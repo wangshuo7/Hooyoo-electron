@@ -5,6 +5,7 @@ declare global {
     electron: ElectronAPI
     api: {
       sendMessage: (message: string) => void
+      updateApp: (msg: any) => void
     }
   }
 }

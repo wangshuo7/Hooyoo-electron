@@ -3,7 +3,13 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  sendMessage: (message: string) => ipcRenderer.send('message', message)
+  sendMessage: (message: string) => ipcRenderer.send('message', message),
+  // updateApp: (msg: any) => ipcRenderer.on('update-available', msg)
+  updateApp: (
+    callback: (event: Electron.IpcRendererEvent, args: any) => void
+  ) => {
+    ipcRenderer.on('update-available', callback)
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
