@@ -1114,8 +1114,8 @@ const goToSlide = (index: number) => {
       }
       .side-text {
         width: 65%;
-        line-height: 16px;
-        font-size: 12px;
+        line-height: 10px;
+        font-size: 8px;
         color: rgb(245, 245, 245);
         z-index: 99;
         display: -webkit-box;

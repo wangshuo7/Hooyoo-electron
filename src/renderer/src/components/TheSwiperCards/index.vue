@@ -63,20 +63,7 @@
           class="swiper-item"
         >
           <div class="swiper-img">
-            <!-- :offset="16" -->
-            <el-popover
-              :teleported="true"
-              placement="top"
-              trigger="hover"
-              content="添至愿望清单"
-              effect="dark"
-              :show-arrow="false"
-              popper-style="font-size:16px;text-align:center;"
-            >
-              <template #reference>
-                <el-icon class="plusicon"><CirclePlusFilled /></el-icon>
-              </template>
-            </el-popover>
+            <el-icon class="plusicon"><CirclePlusFilled /></el-icon>
             <el-image :src="item.src"></el-image>
           </div>
           <div class="swiper-info">
