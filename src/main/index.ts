@@ -2,9 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { autoUpdater } from 'electron-updater'
 
-autoUpdater.autoDownload = false // 是否自动更新
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -23,10 +21,6 @@ function createWindow(): void {
       nodeIntegration: false, // 禁用 Node.js 集成，以提高安全性
       contextIsolation: false // 启用上下文隔离，提高安全性
     }
-  })
-  autoUpdater.on('update-available', () => {
-    // 更新可用，可以通知用户
-    mainWindow.webContents.send('update-available')
   })
   mainWindow.webContents.openDevTools() // 打开开发者工具
 
