@@ -63,7 +63,16 @@
           class="swiper-item"
         >
           <div class="swiper-img">
-            <el-icon class="plusicon"><CirclePlusFilled /></el-icon>
+            <el-tooltip
+              class="box-item"
+              effect="dark"
+              content="添加至愿望清单"
+              placement="top"
+              :offset="16"
+              :show-arrow="false"
+            >
+              <el-icon class="plusicon"><CirclePlusFilled /></el-icon>
+            </el-tooltip>
             <el-image :src="item.src"></el-image>
           </div>
           <div class="swiper-info">

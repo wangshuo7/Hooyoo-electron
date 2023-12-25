@@ -7,8 +7,14 @@ function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     icon: join(__dirname, '../../public/hoo.ico'),
-    width: 2000,
-    height: 1000,
+    // titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#121212',
+      symbolColor: '121212',
+      height: 60
+    },
+    width: 1060,
+    height: 1060,
     show: false, // 窗口是否在创建时显示
     // fullscreen: true, // 窗口是否全屏
     // hasShadow: false, // 窗口阴影
