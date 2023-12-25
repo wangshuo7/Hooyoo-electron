@@ -8,7 +8,7 @@
         </div>
         <input class="search-input" placeholder="搜索商城" />
       </div>
-      <div>
+      <div v-if="route.path === '/mall'">
         <el-dropdown
           trigger="click"
           placement="bottom-start"
@@ -46,6 +46,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { ArrowLeftBold, Search, ArrowDown } from '@element-plus/icons-vue'
+import { useRoute } from 'vue-router'
+const route = useRoute()
 const is_drop = ref<boolean>(false)
 function iconChange(e: boolean) {
   is_drop.value = e
@@ -53,9 +55,22 @@ function iconChange(e: boolean) {
 </script>
 
 <style lang="less" scoped>
+@media screen and (min-width: 2001px) {
+  .header {
+    width: 100rem;
+    margin: 0 auto;
+    // padding: 0 2%;
+  }
+}
+@media screen and (max-width: 2000px) {
+  .header {
+    padding: 0 5%;
+  }
+}
 .header {
   display: flex;
   justify-content: space-between;
+  // overflow: hidden;
   .left {
     display: flex;
     align-items: center;
@@ -86,6 +101,7 @@ function iconChange(e: boolean) {
       display: flex;
       align-items: center;
       cursor: pointer;
+      color: #f5f5f5;
       .el-icon--right {
         transition: all 0.2s linear;
       }
@@ -100,10 +116,10 @@ function iconChange(e: boolean) {
     justify-content: flex-end;
     .right-info {
       width: 155px;
-      display: flex;
-      justify-content: space-evenly;
       border-left: 1px solid #202020;
       .info-item {
+        float: right;
+        margin-left: 35px;
         width: 40px;
         height: 40px;
         border-radius: 50%;

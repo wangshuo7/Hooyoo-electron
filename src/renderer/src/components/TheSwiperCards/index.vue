@@ -535,7 +535,7 @@ onMounted(() => {
 /* 在屏幕宽度在 1601 到 2150 像素之间时应用的样式 */
 @media screen and (min-width: 1601px) and (max-width: 2150px) {
   .container {
-    width: 62.5%;
+    width: 100%;
     position: relative;
     // padding-bottom: 20%;
     margin: 0 auto;
@@ -546,7 +546,7 @@ onMounted(() => {
 /* 在屏幕宽度在 1024 到 1600 像素之间时应用的样式 */
 @media screen and (min-width: 1024px) and (max-width: 1600px) {
   .container {
-    width: 74%;
+    width: 100%;
     position: relative;
     // padding-bottom: 20%;
     margin: 0 auto;

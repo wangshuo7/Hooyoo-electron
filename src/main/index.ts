@@ -15,6 +15,8 @@ function createWindow(): void {
     },
     width: 1060,
     height: 1060,
+    minWidth: 1060,
+    minHeight: 580,
     show: false, // 窗口是否在创建时显示
     // fullscreen: true, // 窗口是否全屏
     // hasShadow: false, // 窗口阴影
