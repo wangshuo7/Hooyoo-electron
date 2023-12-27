@@ -335,7 +335,7 @@ onMounted(async () => {
     transition: all 0.2s linear;
     .refresh-icon {
       transform: rotate(0deg);
-      transition: all 0.6s linear;
+      transition: all 1s linear;
     }
   }
   .refresh:hover {

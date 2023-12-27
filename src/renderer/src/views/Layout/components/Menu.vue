@@ -1,7 +1,7 @@
 <template>
   <div class="menu-box">
     <div class="logo">
-      <el-image class="logo-img" src="/system/hooyoo.gif"></el-image>
+      <el-image class="logo-img" src="./system/hooyoo.gif"></el-image>
     </div>
     <el-menu text-color="#757575" default-active="mall" router>
       <el-menu-item index="mall">

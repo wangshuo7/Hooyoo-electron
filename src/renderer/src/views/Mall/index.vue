@@ -5,7 +5,7 @@
 
   <div class="container">
     <el-form :form="queryForm" inline label-width="70">
-      <el-form-item label="游戏名称">
+      <el-form-item label="名称">
         <el-input
           v-model="queryForm.title"
           style="width: 200px"
@@ -179,7 +179,7 @@ function iconChange(e: boolean) {
 }
 // 检查是否已购买游戏
 function hasPurchasedGame(gameId: number) {
-  return my_game.value.includes(gameId)
+  return my_game.value?.includes(gameId)
 }
 // 更新我的游戏
 async function updateMyGame() {

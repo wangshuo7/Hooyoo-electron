@@ -6,8 +6,9 @@ import icon from '../../resources/icon.png?asset'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    icon: join(__dirname, '../../public/hoo.ico'),
+    icon: join(__dirname, '../../public/huyou.ico'),
     // titleBarStyle: 'hidden',
+    frame: false,
     titleBarOverlay: {
       color: '#121212',
       symbolColor: '121212',
@@ -30,6 +31,7 @@ function createWindow(): void {
       contextIsolation: false // 启用上下文隔离，提高安全性
     }
   })
+
   mainWindow.webContents.openDevTools() // 打开开发者工具
 
   // 加载首页后再创建窗口, 与mainWindow的show:false属性配合使用
@@ -47,6 +49,28 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  // 最小化
+  ipcMain.on('minimize', () => {
+    mainWindow.minimize()
+  })
+  // 最大化
+  ipcMain.on('maximize', () => {
+    mainWindow.maximize()
+  })
+  // 还原
+  ipcMain.on('reduction', () => {
+    mainWindow.restore()
+  })
+  // 在窗口最大化和取消最大化时发送最新的窗口状态
+  function sendMaximizeStatus() {
+    const isMaximized = mainWindow.isMaximized()
+    mainWindow.webContents.send('update-maximize-status', isMaximized)
+  }
+  // 监听窗口最大化事件
+  mainWindow.on('maximize', sendMaximizeStatus)
+
+  // 监听窗口取消最大化事件
+  mainWindow.on('unmaximize', sendMaximizeStatus)
 }
 
 app.whenReady().then(() => {
@@ -72,4 +96,8 @@ app.on('window-all-closed', () => {
 
 ipcMain.on('message', (_event, message) => {
   console.log(message)
+})
+// 关闭
+ipcMain.on('quit', () => {
+  app.quit()
 })

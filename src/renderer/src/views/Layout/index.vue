@@ -1,6 +1,5 @@
 <template>
   <el-container class="container" style="height: 100vh">
-    <!-- <TitleBar></TitleBar> -->
     <el-aside class="aside">
       <Menu class="menu"></Menu>
     </el-aside>
@@ -18,7 +17,6 @@
 </template>
 
 <script lang="ts" setup>
-// import TitleBar from '../../components/TitleBar.vue'
 import Menu from './components/Menu.vue'
 import Content from './components/Content.vue'
 import Header from './components/Header.vue'

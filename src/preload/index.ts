@@ -3,7 +3,16 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  sendMessage: (message: string) => ipcRenderer.send('message', message)
+  sendMessage: (message: string) => ipcRenderer.send('message', message),
+  minimize: () => ipcRenderer.send('minimize'), // 最小
+  quit: () => ipcRenderer.send('quit'), // 关闭
+  maximize: () => ipcRenderer.send('maximize'), // 最大
+  reduction: () => ipcRenderer.send('reduction'), // 还原
+  updateWinStatus: (callback: (status: boolean) => void) => {
+    ipcRenderer.on('update-maximize-status', (_event, status: boolean) => {
+      callback(status)
+    })
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

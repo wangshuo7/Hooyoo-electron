@@ -14,7 +14,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  icon: /public/yoo.png
+  icon: /public/huyou.png
   target: nsis
   executableName: hooyoo-electron
 nsis:

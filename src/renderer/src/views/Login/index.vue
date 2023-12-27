@@ -2,7 +2,7 @@
   <div class="main">
     <div class="login">
       <div class="login-logo">
-        <el-image src="/system/hooyoo.gif" class="logo-img"></el-image>
+        <el-image src="./system/hooyoo.gif" class="logo-img"></el-image>
       </div>
       <div class="login-title">登录</div>
       <LogForm></LogForm>
@@ -21,7 +21,7 @@ import LogForm from './components/LogForm.vue'
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000;
+  background: #121212;
   // .log-box {
   //   width: 600px;
   //   height: 500px;
