@@ -12,18 +12,12 @@
         <el-icon><Menu /></el-icon>
         <template #title>库</template>
       </el-menu-item>
-      <el-menu-item index="3">
-        <template #title>{{ width + 'X' + height }}</template>
-      </el-menu-item>
     </el-menu>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { PriceTag, Menu } from '@element-plus/icons-vue'
-import { useWindowSize } from '@vueuse/core'
-
-const { width, height } = useWindowSize()
 </script>
 
 <style lang="less" scoped>

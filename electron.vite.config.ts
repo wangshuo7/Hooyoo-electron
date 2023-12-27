@@ -19,7 +19,13 @@ export default defineConfig({
     root: Path.join(__dirname, 'src', 'renderer'),
     publicDir: Path.join(__dirname, 'src', 'renderer', 'src', 'public'),
     server: {
-      port: 8080
+      proxy: {
+        '/api': {
+          target: 'http://box-server.huyouyun.cn',
+          changeOrigin: true, // 允许跨域
+          rewrite: (path) => path.replace(/^\/api/, '')
+        }
+      }
     },
     plugins: [vue()]
   }

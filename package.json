@@ -24,7 +24,10 @@
     "@electron-toolkit/utils": "^2.0.0",
     "@element-plus/icons-vue": "^2.1.0",
     "@vueuse/core": "^10.7.0",
+    "axios": "^1.6.2",
     "electron-updater": "^6.1.1",
+    "js-base64": "^3.7.5",
+    "pinia": "^2.1.7",
     "swiper": "^11.0.5"
   },
   "devDependencies": {
