@@ -1,76 +1,15 @@
 <template>
   <div class="header">
-    <div class="left">
-      <!-- <el-icon @click="goBack"><ArrowLeftBold /></el-icon> -->
-      <!-- <div class="search">
-        <div class="search-icon">
-          <el-icon><Search /></el-icon>
-        </div>
-        <input class="search-input" placeholder="搜索商城" />
-      </div> -->
-      <!-- <div v-if="route.path === '/mall'">
-        <el-dropdown
-          trigger="click"
-          placement="bottom-start"
-          @visible-change="iconChange"
-        >
-          <div class="dropdown">
-            <span>探索</span>
-            <el-icon class="el-icon--right" :class="{ active: is_drop }">
-              <arrow-down />
-            </el-icon>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item>探索</el-dropdown-item>
-              <el-dropdown-item>浏览</el-dropdown-item>
-              <el-dropdown-item>新闻</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div> -->
-      <!-- <el-form :form="form" inline label-width="70">
-        <el-form-item label="游戏名称">
-          <el-input
-            v-model="form.title"
-            placeholder="请输入游戏名称"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="排序">
-          <el-select v-model="form.sort" clearable placeholder="请选择排序方式">
-            <el-option value="2" label="创建时间正序" />
-            <el-option value="1" label="创建时间倒序" />
-            <el-option value="4" label="热度正序" />
-            <el-option value="3" label="热度倒序" />
-            <el-option value="6" label="banner正序" />
-            <el-option value="5" label="banner倒序" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="分类">
-          <el-select v-model="form.cate" clearable placeholder="请选择游戏分类">
-            <el-option
-              v-for="item in categories"
-              :key="item.id"
-              :label="item.title"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" style="margin-left: 32px" @click="query"
-            >搜索</el-button
-          >
-          <el-button @click="viewAll">显示全部</el-button>
-        </el-form-item>
-      </el-form> -->
-    </div>
+    <div class="left"></div>
     <div class="right">
       <!-- <div class="right-link">
         <div>愿望清单</div>
         <div>购物车</div>
       </div> -->
       <div class="right-info">
-        <!-- <div class="info-item">斗</div> -->
+        <el-button class="info-item" @click="onSetting">
+          <el-icon><Setting /></el-icon>
+        </el-button>
         <el-dropdown class="info-item">
           <el-avatar
             :size="50"
@@ -87,43 +26,105 @@
       </div>
     </div>
   </div>
+  <el-dialog v-model="settingVisible" title="游戏设置" width="500px">
+    <el-form :form="form" inline class="setting-form">
+      <div class="form-item-title">下载地址</div>
+      <el-form-item prop="download">
+        <el-input v-model.trim="form.download"></el-input>
+      </el-form-item>
+      <el-form-item
+        ><el-button @click="changeDownloadPath">修改</el-button></el-form-item
+      >
+      <div class="form-item-title">安装地址</div>
+      <el-form-item prop="install">
+        <el-input v-model.trim="form.install"></el-input>
+      </el-form-item>
+      <el-form-item
+        ><el-button @click="changeInstallPath">修改</el-button></el-form-item
+      >
+      <div>
+        <el-button type="info" @click="onDefault">恢复默认</el-button>
+      </div>
+    </el-form>
+    <template #footer>
+      <el-button @click="settingVisible = false">取消</el-button>
+      <el-button type="primary" @click="onChangePaths">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
-// import { onMounted, ref } from 'vue'
-// import { ArrowLeftBold, Search, ArrowDown } from '@element-plus/icons-vue'
-// import { Search } from '@element-plus/icons-vue'
+import { ref } from 'vue'
+import { Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-// import { useGlobalStore } from '../../../store/globalStore'
-// const globalStore = useGlobalStore()
+import { ElMessage } from 'element-plus'
 const router = useRouter()
-// const route = useRoute()
-// const is_drop = ref<boolean>(false)
-// function iconChange(e: boolean) {
-//   is_drop.value = e
-// }
-// function goBack() {
-//   router.go(-1)
-// }
-// const form = ref<any>({})
-// const categories = ref<any>([]) // 获取分类
-// 搜索
-// function query() {
-//   //
-// }
-// 显示全部
-// function viewAll() {
-// form.value = {}
-// }
+const form = ref<any>({})
+const settingVisible = ref<boolean>(false)
 // 退出登录
 function logOut() {
   router.push('/login')
   localStorage.setItem('authtoken', '')
 }
-// onMounted(async () => {
-//   await globalStore.setCategory()
-//   categories.value = globalStore.category
-// })
+function onSetting() {
+  settingVisible.value = true
+  window.api.getPath()
+}
+window.api.getPathReply((paths: any) => {
+  form.value.download = paths.downloadPath
+  form.value.install = paths.installPath
+})
+function changeDownloadPath() {
+  const options = {
+    title: '选择下载路径',
+    defaultPath: form.value.download,
+    properties: ['openDirectory']
+  }
+  window.api.openDialog('download', options)
+}
+window.api.getDownloadPath((path) => {
+  form.value.download = path
+})
+function changeInstallPath() {
+  const options = {
+    title: '选择安装路径',
+    defaultPath: form.value.install,
+    properties: ['openDirectory']
+  }
+  window.api.openDialog('install', options)
+}
+window.api.getInstallPath((path) => {
+  form.value.install = path
+})
+// 最终确定
+function onChangePaths() {
+  if (!isDrivePath(form.value.download)) {
+    return ElMessage.error('请检查下载路径格式')
+  }
+  if (!isDrivePath(form.value.install)) {
+    return ElMessage.error('请检查安装路径格式')
+  }
+  const paths = {
+    downloadPath: form.value.download,
+    installPath: form.value.install
+  }
+  window.api.changeStore(paths)
+  return (settingVisible.value = false)
+}
+// 检查是否为盘符路径
+function isDrivePath(path) {
+  const drivePathRegex =
+    /^[a-zA-Z]:\\(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$/
+  return drivePathRegex.test(path)
+}
+// 恢复默认
+function onDefault() {
+  window.api.settingDefault()
+}
+window.api.settingDefaultReply((paths) => {
+  form.value.download = paths.downloadPath
+  form.value.install = paths.installPath
+})
 </script>
 
 <style lang="less" scoped>
@@ -193,7 +194,7 @@ function logOut() {
       // width: 155px;
       // border-left: 1px solid #202020;
       .info-item {
-        float: right;
+        float: left;
         margin-left: 35px;
         width: 40px;
         height: 40px;
@@ -228,5 +229,15 @@ function logOut() {
       }
     }
   }
+}
+.setting-form {
+  .el-input {
+    width: 300px;
+  }
+}
+.form-item-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
 }
 </style>

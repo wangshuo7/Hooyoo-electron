@@ -12,6 +12,76 @@ const api = {
     ipcRenderer.on('update-maximize-status', (_event, status: boolean) => {
       callback(status)
     })
+  },
+  // 下载
+  download: (id, downloadLink) => {
+    ipcRenderer.send('download', id, downloadLink)
+  },
+  // 下载进度
+  downloadProgress: (callback: (progress: any) => void) => {
+    ipcRenderer.on('download-progress', (_event, progress) => {
+      callback(progress)
+    })
+  },
+  launchGame: (callback: (id: any, path: string) => void) => {
+    ipcRenderer.on('launch-game', (_event, id, path) => {
+      callback(id, path)
+    })
+  },
+  updateGameStatus: (callback: (id, status) => void) => {
+    ipcRenderer.on('update-game-status', (_event, id, status) => {
+      callback(id, status)
+    })
+  },
+  // 检查游戏是否存在
+  checkGame: (id: any) => ipcRenderer.send('check-game', id),
+  checkGameReply: (callback: (id) => void) => {
+    ipcRenderer.on('check-game-reply', (_event, id) => {
+      callback(id)
+    })
+  },
+  // 启动游戏
+  startGame: (id: any) => ipcRenderer.send('start-game', id),
+  startGameFailReply: (callback: () => void) => {
+    ipcRenderer.on('start-game-fail-reply', () => {
+      callback()
+    })
+  },
+  // 打开对话框
+  openDialog: (type: string, options: any) =>
+    ipcRenderer.send('open-dialog', type, options),
+  // 获取下载地址路径
+  getDownloadPath: (callback: (path: string) => void) => {
+    ipcRenderer.on('download-dialog-selection', (_event, path) => {
+      callback(path)
+    })
+  },
+  // 获取安装地址路径
+  getInstallPath: (callback: (path: string) => void) => {
+    ipcRenderer.on('install-dialog-selection', (_event, path) => {
+      callback(path)
+    })
+  },
+  getPath: () => ipcRenderer.send('get-paths'),
+  getPathReply: (callback: (paths: any) => void) => {
+    ipcRenderer.on('get-paths-reply', (_event, paths) => {
+      callback(paths)
+    })
+  },
+  // 修改store
+  changeStore: (paths: any) => ipcRenderer.send('change-store', paths),
+  // 恢复默认
+  settingDefault: () => ipcRenderer.send('setting-default'),
+  settingDefaultReply: (callback: (paths: any) => void) => {
+    ipcRenderer.on('setting-default-reply', (_event, paths) => {
+      callback(paths)
+    })
+  },
+  // 重置游戏状态
+  initGameStatus: (callback: () => void) => {
+    ipcRenderer.on('init-game-status', () => {
+      callback()
+    })
   }
 }
 

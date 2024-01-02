@@ -2,13 +2,48 @@
   <div class="container">
     <div class="title" @click="onRefresh">
       <h1>库</h1>
-      <span class="refresh">
-        <el-icon
-          class="refresh-icon"
-          :style="{ transform: `rotate(${rotation}deg)` }"
-          ><Refresh
-        /></el-icon>
-      </span>
+      <!-- <el-popover placement="top" :show-arrow="false" trigger="hover">
+        <template #default>
+          <div style="text-align: center; height: 25px">刷新库</div>
+        </template>
+        <template #reference>
+          <span class="refresh">
+            <el-icon
+              class="refresh-icon"
+              :style="{ transform: `rotate(${rotation}deg)` }"
+              ><Refresh
+            /></el-icon>
+          </span>
+        </template>
+      </el-popover> -->
+      <el-tooltip
+        placement="top"
+        effect="light"
+        :show-arrow="false"
+        :offset="-5"
+      >
+        <span class="refresh">
+          <el-icon
+            class="refresh-icon"
+            :style="{ transform: `rotate(${rotation}deg)` }"
+            ><Refresh
+          /></el-icon>
+        </span>
+        <template #content>
+          <div
+            style="
+              width: 60px;
+              height: 30px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 14px;
+            "
+          >
+            刷新库
+          </div>
+        </template>
+      </el-tooltip>
     </div>
     <!-- <div class="tabs">
       <div
@@ -93,21 +128,21 @@
         v-for="(item, index) in tableData"
         :key="index"
         class="list-item"
-        @click="goDetail(item)"
+        @click="viewDetail(item)"
       >
         <el-image class="img" src="danzhu.jpg"></el-image>
         <div class="item-title">
           <span>{{ item.title }}</span>
-          <span>
+          <!-- <span>
             <el-icon><MoreFilled /></el-icon>
-          </span>
+          </span> -->
         </div>
-        <div class="item-download">
+        <!-- <div class="item-download">
           <span>
             <el-icon><Download /></el-icon>
           </span>
           <span>下载</span>
-        </div>
+        </div> -->
       </div>
     </div>
     <!-- table样式 -->
@@ -160,9 +195,9 @@
           @command="selsecSize"
         >
           <div class="dropdown">
-            <span>{{ pageSize }}</span>
+            <span>{{ pageSize == totalItems ? '全部' : pageSize }}</span>
             <el-icon class="el-icon--right" :class="{ active: is_drop }">
-              <arrow-down />
+              <ArrowDown />
             </el-icon>
           </div>
           <template #dropdown>
@@ -177,34 +212,126 @@
       </div>
     </div>
   </div>
+  <el-dialog v-model="detailVisible" :title="game_name" width="945">
+    <div class="detail">
+      <div
+        class="detail-head"
+        style="
+          background-image: linear-gradient(
+              to right,
+              rgba(51, 54, 58, 1) 0%,
+              rgba(51, 54, 58, 1) 40%,
+              rgba(51, 54, 58, 0) 70%
+            ),
+            url('./danzhu.jpg');
+          background-repeat: no-repeat;
+          background-position: right;
+        "
+      >
+        <div class="head-left">
+          <div class="head-title">{{ detail.title }}</div>
+          <div class="info">{{ detail.jianjie }}</div>
+          <div v-if="detail.cuxiao_price" class="price">
+            ￥{{ detail.price }}
+          </div>
+          <div class="cuxiao-price">
+            ￥{{ detail.cuxiao_price ? detail.cuxiao_price : detail.price }}
+          </div>
+          <div class="btns">
+            <!-- <el-button
+              v-if="progress_test == undefined || progress_test == 100"
+              :type="btnType"
+              size="large"
+              @click="operateGame"
+              >{{
+                hasPurchasedGame(detail.game_id) ? '下载游戏' : '购买游戏'
+              }}</el-button
+            > -->
+            <el-button
+              v-if="progress_test == undefined || progress_test == 100"
+              type="primary"
+              size="large"
+              @click="downLoadGame"
+              >下载游戏</el-button
+            >
+            <div
+              v-else
+              style="
+                width: 100px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 12px 0 0;
+              "
+            >
+              下载中 {{ `${progress_test}%` }}
+            </div>
+            <el-button type="warning" size="large" :disabled="!detail.kefu"
+              >客服</el-button
+            >
+          </div>
+        </div>
+      </div>
+      <!-- 套餐 -->
+      <div class="detail-info package">
+        <h3>套餐</h3>
+        <div class="package-content">
+          <div
+            v-for="(item, index) in detail.taocan"
+            :key="index"
+            class="package-card"
+          >
+            <div class="card-left">套餐{{ index + 1 }}</div>
+            <div class="card-right">
+              <div>
+                <span>天数：</span><span>{{ item.tdays }}</span>
+              </div>
+              <div>
+                <span>价格：</span><span>{{ item.tprice }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 详细信息 -->
+      <div class="detail-info">
+        <h3>详细信息</h3>
+        <div class="info-item">
+          <div>
+            <span>开播余额:</span><span>{{ detail.min_price }}</span>
+          </div>
+          <div>
+            <span>分成比例:</span><span>{{ detail.divide }}</span>
+          </div>
+          <div>
+            <span>更新时间:</span><span>{{ formatTime(detail.uptime) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
-import {
-  Refresh,
-  MoreFilled,
-  Download,
-  ArrowDown
-} from '@element-plus/icons-vue'
-import { useRouter } from 'vue-router'
+import { useDateFormat, useDebounceFn } from '@vueuse/core'
+import { Refresh, MoreFilled, ArrowDown } from '@element-plus/icons-vue'
+// import { useRouter } from 'vue-router'
 import { getMyGameList } from '../../api/mine'
 import { useGlobalStore } from '../../store/globalStore'
+import { ElMessage } from 'element-plus'
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
 const categories = ref<any>([]) // 获取分类
-const router = useRouter()
 const tableData = ref<any>([])
-function goDetail(item: any) {
-  console.log(item.id)
-  router.push({ name: 'Detail', params: { id: item.id } })
-}
 const loading = ref<boolean>(false)
 // 分页相关
 const currentPage = ref<number>(1) // 当前页
 const pageSize = ref<number>(12) // 每页显示条数
 const totalItems = ref<number>(0) // 总数据条数
+const detailVisible = ref<boolean>(false) // 详情
+
 // 当页码发生变化时触发
 function handleCurrentChange(newPage: number) {
   currentPage.value = newPage
@@ -261,11 +388,37 @@ const is_drop = ref<boolean>(false)
 function iconChange(e: boolean) {
   is_drop.value = e
 }
+const buyID = ref<any>()
+const game_name = ref<any>()
+const detail = ref<any>()
+// 打开详情
+function viewDetail(item) {
+  detailVisible.value = true
+  buyID.value = item.game_id
+  game_name.value = item.title
+  detail.value = item
+}
+const progress_test = ref<any>()
+window.api.downloadProgress((progress) => {
+  progress_test.value = progress
+})
+// 下载游戏
+function downLoadGame() {
+  if (detail.value.xiazai_url) {
+    window.api.download(detail.value.mg_game_id, detail.value.xiazai_url)
+  } else {
+    ElMessage.error('暂无游戏地址')
+  }
+}
 onMounted(async () => {
   query()
   await globalStore.setCategory()
   categories.value = globalStore.category
 })
+// 格式化时间
+function formatTime(time: any) {
+  return useDateFormat(time * 1000, 'YYYY-MM-DD HH:mm:ss')
+}
 </script>
 
 <style lang="less" scoped>
@@ -398,18 +551,18 @@ onMounted(async () => {
     .item-title {
       display: flex;
       justify-content: space-between;
-      span:last-child {
-        width: 32px;
-        height: 22px;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.3s linear;
-      }
-      span:last-child:hover {
-        background: #373737;
-      }
+      // span:last-child {
+      //   width: 32px;
+      //   height: 22px;
+      //   border-radius: 4px;
+      //   display: flex;
+      //   align-items: center;
+      //   justify-content: center;
+      //   transition: background 0.3s linear;
+      // }
+      // span:last-child:hover {
+      //   background: #373737;
+      // }
     }
     .item-download {
       margin-top: 5px;
@@ -521,6 +674,105 @@ onMounted(async () => {
       }
       .el-icon--right.active {
         transform: rotate(-180deg);
+      }
+    }
+  }
+}
+.el-popper {
+  border: none;
+}
+// 详情-弹出框
+.detail {
+  .detail-head {
+    width: 900px;
+    height: 260px;
+    position: relative;
+    border-radius: 15px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    .head-left {
+      flex: 1;
+      color: #fff;
+      .head-title {
+        font-size: 20px;
+        margin-bottom: 20px;
+      }
+      .info {
+        height: 20px;
+        margin-bottom: 20px;
+      }
+      .price {
+        text-decoration: line-through;
+        height: 18px;
+        color: #f5f5f599;
+      }
+      .cuxiao-price {
+        font-size: 18px;
+        height: 18px;
+        margin-bottom: 50px;
+        color: #f5f5f5;
+      }
+      .btns {
+        display: flex;
+        align-items: center;
+        .el-button {
+          width: 100px;
+        }
+      }
+    }
+  }
+  .detail-info {
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+    h3 {
+      // color: #000;
+      height: 40px;
+    }
+    .info-item {
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      span:first-child {
+        margin-right: 20px;
+      }
+    }
+  }
+  .package {
+    margin-bottom: 20px;
+    width: 100%;
+    .package-content {
+      display: flex;
+      flex-wrap: wrap;
+      .package-card {
+        width: 170px;
+        height: 80px;
+        margin: 0 20px 20px 0;
+        // border: 2px solid #caa3a3;
+        border-radius: 10px;
+        display: flex;
+        // background: #dcdfe6;
+        // background: #f56c6c;
+        border: 2px solid #79bbff;
+        .card-left {
+          width: 50px;
+          height: 100%;
+          border-right: 2px solid #79bbff;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+        }
+        .card-right {
+          padding: 10px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          // align-items: center;
+        }
       }
     }
   }
