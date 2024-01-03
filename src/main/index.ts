@@ -158,7 +158,7 @@ ipcMain.on('download', (event, id, downloadLink) => {
       // 下载完成后，重置任务栏下载进度条
       mainWindow.setProgressBar(-1)
       // 更新游戏状态为[已下载]
-      gameStatus[id] = 'downloaded'
+      // gameStatus[id] = 'downloaded'
       // 发送游戏状态更新消息到渲染进程
       mainWindow.webContents.send('update-game-status', id, gameStatus[id])
       // 解压文件
@@ -222,9 +222,7 @@ ipcMain.on('start-game', (event, id) => {
 
   if (exeFiles && exeFiles.length > 0) {
     const filePath = path.join(gameFolderPath, exeFiles[0])
-
-    // 在这里你可以启动该文件，例如通过 child_process.spawn
-    // 请注意，下面的代码仅供示例，你需要根据实际情况调整
+    // 启动文件
     // spawn(filePath + ' ' + token, [], { detached: true, stdio: 'ignore' })
     spawn(filePath, [], { detached: true, stdio: 'ignore' })
   } else {
@@ -236,6 +234,7 @@ ipcMain.on('start-game', (event, id) => {
 // 打开对话框
 ipcMain.on('open-dialog', (event, type, options) => {
   const selectedPaths: any = dialog.showOpenDialogSync(options)
+  // console.log('sssss', selectedPaths)
   if (selectedPaths && type === 'download') {
     return event.reply('download-dialog-selection', selectedPaths[0])
   }

@@ -319,7 +319,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useDateFormat } from '@vueuse/core'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
@@ -508,6 +508,7 @@ async function confirm() {
     buyVisible.value = false
     secondVisible.value = false
     updateMyGame()
+    gameStatus.value[buyID.value] = 'purchased'
     query()
   }
 }
@@ -536,14 +537,10 @@ window.api.launchGame((id, path) => {
 // 启动游戏
 function launchGame() {
   window.api.startGame(buyID.value)
-  // if (gameStatus.value[buyID.value] == 'noexist') {
-  //   ElMessage.warning('未找到游戏入口文件main.exe 启动失败')
-  // }
-  // window.api.startGameReply(buyID.value)
+  window.api.startGameFailReply(() => {
+    ElMessage.error('未找到游戏入口文件main.exe 启动失败')
+  })
 }
-window.api.startGameFailReply(() => {
-  ElMessage.error('未找到游戏入口文件main.exe 启动失败')
-})
 // 下载中不允许关闭对话框
 const isdownloading = computed(() => {
   if (gameStatus.value[buyID.value] == 'downloading') {
@@ -552,6 +549,13 @@ const isdownloading = computed(() => {
     return true
   }
 })
+watch(
+  () => buyVisible.value,
+  () => {
+    form.value = { tdays: '', tprice: '', code: '' }
+    thePackage.value = 0
+  }
+)
 onMounted(async () => {
   updateMyGame()
   query()
@@ -592,9 +596,9 @@ function formatTime(time: any) {
     width: 100%;
   }
   .list {
-    grid-template-columns: 20% 20% 20% 20% 20%;
+    grid-template-columns: 25% 25% 25% 25%;
     .list-item {
-      height: 260px;
+      height: 270px;
     }
   }
 }

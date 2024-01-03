@@ -13,12 +13,12 @@
   .box {
     // padding: 0 2%;
     width: 100rem;
-    padding-bottom: 100px;
+    padding-bottom: 40px;
   }
 }
 @media screen and (max-width: 2000px) {
   .box {
-    padding: 0 5% 100px;
+    padding: 0 5% 40px;
   }
 }
 .box {

@@ -212,7 +212,13 @@
       </div>
     </div>
   </div>
-  <el-dialog v-model="detailVisible" :title="game_name" width="945">
+  <el-dialog
+    v-model="detailVisible"
+    :close-on-click-modal="isdownloading"
+    :show-close="isdownloading"
+    :title="game_name"
+    width="945"
+  >
     <div class="detail">
       <div
         class="detail-head"
@@ -248,11 +254,18 @@
               }}</el-button
             > -->
             <el-button
-              v-if="progress_test == undefined || progress_test == 100"
+              v-if="gameStatus[detail.game_id] == 'purchased'"
               type="primary"
               size="large"
               @click="downLoadGame"
               >下载游戏</el-button
+            >
+            <el-button
+              v-else-if="gameStatus[detail.game_id] == 'unzipped'"
+              size="large"
+              type="danger"
+              @click="launchGame"
+              >启动游戏</el-button
             >
             <div
               v-else
@@ -265,8 +278,9 @@
                 margin: 0 12px 0 0;
               "
             >
-              下载中 {{ `${progress_test}%` }}
+              下载中 {{ `${Math.floor(+progress_test)}%` }}
             </div>
+
             <el-button type="warning" size="large" :disabled="!detail.kefu"
               >客服</el-button
             >
@@ -321,6 +335,7 @@ import { Refresh, MoreFilled, ArrowDown } from '@element-plus/icons-vue'
 import { getMyGameList } from '../../api/mine'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage } from 'element-plus'
+const gameStatus = ref<any>({})
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
 const categories = ref<any>([]) // 获取分类
@@ -364,6 +379,9 @@ async function query() {
     tableData.value = response?.data?.list
     totalItems.value = response?.data?.count
     loading.value = false
+    tableData.value.map((item) => {
+      return (gameStatus.value[item.game_id] = 'purchased')
+    })
   } catch (error) {
     console.error('Error fetching data: ', error)
   }
@@ -397,8 +415,14 @@ function viewDetail(item) {
   buyID.value = item.game_id
   game_name.value = item.title
   detail.value = item
+  gameStatus.value[buyID.value] = 'purchased'
+  window.api.checkGame(item.mg_game_id)
+  // console.log(gameStatus.value)
 }
-const progress_test = ref<any>()
+window.api.updateGameStatus((id, status) => {
+  gameStatus.value[id] = status
+})
+const progress_test = ref<any>(0)
 window.api.downloadProgress((progress) => {
   progress_test.value = progress
 })
@@ -410,8 +434,24 @@ function downLoadGame() {
     ElMessage.error('暂无游戏地址')
   }
 }
+// 启动游戏
+function launchGame() {
+  window.api.startGame(buyID.value)
+  window.api.startGameFailReply(() => {
+    ElMessage.error('未找到游戏入口文件main.exe 启动失败')
+  })
+}
+// 下载中不允许关闭对话框
+const isdownloading = computed(() => {
+  if (gameStatus.value[buyID.value] == 'downloading') {
+    return false
+  } else {
+    return true
+  }
+})
 onMounted(async () => {
   query()
+
   await globalStore.setCategory()
   categories.value = globalStore.category
 })
@@ -449,9 +489,9 @@ function formatTime(time: any) {
     width: 100%;
   }
   .list {
-    grid-template-columns: 20% 20% 20% 20% 20%;
+    grid-template-columns: 25% 25% 25% 25%;
     .list-item {
-      height: 260px;
+      height: 270px;
     }
   }
 }
