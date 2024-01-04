@@ -8,6 +8,7 @@ import http from 'http'
 import AdmZip from 'adm-zip'
 import { spawn } from 'child_process'
 import Store from 'electron-store'
+// let authToken = ''
 const store = new Store()
 // store.set({
 //   downloadPath: path.join(app.getPath('documents'), 'huyouyun_game_download'),
@@ -223,11 +224,13 @@ ipcMain.on('start-game', (event, id) => {
   if (exeFiles && exeFiles.length > 0) {
     const filePath = path.join(gameFolderPath, exeFiles[0])
     // 启动文件
-    // spawn(filePath + ' ' + token, [], { detached: true, stdio: 'ignore' })
+    // spawn(filePath + ' ' + authToken, [], { detached: true, stdio: 'ignore' })
     spawn(filePath, [], { detached: true, stdio: 'ignore' })
   } else {
     // gameStatus[id] = 'noexist'
     // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
+    // console.log('event', event)
+    event.sender.removeAllListeners('start-game-fail-reply')
     event.reply('start-game-fail-reply')
   }
 })
@@ -280,3 +283,6 @@ ipcMain.on('setting-default', (event) => {
   }
   event.reply('setting-default-reply', paths)
 })
+// ipcMain.on('send-token', (_event, token: string) => {
+//   authToken = token
+// })

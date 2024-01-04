@@ -536,6 +536,7 @@ window.api.launchGame((id, path) => {
 })
 // 启动游戏
 function launchGame() {
+  window.api.removeAllListeners()
   window.api.startGame(buyID.value)
   window.api.startGameFailReply(() => {
     ElMessage.error('未找到游戏入口文件main.exe 启动失败')

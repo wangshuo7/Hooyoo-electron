@@ -17,6 +17,7 @@ declare global {
       checkGame: (id) => void
       startGame: (id) => void
       startGameFailReply: (callback: () => void) => void
+      removeAllListeners: () => void
       openDialog: (type: string, options: any) => void
       getDownloadPath: (path) => void
       getInstallPath: (path) => void
@@ -27,6 +28,7 @@ declare global {
       settingDefaultReply: (callback: (paths: any) => void) => void
       checkGameReply: (callback: (id: any) => void) => void
       initGameStatus: (callback: () => void) => void
+      sendToken: (token: string) => void
     }
   }
 }

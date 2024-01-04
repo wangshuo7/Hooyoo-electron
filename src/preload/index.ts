@@ -47,6 +47,8 @@ const api = {
       callback()
     })
   },
+  removeAllListeners: () =>
+    ipcRenderer.removeAllListeners('start-game-fail-reply'),
   // 打开对话框
   openDialog: (type: string, options: any) =>
     ipcRenderer.send('open-dialog', type, options),
@@ -82,7 +84,9 @@ const api = {
     ipcRenderer.on('init-game-status', () => {
       callback()
     })
-  }
+  },
+  // 发送token
+  sendToken: (token: string) => ipcRenderer.send('send-token', token)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
