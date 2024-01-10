@@ -59,11 +59,23 @@
       >
         <!-- v-if="hasPurchasedGame(item.game_id)" -->
         <el-tag
-          v-if="tagPurchasedGame(item.game_id)"
+          v-if="gameStatus[item.game_id] !== 'nopurchased'"
           class="tag"
           effect="dark"
-          type="success"
-          >已购买</el-tag
+          :type="
+            gameStatus[item.game_id] !== 'nopurchased'
+              ? gameStatus[item.game_id] === 'expire'
+                ? 'danger'
+                : 'success'
+              : ''
+          "
+          >{{
+            gameStatus[item.game_id] !== 'nopurchased'
+              ? gameStatus[item.game_id] === 'expire'
+                ? '已过期'
+                : '已购买'
+              : ''
+          }}</el-tag
         >
         <el-image class="img" src="danzhu.jpg"></el-image>
         <div class="item-title">
@@ -119,9 +131,9 @@
     v-model="detailVisible"
     :title="`${game_name}${buyID}`"
     width="945"
-    :close-on-click-modal="isdownloading"
-    :show-close="isdownloading"
   >
+    <!-- :close-on-click-modal="isdownloading" -->
+    <!-- :show-close="isdownloading"/ -->
     <div class="detail">
       <div
         class="detail-head"
@@ -148,10 +160,13 @@
           </div>
           <div class="btns">
             <el-button
-              v-if="gameStatus[detail.game_id] == 'nopurchased'"
+              v-if="
+                gameStatus[detail.game_id] == 'nopurchased' ||
+                gameStatus[detail.game_id] == 'expire'
+              "
               size="large"
               type="success"
-              @click="buyVisible = true"
+              @click="onbuyGame"
               >购买游戏</el-button
             >
             <el-button
@@ -169,7 +184,7 @@
               >启动游戏</el-button
             >
             <div
-              v-else
+              v-else-if="gameStatus[detail.game_id] == 'downloading'"
               style="
                 width: 100px;
                 height: 40px;
@@ -241,7 +256,7 @@
             placeholder="请选择套餐"
             @change="selectPackage"
           >
-            <el-option label="自定义" :value="0"></el-option>
+            <!-- <el-option label="自定义" :value="0"></el-option> -->
             <el-option
               v-for="(item, index) in packages"
               :key="item.id"
@@ -250,42 +265,22 @@
             ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item
-          label="天数"
-          prop="tdays"
-          :rules="[
-            {
-              required: true,
-              message: '请填写天数',
-              trigger: 'blur'
-            }
-          ]"
-        >
+        <!-- <el-form-item label="天数">
           <el-input
             v-model="form.tdays"
             type="number"
-            :disabled="thePackage !== 0"
+            disabled
             placeholder="请输入天数"
           ></el-input>
         </el-form-item>
-        <el-form-item
-          label="价格"
-          prop="tprice"
-          :rules="[
-            {
-              required: true,
-              message: '请填写价格',
-              trigger: 'blur'
-            }
-          ]"
-        >
+        <el-form-item label="价格">
           <el-input
             v-model="form.tprice"
             type="number"
-            :disabled="thePackage !== 0"
+            disabled
             placeholder="请输入价格"
           ></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="折扣券或免费激活码">
           <el-input
             v-model="form.code"
@@ -320,20 +315,18 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { useDateFormat } from '@vueuse/core'
+import { useDateFormat, useTimestamp } from '@vueuse/core'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
 import { ArrowDown } from '@element-plus/icons-vue'
 import { buyGame, getGameList } from '../../api/game'
-import { getMyGameList } from '../../api/mine'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage, FormInstance } from 'element-plus'
-// import { fs } from 'nodejs'
+const timestamp = useTimestamp()
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
 const categories = ref<any>([]) // 获取分类
 const tableData = ref<any>([]) // 所有数据
-const my_game = ref<any>() // 我的游戏
 const is_drop = ref<boolean>(false) // 换每页条数的箭头变化
 const loading = ref<boolean>(false) // 加载
 const currentPage = ref<number>(1) // 当前页
@@ -348,14 +341,18 @@ const secondVisible = ref<boolean>(false)
 const ruleFormRef = ref<FormInstance>()
 
 // 套餐
-const thePackage = ref<number>(0)
+const thePackage = ref<number>()
 const packages = computed(() => {
   const item =
     tableData.value.find((game: any) => game.game_id === buyID.value) || {}
   return item.taocan.map((i: any, index: number) => {
-    return Object.assign({}, i, { id: index + 1 })
+    return Object.assign({}, i, { id: index })
   })
 })
+function onbuyGame() {
+  buyVisible.value = true
+  thePackage.value = packages.value[0].id
+}
 // 添加表单
 const form = ref<{
   tdays: string
@@ -399,6 +396,21 @@ async function query() {
     })
     tableData.value = response?.data?.list
     totalItems.value = response?.data?.count
+    // console.log('now', timestamp.value / 1000)
+    tableData.value.map((item: any) => {
+      if (item.game_buy_end_time === null) {
+        return (gameStatus.value[item.game_id] = 'nopurchased')
+      } else if (item.game_buy_end_time >= timestamp.value / 1000) {
+        return (gameStatus.value[item.game_id] = 'purchased')
+      } else if (
+        item.game_buy_end_time > 0 &&
+        item.game_buy_end_time < timestamp.value
+      ) {
+        return (gameStatus.value[item.game_id] = 'expire')
+      }
+      return
+    })
+    console.log('gameStatus', gameStatus.value)
     loading.value = false
   } catch (error) {
     console.error('Error fetching data: ', error)
@@ -409,55 +421,39 @@ function iconChange(e: boolean) {
   is_drop.value = e
 }
 // 检查是否已购买游戏
-function tagPurchasedGame(gameId: number) {
-  return my_game.value?.includes(gameId)
-}
+// function checkBuyGame(id) {
+//   if (gameStatus.value[id] !== 'nopurchased') {
+//     return true
+//   }
+//   return false
+// }
 
-// 更新我的游戏
-async function updateMyGame() {
-  const res = await getMyGameList({})
-  my_game.value = res.data.list.map((item: any) => item.mg_game_id)
-}
+// // 更新我的游戏
+// async function updateMyGame() {
+//   const res = await getMyGameList({})
+//   my_game.value = res.data.list.map((item: any) => item.mg_game_id)
+// }
 // 打开详情
 function openDetail(item: any) {
   detailVisible.value = true
   buyID.value = item.game_id
   game_name.value = item.title
   detail.value = item
-  hasPurchasedGame(item.game_id)
-  window.api.checkGame(item.game_id)
-  // console.log('bbbbbb', gameStatus.value)
-  // const exeFiles = fs
-  //   .readdirSync(`D:\\hooyoo\\game${buyID.value}`)
-  //   .filter((file) => /\.(exe)$/i.test(file) && !/Unity/i.test(file))
-  // if (exeFiles.length > 0) {
-  //   gameStatus.value[buyID.value] = 'unzipped'
-  // }
+  // 如果这个游戏已购买，检查游戏是否存在
+  if (gameStatus.value[buyID.value] === 'purchased') {
+    window.api.checkGame(item.game_id)
+  }
 }
-window.api.checkGameReply((id) => {
-  hasPurchasedGame(id)
-})
+// window.api.checkGameReply((id) => {
+//   hasPurchasedGame(id)
+// })
 // 更改安装路径后重置游戏状态
 window.api.initGameStatus(() => {
   gameStatus.value = {}
 })
-// 检查是否已购买游戏
-function hasPurchasedGame(gameId: number) {
-  if (gameStatus.value[gameId]) {
-    return
-  }
-  if (my_game.value?.includes(gameId)) {
-    gameStatus.value[gameId] = 'purchased' // 已购买
-  } else {
-    gameStatus.value[gameId] = 'nopurchased' // 未购买
-  }
-}
+
 // 选择套餐
 function selectPackage() {
-  if (thePackage.value === 0) {
-    ruleFormRef.value?.resetFields()
-    return
-  }
   ruleFormRef.value?.clearValidate(['tprice', 'tdays'])
   const selectedPackageItem = packages.value.find(
     (item: any) => item.id === thePackage.value
@@ -470,15 +466,20 @@ function selectPackage() {
   }
 }
 function confirmOrder() {
-  ruleFormRef.value?.validate((valid, filed) => {
-    if (valid) {
-      // secondVisible.value = true
-      onComputed()
-    } else {
-      // 表单验证未通过
-      console.log('filed', filed)
-    }
-  })
+  console.log(form.value)
+  // if (thePackage.value) {
+  onComputed()
+  // }
+  // return ElMessage.error('请选择套餐')
+  // ruleFormRef.value?.validate((valid, filed) => {
+  //   if (valid) {
+  //     // secondVisible.value = true
+  //     onComputed()
+  //   } else {
+  //     // 表单验证未通过
+  //     console.log('filed', filed)
+  //   }
+  // })
 }
 // 计算
 const jisuanData = ref<any>()
@@ -507,8 +508,8 @@ async function confirm() {
     ElMessage.success('购买成功')
     buyVisible.value = false
     secondVisible.value = false
-    updateMyGame()
-    gameStatus.value[buyID.value] = 'purchased'
+    // updateMyGame()
+    // gameStatus.value[buyID.value] = 'purchased'
     query()
   }
 }
@@ -543,22 +544,27 @@ function launchGame() {
   })
 }
 // 下载中不允许关闭对话框
-const isdownloading = computed(() => {
-  if (gameStatus.value[buyID.value] == 'downloading') {
-    return false
-  } else {
-    return true
-  }
-})
+// const isdownloading = computed(() => {
+//   if (gameStatus.value[buyID.value] == 'downloading') {
+//     return false
+//   } else {
+//     return true
+//   }
+// })
 watch(
   () => buyVisible.value,
   () => {
-    form.value = { tdays: '', tprice: '', code: '' }
-    thePackage.value = 0
+    // thePackage.value = undefined
+    // thePackage.value = packages.value[0].id
+    form.value = {
+      tdays: packages.value[0].tdays,
+      tprice: packages.value[0].tprice,
+      code: ''
+    }
   }
 )
 onMounted(async () => {
-  updateMyGame()
+  // updateMyGame()
   query()
   await globalStore.setCategory()
   categories.value = globalStore.category

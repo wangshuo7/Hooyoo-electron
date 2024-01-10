@@ -18,6 +18,7 @@
         <p class="label-password" :class="{ active: psd_active }">密码</p>
         <el-input
           v-model="form.password"
+          :show-password="true"
           class="login-input psd-input"
           :class="{ active: psd_border }"
           type="password"
@@ -28,7 +29,19 @@
       </div>
     </el-form-item>
     <el-form-item>
-      <el-checkbox v-model="remember" label="记住密码"></el-checkbox>
+      <div
+        style="
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        "
+      >
+        <el-checkbox v-model="remember" label="记住密码"></el-checkbox>
+        <el-link type="primary" :underline="false" @click="switchRegister"
+          >注册账号</el-link
+        >
+      </div>
     </el-form-item>
     <el-form-item>
       <el-button
@@ -47,7 +60,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { login } from '../../../api/login'
 import { Base64 } from 'js-base64'
-
+import { useAccountStore } from '../../../store/account'
+const accountStore = useAccountStore()
 interface login_type {
   login_type: string
   username: string
@@ -157,6 +171,10 @@ onMounted(() => {
     psd_active.value = false
   }
 })
+// 切换注册
+function switchRegister() {
+  accountStore.setActive('register')
+}
 </script>
 
 <style lang="less" scoped>

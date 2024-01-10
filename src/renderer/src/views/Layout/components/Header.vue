@@ -18,7 +18,13 @@
           </el-avatar>
           <template #dropdown>
             <el-dropdown-menu class="dropdown-t">
-              <el-dropdown-item @click="logOut">退出登录</el-dropdown-item>
+              <el-dropdown-item>余额：{{ balance }} 云豆</el-dropdown-item>
+              <el-dropdown-item @click="rechargeVisible = true"
+                >充值</el-dropdown-item
+              >
+              <el-dropdown-item divided @click="logOut"
+                >退出登录</el-dropdown-item
+              >
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -51,16 +57,82 @@
       <el-button type="primary" @click="onChangePaths">确定</el-button>
     </template>
   </el-dialog>
+  <el-dialog v-model="rechargeVisible" title="充值" width="700px">
+    <el-radio-group v-model="recharge_type" class="recharge-radio">
+      <el-radio label="1" size="large">卡密充值</el-radio>
+      <el-radio label="2" size="large">微信充值</el-radio>
+    </el-radio-group>
+    <div v-if="recharge_type == '1'" class="recharge-content">
+      <el-form
+        ref="ruleFormRef"
+        :hide-required-asterisk="true"
+        :model="rechargeForm"
+        inline
+      >
+        <el-form-item label="充值卡" prop="miyao">
+          <el-input
+            v-model="form.miyao"
+            required
+            placeholder="请输入卡密"
+          ></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submit">确定</el-button>
+          <el-button @click="cancel">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+    <div v-else class="recharge-content">
+      <el-form inline>
+        <el-form-item label="充值云豆">
+          <el-input-number
+            v-model="vx_price"
+            placeholder="请输入充值数额"
+            :min="0"
+            controls-position="right"
+            style="width: 180px"
+          ></el-input-number>
+          <el-button
+            type="primary"
+            style="margin-left: 20px"
+            @click="onRechargeWeixin"
+          >
+            确定
+          </el-button>
+          <el-button @click="onCancelRechargeWeixin">取消</el-button>
+        </el-form-item>
+        <!-- <div class="tip">充值金额需在 1-10000 之间</div> -->
+      </el-form>
+      <div v-if="code_url" class="qrcode-box">
+        <img :src="qrcode" alt="QR Code" />
+      </div>
+    </div>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, FormInstance } from 'element-plus'
+import {
+  getPersonalInfo,
+  rechargeCard,
+  rechargeWeixin,
+  checkWeixinOrder
+} from '../../../api/wallet'
+import { useQRCode } from '@vueuse/integrations/useQRCode'
+// 微信充值
+const vx_price = ref<number>(0)
+const code_url = ref<any>()
+const qrcode = useQRCode(code_url)
 const router = useRouter()
 const form = ref<any>({})
 const settingVisible = ref<boolean>(false)
+const rechargeVisible = ref<boolean>(false)
+const recharge_type = ref<string>('1')
+const intervalId = ref<any>(null)
+
 // 退出登录
 function logOut() {
   router.push('/login')
@@ -125,6 +197,90 @@ window.api.settingDefaultReply((paths) => {
   form.value.download = paths.downloadPath
   form.value.install = paths.installPath
 })
+async function viewBalance() {
+  const res = await getPersonalInfo()
+  balance.value = res.data.one.current_price
+}
+const balance = ref<any>()
+onMounted(() => {
+  viewBalance()
+})
+watch(
+  () => rechargeVisible.value,
+  (newVal) => {
+    if (newVal === false) {
+      recharge_type.value = '1'
+      form.value.miyao = undefined
+      vx_price.value = 0
+      code_url.value = ''
+      viewBalance()
+      clearInterval(intervalId.value)
+    }
+  }
+)
+// 充值
+const ruleFormRef = ref<FormInstance>()
+const rechargeForm = ref<any>({ miyao: '' })
+// 卡密-确定
+function submit() {
+  ruleFormRef.value?.validate(async (valid) => {
+    if (valid) {
+      // 表单验证通过
+      const res: any = await rechargeCard({
+        miyao: form.value.miyao
+      })
+      if (res.code === 200) {
+        ElMessage.success('充值成功')
+        // viewBalance()
+        return (rechargeVisible.value = false)
+      }
+      return ElMessage.error(res.msg)
+    } else {
+      // 表单验证未通过
+      return ElMessage.error('表单验证未通过')
+    }
+  })
+}
+
+// 卡密-取消
+function cancel() {
+  ruleFormRef.value?.resetFields()
+}
+const order_id = ref<any>()
+// 检查微信订单
+async function checkOrder() {
+  const res: any = await checkWeixinOrder({ order_id: order_id.value })
+  if (res.data.status === 'yes') {
+    ElMessage.success('微信充值成功')
+    code_url.value = ''
+    // rechargeVisible.value = false
+  }
+}
+
+// 微信-确定
+async function onRechargeWeixin() {
+  try {
+    const send_data = {
+      price: vx_price.value
+    }
+    const res: any = await rechargeWeixin(send_data)
+    if (res.code === 200) {
+      code_url.value = res.data.code_url
+      order_id.value = res.data.order_id
+      ElMessage.success('请扫描二维码充值')
+      intervalId.value = setInterval(async () => {
+        await checkOrder()
+      }, 5000)
+    }
+  } catch {
+    code_url.value = ''
+  }
+}
+function onCancelRechargeWeixin() {
+  vx_price.value = 0
+  code_url.value = ''
+  clearInterval(intervalId.value)
+}
 </script>
 
 <style lang="less" scoped>
@@ -239,5 +395,22 @@ window.api.settingDefaultReply((paths) => {
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 10px;
+}
+// 充值弹框
+.recharge-radio {
+  margin-bottom: 40px;
+}
+.recharge-content {
+  margin-bottom: 40px;
+}
+.qrcode-box {
+  position: absolute;
+  // margin-left: 70px;
+  right: 50px;
+  bottom: 50px;
+}
+.tip {
+  color: #757575;
+  position: absolute;
 }
 </style>

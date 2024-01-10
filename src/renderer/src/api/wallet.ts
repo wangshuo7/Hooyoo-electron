@@ -24,3 +24,11 @@ export const rechargeCard = (data: any) => {
 export const withdrawalApply = (data: any) => {
   return request.post('/zhuboduan/tixian/tixian_shenqing', data)
 }
+// 微信充值
+export const rechargeWeixin = (data: any) => {
+  return request.post('/zhuboduan/paymiyao/weixin', data)
+}
+// 检查微信充值
+export const checkWeixinOrder = (data: any) => {
+  return request.post('/zhuboduan/gameser/check_order', data)
+}

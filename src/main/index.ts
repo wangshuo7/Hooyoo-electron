@@ -120,11 +120,11 @@ ipcMain.on('quit', () => {
 ipcMain.on('download', (event, id, downloadLink) => {
   const downloadFolderPath = path.join(
     store.get('downloadPath') + '',
-    `game${id}`
+    `huyou_game${id}`
   )
   const installFolderPath = path.join(
     store.get('installPath') + '',
-    `game${id}`
+    `huyou_game${id}`
   )
   const filePath = path.join(downloadFolderPath, `main.zip`) // 替换为实际的文件名和扩展名
   const extractTo = installFolderPath
@@ -195,7 +195,10 @@ ipcMain.on('download', (event, id, downloadLink) => {
 // 检查游戏是否存在
 ipcMain.on('check-game', (event, id: any) => {
   // const gameFolderPath = `D:\\hooyoo\\game${id}`
-  const gameFolderPath = path.join(store.get('installPath') + '', `game${id}`)
+  const gameFolderPath = path.join(
+    store.get('installPath') + '',
+    `huyou_game${id}`
+  )
   // console.log(1234, gameFolderPath)
   // 先检查是否存在此文件夹
   if (fs.existsSync(gameFolderPath)) {
@@ -216,7 +219,10 @@ ipcMain.on('check-game', (event, id: any) => {
 // 启动项目
 ipcMain.on('start-game', (event, id) => {
   // const gameFolderPath = `D:\\hooyoo\\game${id}`
-  const gameFolderPath = path.join(store.get('installPath') + '', `game${id}`)
+  const gameFolderPath = path.join(
+    store.get('installPath') + '',
+    `huyou_game${id}`
+  )
   const exeFiles = fs
     .readdirSync(gameFolderPath)
     ?.filter((file) => file === 'main.exe')

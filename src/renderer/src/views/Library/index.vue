@@ -329,12 +329,13 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
-import { useDateFormat, useDebounceFn } from '@vueuse/core'
+import { useDateFormat, useDebounceFn, useTimestamp } from '@vueuse/core'
 import { Refresh, MoreFilled, ArrowDown } from '@element-plus/icons-vue'
 // import { useRouter } from 'vue-router'
 import { getMyGameList } from '../../api/mine'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage } from 'element-plus'
+const timestamp = useTimestamp()
 const gameStatus = ref<any>({})
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
@@ -376,7 +377,11 @@ async function query() {
       orderby: queryForm.value.sort,
       cate_id: queryForm.value.cate
     })
-    tableData.value = response?.data?.list
+    tableData.value = response?.data?.list.filter((item: any) => {
+      console.log(item)
+      return item.end_time !== null && item.end_time >= timestamp.value / 1000
+    })
+    console.log(tableData.value)
     totalItems.value = response?.data?.count
     loading.value = false
     tableData.value.map((item) => {
