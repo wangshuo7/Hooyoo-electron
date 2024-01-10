@@ -194,7 +194,7 @@
                 margin: 0 12px 0 0;
               "
             >
-              下载中 {{ `${Math.floor(+progress_test)}%` }}
+              下载中 {{ `${Math.floor(+progress_test[detail.game_id])}%` }}
             </div>
             <el-button type="warning" size="large" :disabled="!detail.kefu"
               >客服</el-button
@@ -314,7 +314,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useDateFormat, useTimestamp } from '@vueuse/core'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
@@ -513,9 +513,10 @@ async function confirm() {
     query()
   }
 }
-const progress_test = ref<any>(0)
-window.api.downloadProgress((progress) => {
-  progress_test.value = progress
+// 以对象的形式保存下载进度 {id:progress, id1:progress1}
+const progress_test = reactive<any>({})
+window.api.downloadProgress((obj) => {
+  progress_test[obj.id] = obj.progress ? obj.progress : 0
 })
 const gameStatus = ref<any>({})
 window.api.updateGameStatus((id, status) => {

@@ -115,7 +115,6 @@ ipcMain.on('message', (_event, message) => {
 ipcMain.on('quit', () => {
   app.quit()
 })
-
 // 监听下载事件
 ipcMain.on('download', (event, id, downloadLink) => {
   const downloadFolderPath = path.join(
@@ -143,12 +142,12 @@ ipcMain.on('download', (event, id, downloadLink) => {
 
     response.on('data', (chunk) => {
       downloadedSize += chunk.length
-      const progress = (downloadedSize / totalSize) * 100
+      const progress = (downloadedSize / totalSize) * 100 || 0
 
       // 发送下载进度到渲染进程
-      mainWindow.webContents.send('download-progress', progress ? progress : 0)
+      mainWindow.webContents.send('download-progress', { id, progress })
       // 设置任务栏下载进度条
-      mainWindow.setProgressBar(progress / 100)
+      // mainWindow.setProgressBar(progress / 100)
     })
 
     response.pipe(fileStream)
