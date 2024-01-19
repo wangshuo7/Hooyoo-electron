@@ -130,7 +130,12 @@
         class="list-item"
         @click="viewDetail(item)"
       >
-        <el-image class="img" src="danzhu.jpg"></el-image>
+        <div class="img-box">
+          <el-image
+            class="img"
+            :src="item.icon.includes('http') ? item.icon : 'danzhu.jpg'"
+          ></el-image>
+        </div>
         <div class="item-title">
           <span>{{ item.title }}</span>
           <!-- <span>
@@ -222,17 +227,14 @@
     <div class="detail">
       <div
         class="detail-head"
-        style="
-          background-image: linear-gradient(
-              to right,
-              rgba(51, 54, 58, 1) 0%,
-              rgba(51, 54, 58, 1) 40%,
-              rgba(51, 54, 58, 0) 70%
-            ),
-            url('./danzhu.jpg');
-          background-repeat: no-repeat;
-          background-position: right;
-        "
+        :style="{
+          backgroundImage:
+            'linear-gradient(to right, rgba(51, 54, 58, 1) 0%, rgba(51, 54, 58, 1) 40%, rgba(51, 54, 58, 0) 70%), url(' +
+            (detail.icon.includes('http') ? detail.icon : '/danzhu.jpg') +
+            ')',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right'
+        }"
       >
         <div class="head-left">
           <div class="head-title">{{ detail.title }}</div>
@@ -254,11 +256,22 @@
               }}</el-button
             > -->
             <el-button
-              v-if="gameStatus[detail.game_id] == 'purchased'"
-              type="primary"
+              v-if="
+                gameStatus[detail.game_id] == 'purchased' ||
+                gameStatus[detail.game_id] == 'update'
+              "
+              :type="
+                gameStatus[detail.game_id] == 'purchased'
+                  ? 'primary'
+                  : 'warning'
+              "
               size="large"
               @click="downLoadGame"
-              >下载游戏</el-button
+              >{{
+                gameStatus[detail.game_id] == 'purchased'
+                  ? '下载游戏'
+                  : '更新游戏'
+              }}</el-button
             >
             <el-button
               v-else-if="gameStatus[detail.game_id] == 'unzipped'"
@@ -280,15 +293,26 @@
             >
               下载中 {{ `${Math.floor(+progress_test)}%` }}
             </div>
-
-            <el-button type="warning" size="large" :disabled="!detail.kefu"
+            <el-link
+              style="margin-left: 12px"
+              target="_bank"
+              :href="detail.doc_url"
+              :underline="false"
+            >
+              <el-button size="large" type="primary">使用指南</el-button>
+            </el-link>
+            <el-button
+              style="margin-left: 12px"
+              type="warning"
+              size="large"
+              :disabled="!detail.kefu"
               >客服</el-button
             >
           </div>
         </div>
       </div>
       <!-- 套餐 -->
-      <div class="detail-info package">
+      <!-- <div class="detail-info package">
         <h3>套餐</h3>
         <div class="package-content">
           <div
@@ -296,18 +320,20 @@
             :key="index"
             class="package-card"
           >
-            <div class="card-left">套餐{{ index + 1 }}</div>
+            <div class="card-left">{{ JSON.parse(item.content).ttitle }}</div>
             <div class="card-right">
               <div>
-                <span>天数：</span><span>{{ item.tdays }}</span>
+                <span>天数：</span
+                ><span>{{ JSON.parse(item.content).tdays }}</span>
               </div>
               <div>
-                <span>价格：</span><span>{{ item.tprice }}</span>
+                <span>价格：</span
+                ><span>{{ JSON.parse(item.content).tprice }}</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
       <!-- 详细信息 -->
       <div class="detail-info">
         <h3>详细信息</h3>
@@ -421,7 +447,7 @@ function viewDetail(item) {
   game_name.value = item.title
   detail.value = item
   gameStatus.value[buyID.value] = 'purchased'
-  window.api.checkGame(item.mg_game_id)
+  window.api.checkGame(item.mg_game_id, item.xiazai_url)
   // console.log(gameStatus.value)
 }
 window.api.updateGameStatus((id, status) => {
@@ -442,9 +468,9 @@ function downLoadGame() {
 // 启动游戏
 function launchGame() {
   window.api.removeAllListeners()
-  window.api.startGame(buyID.value)
+  window.api.startGame(buyID.value, detail.value.v_main)
   window.api.startGameFailReply(() => {
-    ElMessage.error('未找到游戏入口文件main.exe 启动失败')
+    ElMessage.error(`未找到游戏入口文件${detail.value.v_main} 启动失败`)
   })
 }
 // 下载中不允许关闭对话框
@@ -589,11 +615,17 @@ function formatTime(time: any) {
     transition: all 0.2s linear;
     // height: 342px;
     position: relative;
-
-    .img {
+    .img-box {
+      width: 100%;
+      aspect-ratio: 547/260;
       border-radius: 4px;
       margin-bottom: 10px;
+      overflow: hidden;
     }
+    // .img {
+    //   border-radius: 4px;
+    //   margin-bottom: 10px;
+    // }
     .item-title {
       display: flex;
       justify-content: space-between;
@@ -797,12 +829,11 @@ function formatTime(time: any) {
         width: 170px;
         height: 80px;
         margin: 0 20px 20px 0;
-        // border: 2px solid #caa3a3;
         border-radius: 10px;
         display: flex;
-        // background: #dcdfe6;
-        // background: #f56c6c;
-        border: 2px solid #79bbff;
+        background-color: #396ea3;
+        box-shadow: 8px 8px 0px rgba(140, 154, 216, 0.1);
+        // border: 2px solid #79bbff;
         .card-left {
           width: 50px;
           height: 100%;

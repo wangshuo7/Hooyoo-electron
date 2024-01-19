@@ -34,14 +34,16 @@ const api = {
     })
   },
   // 检查游戏是否存在
-  checkGame: (id: any) => ipcRenderer.send('check-game', id),
+  checkGame: (id: any, downloadLink: string) =>
+    ipcRenderer.send('check-game', id, downloadLink),
   checkGameReply: (callback: (id) => void) => {
     ipcRenderer.on('check-game-reply', (_event, id) => {
       callback(id)
     })
   },
   // 启动游戏
-  startGame: (id: any) => ipcRenderer.send('start-game', id),
+  startGame: (id: any, name: string) =>
+    ipcRenderer.send('start-game', id, name),
   startGameFailReply: (callback: () => void) => {
     ipcRenderer.on('start-game-fail-reply', () => {
       callback()

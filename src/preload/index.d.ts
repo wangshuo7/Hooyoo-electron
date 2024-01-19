@@ -14,8 +14,8 @@ declare global {
       downloadProgress: (callback: (progress: any) => void) => void
       launchGame: (callback: (id, path) => void) => void
       updateGameStatus: (callback: (id, status) => void) => void
-      checkGame: (id) => void
-      startGame: (id) => void
+      checkGame: (id, downloadLink: string) => void
+      startGame: (id, name) => void
       startGameFailReply: (callback: () => void) => void
       removeAllListeners: () => void
       openDialog: (type: string, options: any) => void

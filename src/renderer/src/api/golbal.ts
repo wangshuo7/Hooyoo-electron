@@ -12,3 +12,7 @@ export const getCategory = (data: any) => {
 export const getPlatform = (data: any) => {
   return request.post('/commpublic/param/pingtai', data)
 }
+// 配置信息
+export const getConfig = () => {
+  return request.post('/commpublic/param/getconf')
+}

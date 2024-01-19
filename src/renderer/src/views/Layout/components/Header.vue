@@ -10,7 +10,11 @@
         <el-button class="info-item" @click="onSetting">
           <el-icon><Setting /></el-icon>
         </el-button>
-        <el-dropdown class="info-item">
+        <el-dropdown
+          class="info-item"
+          trigger="click"
+          @visible-change="getInfo"
+        >
           <el-avatar
             :size="50"
             src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
@@ -18,7 +22,13 @@
           </el-avatar>
           <template #dropdown>
             <el-dropdown-menu class="dropdown-t">
-              <el-dropdown-item>余额：{{ balance }} 云豆</el-dropdown-item>
+              <div style="padding: 5px 16px; font-size: 15px">
+                {{ info?.nickname }}
+              </div>
+              <el-dropdown-item
+                >余额：{{ info?.current_price }} 云豆</el-dropdown-item
+              >
+              <el-dropdown-item>积分：{{ info?.jifen }} 积分</el-dropdown-item>
               <el-dropdown-item @click="rechargeVisible = true"
                 >充值</el-dropdown-item
               >
@@ -58,10 +68,29 @@
     </template>
   </el-dialog>
   <el-dialog v-model="rechargeVisible" title="充值" width="700px">
-    <el-radio-group v-model="recharge_type" class="recharge-radio">
-      <el-radio label="1" size="large">卡密充值</el-radio>
-      <el-radio label="2" size="large">微信充值</el-radio>
-    </el-radio-group>
+    <div>
+      <span style="font-size: 14px; color: #cfd3dc; margin-right: 20px"
+        >充值方式</span
+      >
+      <el-radio-group v-model="recharge_type" class="recharge-radio">
+        <el-radio label="1" size="large">卡密充值</el-radio>
+        <el-radio label="2" size="large">微信充值</el-radio>
+      </el-radio-group>
+    </div>
+    <div>
+      <span style="font-size: 14px; color: #cfd3dc; margin-right: 20px"
+        >充值目标</span
+      >
+      <el-radio-group v-model="target_type" class="recharge-radio">
+        <el-radio label="1" size="large">云豆</el-radio>
+        <el-radio label="2" size="large">
+          积分
+          <el-text type="info" style="margin-left: 10px">
+            (积分可用于直播收益抽成)
+          </el-text>
+        </el-radio>
+      </el-radio-group>
+    </div>
     <div v-if="recharge_type == '1'" class="recharge-content">
       <el-form
         ref="ruleFormRef"
@@ -83,8 +112,8 @@
       </el-form>
     </div>
     <div v-else class="recharge-content">
-      <el-form inline>
-        <el-form-item label="充值云豆">
+      <el-form label-width="68px">
+        <el-form-item label="充值数额">
           <el-input-number
             v-model="vx_price"
             placeholder="请输入充值数额"
@@ -101,6 +130,11 @@
           </el-button>
           <el-button @click="onCancelRechargeWeixin">取消</el-button>
         </el-form-item>
+        <el-form-item>
+          <el-text v-if="target_type === '2' && vx_price > 0" type="info">
+            {{ getJifen }}
+          </el-text>
+        </el-form-item>
         <!-- <div class="tip">充值金额需在 1-10000 之间</div> -->
       </el-form>
       <div v-if="code_url" class="qrcode-box">
@@ -111,7 +145,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, FormInstance } from 'element-plus'
@@ -122,6 +156,7 @@ import {
   checkWeixinOrder
 } from '../../../api/wallet'
 import { useQRCode } from '@vueuse/integrations/useQRCode'
+import { getConfig } from '../../../api/golbal'
 // 微信充值
 const vx_price = ref<number>(0)
 const code_url = ref<any>()
@@ -131,13 +166,19 @@ const form = ref<any>({})
 const settingVisible = ref<boolean>(false)
 const rechargeVisible = ref<boolean>(false)
 const recharge_type = ref<string>('1')
+const target_type = ref<string>('1')
 const intervalId = ref<any>(null)
-
+const timeoutId = ref<any>(null)
+const ratio = ref<any>()
 // 退出登录
 function logOut() {
   router.push('/login')
   localStorage.setItem('authtoken', '')
 }
+function getInfo(visible: boolean) {
+  visible && viewPersonal()
+}
+
 function onSetting() {
   settingVisible.value = true
   window.api.getPath()
@@ -197,13 +238,15 @@ window.api.settingDefaultReply((paths) => {
   form.value.download = paths.downloadPath
   form.value.install = paths.installPath
 })
-async function viewBalance() {
+const info = ref<any>()
+async function viewPersonal() {
   const res = await getPersonalInfo()
-  balance.value = res.data.one.current_price
+  info.value = res.data.one
 }
-const balance = ref<any>()
-onMounted(() => {
-  viewBalance()
+onMounted(async () => {
+  viewPersonal()
+  const res: any = await getConfig()
+  ratio.value = +res?.data?.one?.jifenbili
 })
 watch(
   () => rechargeVisible.value,
@@ -213,21 +256,25 @@ watch(
       form.value.miyao = undefined
       vx_price.value = 0
       code_url.value = ''
-      viewBalance()
       clearInterval(intervalId.value)
+      clearTimeout(timeoutId.value)
     }
   }
 )
 // 充值
 const ruleFormRef = ref<FormInstance>()
 const rechargeForm = ref<any>({ miyao: '' })
+const getJifen = computed(() => {
+  return `${vx_price.value} 元可兑换 ${vx_price.value * ratio.value} 积分`
+})
 // 卡密-确定
 function submit() {
   ruleFormRef.value?.validate(async (valid) => {
     if (valid) {
       // 表单验证通过
       const res: any = await rechargeCard({
-        miyao: form.value.miyao
+        miyao: form.value.miyao,
+        type: target_type.value == '1' ? 'yundou' : 'jifen'
       })
       if (res.code === 200) {
         ElMessage.success('充值成功')
@@ -253,6 +300,8 @@ async function checkOrder() {
   if (res.data.status === 'yes') {
     ElMessage.success('微信充值成功')
     code_url.value = ''
+    clearInterval(intervalId.value)
+    clearTimeout(timeoutId.value) // 清除超时定时器
     // rechargeVisible.value = false
   }
 }
@@ -260,8 +309,11 @@ async function checkOrder() {
 // 微信-确定
 async function onRechargeWeixin() {
   try {
+    clearTimeout(timeoutId.value) // 清除之前的超时定时器
+    clearInterval(intervalId.value) // 清除之前的订单检查定时器
     const send_data = {
-      price: vx_price.value
+      price: vx_price.value,
+      type: target_type.value == '1' ? 'yundou' : 'jifen'
     }
     const res: any = await rechargeWeixin(send_data)
     if (res.code === 200) {
@@ -271,6 +323,14 @@ async function onRechargeWeixin() {
       intervalId.value = setInterval(async () => {
         await checkOrder()
       }, 5000)
+      timeoutId.value = setTimeout(
+        () => {
+          ElMessage.warning('订单超时，请重新输入二维码')
+          code_url.value = ''
+          clearInterval(intervalId.value)
+        },
+        3 * 60 * 1000
+      ) // 3分钟
     }
   } catch {
     code_url.value = ''
@@ -280,7 +340,20 @@ function onCancelRechargeWeixin() {
   vx_price.value = 0
   code_url.value = ''
   clearInterval(intervalId.value)
+  clearTimeout(timeoutId.value)
 }
+watch(
+  () => target_type.value,
+  () => {
+    code_url.value = ''
+    clearInterval(intervalId.value)
+    clearTimeout(timeoutId.value)
+  }
+)
+onUnmounted(() => {
+  clearInterval(intervalId.value)
+  clearTimeout(timeoutId.value)
+})
 </script>
 
 <style lang="less" scoped>

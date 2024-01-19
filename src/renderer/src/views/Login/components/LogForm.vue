@@ -2,7 +2,9 @@
   <el-form ref="ruleFormRef" :model="form" :rules="rules">
     <el-form-item prop="username" class="form-item">
       <div class="input-box">
-        <p class="label-user" :class="{ active: user_active }">用户名</p>
+        <p class="label-user" :class="{ active: user_active }">
+          {{ loginType ? '账号' : '手机号' }}
+        </p>
         <el-input
           v-model="form.username"
           class="login-input user-input"
@@ -10,12 +12,27 @@
           @focus="userFocus"
           @blur="userBlur"
           @keyup.enter="onSubmit"
-        ></el-input>
+        >
+          <template #suffix>
+            <el-button
+              v-if="!loginType"
+              color="#303030"
+              :dark="true"
+              :disabled="countdown > 0"
+              style="width: 100px; position: relative; bottom: 10px"
+              @click="onGetCode"
+            >
+              {{ countdown > 0 ? `${countdown}` : '获取验证码' }}
+            </el-button>
+          </template>
+        </el-input>
       </div>
     </el-form-item>
     <el-form-item prop="password" class="form-item" style="margin-bottom: 10px">
       <div class="input-box">
-        <p class="label-password" :class="{ active: psd_active }">密码</p>
+        <p class="label-password" :class="{ active: psd_active }">
+          {{ loginType ? '密码' : '验证码' }}
+        </p>
         <el-input
           v-model="form.password"
           :show-password="true"
@@ -52,30 +69,46 @@
         >登录</el-button
       >
     </el-form-item>
+    <el-divider> 其他操作 </el-divider>
+    <div
+      style="display: flex; align-items: center; justify-content: space-around"
+    >
+      <el-button
+        class="change-btn"
+        color="rgb(40, 138, 232)"
+        @click="switchLoginType"
+      >
+        {{ loginType ? '验证码登录' : '密码登录' }}
+      </el-button>
+      <el-button
+        class="change-btn"
+        color="rgb(40, 138, 232)"
+        @click="switchForget"
+      >
+        忘记密码
+      </el-button>
+    </div>
   </el-form>
 </template>
 
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { login } from '../../../api/login'
+import { login, getPhoneCode } from '../../../api/login'
 import { Base64 } from 'js-base64'
 import { useAccountStore } from '../../../store/account'
 const accountStore = useAccountStore()
-interface login_type {
-  login_type: string
-  username: string
-  password: string
-}
+
+const loginType = ref<boolean>(true) // true为密码登录 | false为验证码登录
 
 const ruleFormRef = ref<FormInstance>()
 
-const form = reactive<login_type>({
+const form = reactive<any>({
   login_type: '1',
   username: '',
   password: ''
 })
-const rules = reactive<FormRules<login_type>>({
+const rules = reactive<FormRules<any>>({
   username: [
     {
       required: true,
@@ -90,15 +123,28 @@ const rules = reactive<FormRules<login_type>>({
   ]
 })
 async function onSubmit() {
-  const send_data = {
-    login_type: form.login_type,
-    username: form.username,
-    password: form.password
+  let send_data: any
+  if (loginType.value) {
+    send_data = {
+      login_type: '1',
+      username: form.username,
+      password: form.password
+    }
+  } else {
+    send_data = {
+      login_type: '3',
+      username: form.username,
+      telkey: form.telkey,
+      telcode: form.password
+    }
   }
   ruleFormRef.value?.validate(async (valid) => {
     if (valid) {
       const res: any = await login(send_data)
       if (res?.code === 200) {
+        if (!loginType.value) {
+          return ElMessage.success('登录成功')
+        }
         localStorage.setItem('hoo_anchor_remember', remember.value + '')
         const basePassword = Base64.encode(form.password) // 加密
         if (remember.value) {
@@ -108,12 +154,32 @@ async function onSubmit() {
           localStorage.removeItem('hoo_anchor_username')
           localStorage.removeItem('hoo_anchor_password')
         }
-        ElMessage.success('登录成功')
+        return ElMessage.success('登录成功')
       }
     } else {
-      // 表单验证未通过
+      return console.log('表单验证未通过')
     }
   })
+}
+const countdown = ref<number>(0)
+// 获取手机验证码
+async function onGetCode() {
+  if (!form.username) {
+    return ElMessage.error('请填写手机号后获取')
+  }
+  const res: any = await getPhoneCode({ tel: form.username })
+  if (res.code === 200) {
+    if (countdown.value === 0) {
+      countdown.value = 60
+      const timer = setInterval(() => {
+        countdown.value--
+        if (countdown.value === 0) {
+          clearInterval(timer)
+        }
+      }, 1000)
+    }
+    return (form.telkey = res.data.telkey)
+  }
 }
 // 用户名
 const user_active = ref<boolean>(true)
@@ -174,6 +240,35 @@ onMounted(() => {
 // 切换注册
 function switchRegister() {
   accountStore.setActive('register')
+}
+function decode(value: any) {
+  if (!value) {
+    return ''
+  }
+  return Base64.decode(value)
+}
+// 切换验证码登陆
+function switchLoginType() {
+  loginType.value = !loginType.value
+  if (!loginType.value) {
+    // form.username = ''
+    ruleFormRef.value?.resetFields()
+    user_active.value = false
+    user_border.value = false
+    psd_active.value = false
+    psd_border.value = false
+  } else {
+    form.username = localStorage.getItem('hoo_anchor_username') as string
+    form.password = decode(localStorage.getItem('hoo_anchor_password'))
+    user_active.value = true
+    user_border.value = true
+    psd_active.value = true
+    psd_border.value = true
+  }
+}
+// 切换忘记密码
+function switchForget() {
+  accountStore.setActive('forget')
 }
 </script>
 
@@ -257,5 +352,14 @@ function switchRegister() {
 }
 .form-item {
   margin-bottom: 40px;
+}
+:deep(.el-divider__text.is-center) {
+  background-color: #202020;
+  color: #bebebe;
+}
+.change-btn {
+  width: 100px;
+  border: 0;
+  border-radius: 15px;
 }
 </style>

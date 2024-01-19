@@ -115,8 +115,25 @@ ipcMain.on('message', (_event, message) => {
 ipcMain.on('quit', () => {
   app.quit()
 })
+// 解压
+function performPostDownloadOperations(id, filePath, extractTo) {
+  gameStatus[id] = 'unzipping'
+  mainWindow.webContents.send('update-game-status', id, gameStatus[id])
+  // 解压文件
+  const zip = new AdmZip(filePath)
+  zip.extractAllTo(extractTo, true)
+
+  // 更新游戏状态为[已解压]
+  gameStatus[id] = 'unzipped'
+
+  // 发送游戏状态更新消息到渲染进程
+  mainWindow.webContents.send('update-game-status', id, gameStatus[id])
+}
 // 监听下载事件
 ipcMain.on('download', (event, id, downloadLink) => {
+  // 保存下载地址，以判断是否需要更新
+  store.set(`game${id}`, downloadLink)
+  // console.log('download', downloadLink)
   const downloadFolderPath = path.join(
     store.get('downloadPath') + '',
     `huyou_game${id}`
@@ -154,20 +171,24 @@ ipcMain.on('download', (event, id, downloadLink) => {
 
     fileStream.on('finish', () => {
       fileStream.close()
-      event.reply('download-complete', filePath)
+      performPostDownloadOperations(id, filePath, extractTo)
+      // event.reply('download-complete', filePath)
       // 下载完成后，重置任务栏下载进度条
-      mainWindow.setProgressBar(-1)
+      // mainWindow.setProgressBar(-1)
       // 更新游戏状态为[已下载]
       // gameStatus[id] = 'downloaded'
       // 发送游戏状态更新消息到渲染进程
-      mainWindow.webContents.send('update-game-status', id, gameStatus[id])
+      // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
+      // gameStatus[id] = 'unzipping'
+      // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
       // 解压文件
-      const zip = new AdmZip(filePath)
-      zip.extractAllTo(extractTo, true)
+      // const zip = new AdmZip(filePath)
+      // zip.extractAllTo(extractTo, true)
+
       // 更新游戏状态为[已解压]
-      gameStatus[id] = 'unzipped'
+      // gameStatus[id] = 'unzipped'
       // 发送游戏状态更新消息到渲染进程
-      mainWindow.webContents.send('update-game-status', id, gameStatus[id])
+      // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
       // // 检查是否存在任何以 .exe 结尾的文件
       // const exeFiles = fs
       //   .readdirSync(extractTo)
@@ -192,31 +213,26 @@ ipcMain.on('download', (event, id, downloadLink) => {
   })
 })
 // 检查游戏是否存在
-ipcMain.on('check-game', (event, id: any) => {
-  // const gameFolderPath = `D:\\hooyoo\\game${id}`
+ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
+  if (store.get(`game${id}`) && store.get(`game${id}`) !== downloadLink) {
+    gameStatus[id] = 'update'
+    return mainWindow.webContents.send('update-game-status', id, gameStatus[id])
+  }
   const gameFolderPath = path.join(
     store.get('installPath') + '',
     `huyou_game${id}`
   )
-  // console.log(1234, gameFolderPath)
   // 先检查是否存在此文件夹
   if (fs.existsSync(gameFolderPath)) {
-    // const exeFiles = fs
-    //   .readdirSync(gameFolderPath)
-    //   ?.filter((file) => file === 'main.exe')
-    // if (exeFiles.length > 0) {
     gameStatus[id] = 'unzipped'
     mainWindow.webContents.send('update-game-status', id, gameStatus[id])
-    // } else {
-    //   event.reply('check-game-reply', id)
-    // }
   } else {
     // 不存在文件夹
     event.reply('check-game-reply', id)
   }
 })
 // 启动项目
-ipcMain.on('start-game', (event, id) => {
+ipcMain.on('start-game', (event, id, name) => {
   // const gameFolderPath = `D:\\hooyoo\\game${id}`
   const gameFolderPath = path.join(
     store.get('installPath') + '',
@@ -224,7 +240,7 @@ ipcMain.on('start-game', (event, id) => {
   )
   const exeFiles = fs
     .readdirSync(gameFolderPath)
-    ?.filter((file) => file === 'main.exe')
+    ?.filter((file) => file === name)
 
   if (exeFiles && exeFiles.length > 0) {
     const filePath = path.join(gameFolderPath, exeFiles[0])
@@ -242,7 +258,6 @@ ipcMain.on('start-game', (event, id) => {
 // 打开对话框
 ipcMain.on('open-dialog', (event, type, options) => {
   const selectedPaths: any = dialog.showOpenDialogSync(options)
-  // console.log('sssss', selectedPaths)
   if (selectedPaths && type === 'download') {
     return event.reply('download-dialog-selection', selectedPaths[0])
   }

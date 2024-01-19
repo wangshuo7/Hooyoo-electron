@@ -6,7 +6,8 @@
       </div>
       <div class="login-title">{{ active === 'login' ? '登录' : '注册' }}</div>
       <LogForm v-if="active === 'login'"></LogForm>
-      <RegisterForm v-else></RegisterForm>
+      <RegisterForm v-else-if="active === 'register'"></RegisterForm>
+      <ForgetForm v-else></ForgetForm>
     </div>
   </div>
 </template>
@@ -15,6 +16,7 @@
 import { computed } from 'vue'
 import LogForm from './components/LogForm.vue'
 import RegisterForm from './components/RegisterForm.vue'
+import ForgetForm from './components/ForgetForm.vue'
 import { useAccountStore } from '../../store/account'
 const accountStore = useAccountStore()
 const active = computed(() => {

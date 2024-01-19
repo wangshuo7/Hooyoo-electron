@@ -39,8 +39,8 @@ request.interceptors.response.use(
       if (data.t) {
         // 只有登录接口有data.t ，所以只有登录接口生效
         localStorage.setItem('authtoken', data.t)
-        window.api.sendToken(data.t)
         router.push('/mall')
+        window.api.sendToken(data.t)
       }
       return response.data
     } else if (code === 0) {
