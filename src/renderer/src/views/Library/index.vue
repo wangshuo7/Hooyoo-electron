@@ -45,22 +45,6 @@
         </template>
       </el-tooltip>
     </div>
-    <!-- <div class="tabs">
-      <div
-        class="tab"
-        :class="{ active: queryForm.activeTab === 'all' }"
-        @click="onChangeAll"
-      >
-        全部
-      </div>
-      <div
-        class="tab"
-        :class="{ active: queryForm.activeTab === 'save' }"
-        @click="onChangeSave"
-      >
-        收藏
-      </div>
-    </div> -->
     <div class="sort">
       <div>
         <el-form :form="queryForm" inline label-width="70">
@@ -138,16 +122,7 @@
         </div>
         <div class="item-title">
           <span>{{ item.title }}</span>
-          <!-- <span>
-            <el-icon><MoreFilled /></el-icon>
-          </span> -->
         </div>
-        <!-- <div class="item-download">
-          <span>
-            <el-icon><Download /></el-icon>
-          </span>
-          <span>下载</span>
-        </div> -->
       </div>
     </div>
     <!-- table样式 -->
@@ -217,13 +192,7 @@
       </div>
     </div>
   </div>
-  <el-dialog
-    v-model="detailVisible"
-    :close-on-click-modal="isdownloading"
-    :show-close="isdownloading"
-    :title="game_name"
-    width="945"
-  >
+  <el-dialog v-model="detailVisible" :title="game_name" width="945">
     <div class="detail">
       <div
         class="detail-head"
@@ -246,15 +215,13 @@
             ￥{{ detail.cuxiao_price ? detail.cuxiao_price : detail.price }}
           </div>
           <div class="btns">
-            <!-- <el-button
-              v-if="progress_test == undefined || progress_test == 100"
-              :type="btnType"
+            <el-button
+              v-if="gameStatus[detail.game_id] == 'unzipped'"
               size="large"
-              @click="operateGame"
-              >{{
-                hasPurchasedGame(detail.game_id) ? '下载游戏' : '购买游戏'
-              }}</el-button
-            > -->
+              type="success"
+              @click="barrageVisible = true"
+              >连接弹幕</el-button
+            >
             <el-button
               v-if="
                 gameStatus[detail.game_id] == 'purchased' ||
@@ -311,29 +278,6 @@
           </div>
         </div>
       </div>
-      <!-- 套餐 -->
-      <!-- <div class="detail-info package">
-        <h3>套餐</h3>
-        <div class="package-content">
-          <div
-            v-for="(item, index) in detail.taocan"
-            :key="index"
-            class="package-card"
-          >
-            <div class="card-left">{{ JSON.parse(item.content).ttitle }}</div>
-            <div class="card-right">
-              <div>
-                <span>天数：</span
-                ><span>{{ JSON.parse(item.content).tdays }}</span>
-              </div>
-              <div>
-                <span>价格：</span
-                ><span>{{ JSON.parse(item.content).tprice }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div> -->
       <!-- 详细信息 -->
       <div class="detail-info">
         <h3>详细信息</h3>
@@ -351,16 +295,29 @@
       </div>
     </div>
   </el-dialog>
+  <!-- 连接弹幕 -->
+  <el-dialog v-model="barrageVisible" title="连接弹幕" width="30%">
+    <el-form>
+      <el-form-item label="直播间">
+        <el-input v-model="liveRoom"></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="barrageVisible = false">取消</el-button>
+      <el-button type="primary" @click="connectLive">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useDateFormat, useDebounceFn, useTimestamp } from '@vueuse/core'
 import { Refresh, MoreFilled, ArrowDown } from '@element-plus/icons-vue'
 // import { useRouter } from 'vue-router'
 import { getMyGameList } from '../../api/mine'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage } from 'element-plus'
+import { getGameUse } from '../../api/rc4'
 const timestamp = useTimestamp()
 const gameStatus = ref<any>({})
 const globalStore = useGlobalStore()
@@ -368,6 +325,10 @@ const queryForm = ref<any>({})
 const categories = ref<any>([]) // 获取分类
 const tableData = ref<any>([])
 const loading = ref<boolean>(false)
+
+const barrageVisible = ref<boolean>(false)
+const liveRoom = ref<string>('')
+
 // 分页相关
 const currentPage = ref<number>(1) // 当前页
 const pageSize = ref<number>(12) // 每页显示条数
@@ -465,22 +426,84 @@ function downLoadGame() {
     ElMessage.error('暂无游戏地址')
   }
 }
-// 启动游戏
-function launchGame() {
-  window.api.removeAllListeners()
-  window.api.startGame(buyID.value, detail.value.v_main)
-  window.api.startGameFailReply(() => {
-    ElMessage.error(`未找到游戏入口文件${detail.value.v_main} 启动失败`)
-  })
-}
-// 下载中不允许关闭对话框
-const isdownloading = computed(() => {
-  if (gameStatus.value[buyID.value] == 'downloading') {
+function areLastThreeEqual(strArray: string[]) {
+  if (strArray.length < 3) {
     return false
-  } else {
-    return true
   }
+  const lastThree = strArray.slice(-3)
+  return new Set(lastThree).size === 1
+}
+const intervalId = ref<any>()
+const is_start = ref<boolean>(false) // 是否启动游戏
+const start_id = ref<any>() // 启动游戏id
+const salts = reactive<string[]>([])
+// 启动游戏
+async function launchGame() {
+  if (!is_start.value) {
+    window.api.removeAllListeners()
+    const res: any = await getGameUse({ game_id: buyID.value })
+    // console.log('res', res)
+    if (res.data.status === 'yes') {
+      if (liveRoom.value) {
+        window.api.startLive(liveRoom.value)
+      }
+      salts.push(res.salt)
+      console.log('salts', salts)
+      window.api.startGame(buyID.value, detail.value.v_main)
+      is_start.value = true
+      start_id.value = buyID.value
+      window.api.startGameFailReply(() => {
+        is_start.value = false
+        start_id.value = ''
+        return ElMessage.error(
+          `未找到游戏入口文件${detail.value.v_main} 启动失败`
+        )
+      })
+    }
+    intervalId.value = setInterval(
+      async () => {
+        const res: any = await getGameUse({ game_id: buyID.value })
+        if (res.code !== 200) {
+          // 弹幕礼物失效 链接弹幕
+          return console.log('code !== 200')
+        }
+        if (res.data.status === 'no') {
+          return console.log('status == no')
+        }
+        salts.push(res.salt)
+        const result = areLastThreeEqual(salts)
+        if (!result) {
+          //
+        }
+      },
+      2 * 60 * 1000
+    )
+  } else {
+    ElMessage.error('请先关闭已打开的游戏')
+  }
+}
+window.api.mainCloseGame(() => {
+  is_start.value = false
+  clearInterval(intervalId.value)
 })
+// // 下载中不允许关闭对话框
+// const isdownloading = computed(() => {
+//   if (gameStatus.value[buyID.value] == 'downloading') {
+//     return false
+//   } else {
+//     return true
+//   }
+// })
+// 连接弹幕
+function connectLive() {
+  barrageVisible.value = false
+  if (is_start.value) {
+    if (start_id.value != buyID.value) {
+      return ElMessage.error('请连接已打开游戏的直播间弹幕')
+    }
+    return window.api.startLive(liveRoom.value)
+  }
+}
 onMounted(async () => {
   query()
 

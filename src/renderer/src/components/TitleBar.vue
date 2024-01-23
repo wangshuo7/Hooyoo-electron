@@ -36,6 +36,7 @@ function controlMin() {
   window.api.minimize()
 }
 function controlClose() {
+  window.api.closeGame()
   window.api.quit()
 }
 function controlMax() {

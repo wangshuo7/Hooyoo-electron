@@ -30,6 +30,7 @@
     "electron-store": "^8.1.0",
     "electron-updater": "^6.1.1",
     "js-base64": "^3.7.5",
+    "md5": "^2.3.0",
     "pinia": "^2.1.7",
     "qrcode": "^1.5.3",
     "swiper": "^11.0.5"

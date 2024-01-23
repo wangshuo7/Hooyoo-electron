@@ -49,6 +49,15 @@ const api = {
       callback()
     })
   },
+  // 关闭游戏
+  closeGame: () => ipcRenderer.send('close-game'),
+  mainCloseGame: (callback: () => void) => {
+    ipcRenderer.on('main-close-game', () => {
+      callback()
+    })
+  },
+  // 启动直播间
+  startLive: (url: string) => ipcRenderer.send('start-live', url),
   removeAllListeners: () =>
     ipcRenderer.removeAllListeners('start-game-fail-reply'),
   // 打开对话框

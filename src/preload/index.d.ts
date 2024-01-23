@@ -17,6 +17,9 @@ declare global {
       checkGame: (id, downloadLink: string) => void
       startGame: (id, name) => void
       startGameFailReply: (callback: () => void) => void
+      mainCloseGame: (callback: () => void) => void
+      closeGame: () => void
+      startLive: (url: string) => void
       removeAllListeners: () => void
       openDialog: (type: string, options: any) => void
       getDownloadPath: (path) => void

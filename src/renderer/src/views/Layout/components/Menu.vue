@@ -13,6 +13,7 @@
           <el-icon><Menu /></el-icon>
           <template #title>库</template>
         </el-menu-item>
+        <el-button type="success" @click="testRc4">测试加密</el-button>
       </el-menu>
       <!-- <el-menu class="down" style="margin-top: auto" default-active="1">
         <el-menu-item index="1" @click="onOpenDownList">
@@ -50,7 +51,7 @@
 
 <script lang="ts" setup>
 import { PriceTag, Menu } from '@element-plus/icons-vue'
-
+import { getGameUse } from '../../../api/rc4'
 // import { reactive, ref } from 'vue'
 // import { PriceTag, Menu, Download } from '@element-plus/icons-vue'
 // const downlistVisible = ref<boolean>(false)
@@ -61,6 +62,14 @@ import { PriceTag, Menu } from '@element-plus/icons-vue'
 // window.api.downloadProgress((obj) => {
 // progress[obj.id] = obj.progress
 // })
+
+async function testRc4() {
+  const send_data = {
+    game_id: 57
+  }
+  const res: any = getGameUse(send_data)
+  console.log('res', res)
+}
 </script>
 
 <style lang="less" scoped>

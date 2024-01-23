@@ -133,8 +133,6 @@
   </div>
   <!-- 详情 -->
   <el-dialog v-model="detailVisible" :title="game_name" width="945">
-    <!-- :close-on-click-modal="isdownloading" -->
-    <!-- :show-close="isdownloading"/ -->
     <div class="detail">
       <div
         class="detail-head"
@@ -157,6 +155,13 @@
             ￥{{ detail.cuxiao_price ? detail.cuxiao_price : detail.price }}
           </div>
           <div class="btns">
+            <el-button
+              v-if="gameStatus[detail.game_id] == 'unzipped'"
+              size="large"
+              type="success"
+              @click="barrageVisible = true"
+              >连接弹幕</el-button
+            >
             <el-button
               v-if="
                 gameStatus[detail.game_id] == 'nopurchased' ||
@@ -352,6 +357,18 @@
       </span>
     </template>
   </el-dialog>
+  <!-- 连接弹幕 -->
+  <el-dialog v-model="barrageVisible" title="连接弹幕" width="30%">
+    <el-form>
+      <el-form-item label="直播间">
+        <el-input v-model="liveRoom"></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="barrageVisible = false">取消</el-button>
+      <el-button type="primary" @click="connectLive">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -363,6 +380,8 @@ import { ArrowDown } from '@element-plus/icons-vue'
 import { buyGame, getGameList } from '../../api/game'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage, FormInstance } from 'element-plus'
+import { getGameUse } from '../../api/rc4'
+
 const timestamp = useTimestamp()
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
@@ -380,6 +399,8 @@ const game_name = ref<any>()
 const detail = ref<any>()
 const buyVisible = ref<boolean>(false)
 const secondVisible = ref<boolean>(false)
+const barrageVisible = ref<boolean>(false)
+const liveRoom = ref<string>('')
 const ruleFormRef = ref<FormInstance>()
 
 // 套餐
@@ -456,7 +477,7 @@ async function query() {
       }
       return
     })
-    console.log('gameStatus', gameStatus.value)
+    // console.log('gameStatus', gameStatus.value)
     loading.value = false
   } catch (error) {
     console.error('Error fetching data: ', error)
@@ -572,22 +593,66 @@ const gamePath = ref<any>({})
 window.api.launchGame((id, path) => {
   gamePath.value[id] = path
 })
-// 启动游戏
-function launchGame() {
-  window.api.removeAllListeners()
-  window.api.startGame(buyID.value, detail.value.v_main)
-  window.api.startGameFailReply(() => {
-    ElMessage.error(`未找到游戏入口文件${detail.value.v_main} 启动失败`)
-  })
+function areLastThreeEqual(strArray: string[]) {
+  if (strArray.length < 3) {
+    return false
+  }
+  const lastThree = strArray.slice(-3)
+  return new Set(lastThree).size === 1
 }
-// 下载中不允许关闭对话框
-// const isdownloading = computed(() => {
-//   if (gameStatus.value[buyID.value] == 'downloading') {
-//     return false
-//   } else {
-//     return true
-//   }
-// })
+const intervalId = ref<any>()
+const is_start = ref<boolean>(false) // 是否启动游戏
+const start_id = ref<any>() // 启动游戏id
+const salts = reactive<string[]>([])
+// 启动游戏
+async function launchGame() {
+  if (!is_start.value) {
+    window.api.removeAllListeners()
+    const res: any = await getGameUse({ game_id: buyID.value })
+    // console.log('res', res)
+    if (res.data.status === 'yes') {
+      if (liveRoom.value) {
+        window.api.startLive(liveRoom.value)
+      }
+      salts.push(res.salt)
+      console.log('salts', salts)
+      window.api.startGame(buyID.value, detail.value.v_main)
+      is_start.value = true
+      start_id.value = buyID.value
+      window.api.startGameFailReply(() => {
+        is_start.value = false
+        start_id.value = ''
+        return ElMessage.error(
+          `未找到游戏入口文件${detail.value.v_main} 启动失败`
+        )
+      })
+    }
+    intervalId.value = setInterval(
+      async () => {
+        const res: any = await getGameUse({ game_id: buyID.value })
+        if (res.code !== 200) {
+          // 弹幕礼物失效 链接弹幕
+          return console.log('code !== 200')
+        }
+        if (res.data.status === 'no') {
+          return console.log('status == no')
+        }
+        salts.push(res.salt)
+        const result = areLastThreeEqual(salts)
+        if (!result) {
+          //
+        }
+      },
+      2 * 60 * 1000
+    )
+  } else {
+    ElMessage.error('请先关闭已打开的游戏')
+  }
+}
+window.api.mainCloseGame(() => {
+  is_start.value = false
+  clearInterval(intervalId.value)
+})
 watch(
   () => buyVisible.value,
   () => {
@@ -601,6 +666,16 @@ watch(
     }
   }
 )
+// 连接弹幕
+function connectLive() {
+  barrageVisible.value = false
+  if (is_start.value) {
+    if (start_id.value != buyID.value) {
+      return ElMessage.error('请连接已打开游戏的直播间弹幕')
+    }
+    return window.api.startLive(liveRoom.value)
+  }
+}
 onMounted(async () => {
   // updateMyGame()
   query()

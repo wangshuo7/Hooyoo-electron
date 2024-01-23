@@ -8,6 +8,7 @@ import http from 'http'
 import AdmZip from 'adm-zip'
 import { spawn } from 'child_process'
 import Store from 'electron-store'
+
 // let authToken = ''
 const store = new Store()
 // store.set({
@@ -16,7 +17,8 @@ const store = new Store()
 // })
 const gameStatus = {}
 
-let mainWindow
+let mainWindow: any
+let liveRoom: any
 function createWindow(): void {
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -171,35 +173,8 @@ ipcMain.on('download', (event, id, downloadLink) => {
 
     fileStream.on('finish', () => {
       fileStream.close()
+      // 解压
       performPostDownloadOperations(id, filePath, extractTo)
-      // event.reply('download-complete', filePath)
-      // 下载完成后，重置任务栏下载进度条
-      // mainWindow.setProgressBar(-1)
-      // 更新游戏状态为[已下载]
-      // gameStatus[id] = 'downloaded'
-      // 发送游戏状态更新消息到渲染进程
-      // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
-      // gameStatus[id] = 'unzipping'
-      // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
-      // 解压文件
-      // const zip = new AdmZip(filePath)
-      // zip.extractAllTo(extractTo, true)
-
-      // 更新游戏状态为[已解压]
-      // gameStatus[id] = 'unzipped'
-      // 发送游戏状态更新消息到渲染进程
-      // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
-      // // 检查是否存在任何以 .exe 结尾的文件
-      // const exeFiles = fs
-      //   .readdirSync(extractTo)
-      //   .filter((file) => /\.(exe)$/i.test(file) && !/Unity/i.test(file))
-
-      // if (exeFiles.length > 0) {
-      //   console.log('找到 .exe 文件:', exeFiles)
-      //   mainWindow.webContents.send('launch-game', id, exeFiles[0])
-      // } else {
-      //   console.log('未找到 .exe 文件')
-      // }
     })
   })
   req.on('error', (err) => {
@@ -214,6 +189,7 @@ ipcMain.on('download', (event, id, downloadLink) => {
 })
 // 检查游戏是否存在
 ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
+  // store里存在此游戏下载地址 并且 保存的下载地址与新传来的下载地址不一样，则需要更新游戏
   if (store.get(`game${id}`) && store.get(`game${id}`) !== downloadLink) {
     gameStatus[id] = 'update'
     return mainWindow.webContents.send('update-game-status', id, gameStatus[id])
@@ -231,6 +207,7 @@ ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
     event.reply('check-game-reply', id)
   }
 })
+let gameProcess: any
 // 启动项目
 ipcMain.on('start-game', (event, id, name) => {
   // const gameFolderPath = `D:\\hooyoo\\game${id}`
@@ -246,13 +223,32 @@ ipcMain.on('start-game', (event, id, name) => {
     const filePath = path.join(gameFolderPath, exeFiles[0])
     // 启动文件
     // spawn(filePath + ' ' + authToken, [], { detached: true, stdio: 'ignore' })
-    spawn(filePath, [], { detached: true, stdio: 'ignore' })
+    gameProcess = spawn(filePath, [], { detached: true, stdio: 'ignore' })
+    // 在游戏进程关闭时的处理
+    gameProcess.on('close', () => {
+      mainWindow.webContents.send('main-close-game')
+      if (liveRoom) {
+        liveRoom.close()
+      }
+      gameProcess = null // 清空引用
+    })
   } else {
     // gameStatus[id] = 'noexist'
     // mainWindow.webContents.send('update-game-status', id, gameStatus[id])
     // console.log('event', event)
     event.sender.removeAllListeners('start-game-fail-reply')
     event.reply('start-game-fail-reply')
+  }
+})
+// 关闭游戏进程
+ipcMain.on('close-game', (event) => {
+  if (gameProcess) {
+    // 发送关闭信号到游戏进程
+    gameProcess.kill()
+    liveRoom.close()
+    event.reply('close-game-reply', true)
+  } else {
+    event.reply('close-game-reply', false)
   }
 })
 // 打开对话框
@@ -302,6 +298,15 @@ ipcMain.on('setting-default', (event) => {
     installPath: path.join(app.getPath('documents'), 'huyouyun_game_install')
   }
   event.reply('setting-default-reply', paths)
+})
+// 打开直播间
+ipcMain.on('start-live', (_event, url: string) => {
+  console.log('555', url)
+  liveRoom = new BrowserWindow()
+  liveRoom.loadURL(url)
+  liveRoom.on('closed', () => {
+    liveRoom = null
+  })
 })
 // ipcMain.on('send-token', (_event, token: string) => {
 //   authToken = token
