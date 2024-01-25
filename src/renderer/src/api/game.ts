@@ -12,3 +12,7 @@ export const gameInfo = (data: any) => {
 export const buyGame = (data: any) => {
   return request.post('/zhuboduan/buygame/buygame', data)
 }
+// 兑换游戏
+export const exchangeGame = (data: any) => {
+  return request.post('/zhuboduan/game/info_youhui', data)
+}

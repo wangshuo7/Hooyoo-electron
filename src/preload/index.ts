@@ -3,6 +3,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
+  uploadContent: (res: any) => ipcRenderer.send('upload-content', res),
   sendMessage: (message: string) => ipcRenderer.send('message', message),
   minimize: () => ipcRenderer.send('minimize'), // 最小
   quit: () => ipcRenderer.send('quit'), // 关闭
@@ -58,6 +59,7 @@ const api = {
   },
   // 启动直播间
   startLive: (url: string) => ipcRenderer.send('start-live', url),
+  // startFloat: (res: any) => ipcRenderer.send('start-float', res),
   removeAllListeners: () =>
     ipcRenderer.removeAllListeners('start-game-fail-reply'),
   // 打开对话框
@@ -98,6 +100,8 @@ const api = {
   },
   // 发送token
   sendToken: (token: string) => ipcRenderer.send('send-token', token)
+  // sendMsgToFloat: (message: string) =>
+  //   ipcRenderer.send('send-msg-float', message)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

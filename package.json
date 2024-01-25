@@ -32,8 +32,10 @@
     "js-base64": "^3.7.5",
     "md5": "^2.3.0",
     "pinia": "^2.1.7",
+    "protobufjs": "^7.2.6",
     "qrcode": "^1.5.3",
-    "swiper": "^11.0.5"
+    "swiper": "^11.0.5",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.1",

@@ -4,6 +4,7 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
+      uploadContent: (res: any) => void
       sendMessage: (message: string) => void
       minimize: () => void
       quit: () => void
@@ -20,6 +21,7 @@ declare global {
       mainCloseGame: (callback: () => void) => void
       closeGame: () => void
       startLive: (url: string) => void
+      // startFloat: (res: any) => void
       removeAllListeners: () => void
       openDialog: (type: string, options: any) => void
       getDownloadPath: (path) => void
@@ -32,6 +34,7 @@ declare global {
       checkGameReply: (callback: (id: any) => void) => void
       initGameStatus: (callback: () => void) => void
       sendToken: (token: string) => void
+      // sendMsgToFloat: (message: string) => void
     }
   }
 }

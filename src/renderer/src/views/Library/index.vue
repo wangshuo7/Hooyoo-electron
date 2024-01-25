@@ -2,20 +2,6 @@
   <div class="container">
     <div class="title" @click="onRefresh">
       <h1>库</h1>
-      <!-- <el-popover placement="top" :show-arrow="false" trigger="hover">
-        <template #default>
-          <div style="text-align: center; height: 25px">刷新库</div>
-        </template>
-        <template #reference>
-          <span class="refresh">
-            <el-icon
-              class="refresh-icon"
-              :style="{ transform: `rotate(${rotation}deg)` }"
-              ><Refresh
-            /></el-icon>
-          </span>
-        </template>
-      </el-popover> -->
       <el-tooltip
         placement="top"
         effect="light"
@@ -94,20 +80,9 @@
           </el-form-item>
         </el-form>
       </div>
-      <div class="sort-icon">
-        <span :class="{ active: viewType === 'list' }" @click="changeViewList">
-          <i class="iconfont">&#xe696;</i>
-        </span>
-        <span
-          :class="{ active: viewType === 'table' }"
-          @click="changeViewTable"
-        >
-          <i class="iconfont">&#xe6b5;</i>
-        </span>
-      </div>
     </div>
     <!-- list样式 -->
-    <div v-if="viewType === 'list'" v-loading="loading" class="list">
+    <div v-loading="loading" class="list">
       <div
         v-for="(item, index) in tableData"
         :key="index"
@@ -126,37 +101,6 @@
       </div>
     </div>
     <!-- table样式 -->
-    <div v-else>
-      <el-table v-loading="loading" :data="tableData" style="width: 100%">
-        <el-table-column label="标题" min-width="200">
-          <template #default="{ row }">
-            <div class="table">
-              <div class="table-img">
-                <el-image src="danzhu.jpg"></el-image>
-              </div>
-              <div class="table-info">
-                <span class="info-title">{{ row.title }}</span>
-                <span class="info-download">
-                  <i class="iconfont">&#xe600;</i>
-                  <span>安装</span>
-                </span>
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="achieve" label="成就" min-width="100" />
-        <el-table-column prop="content" label="附加内容" min-width="80" />
-        <el-table-column prop="time" label="游戏时间" min-width="150" />
-        <el-table-column prop="size" label="大小" min-width="80" />
-        <el-table-column width="100">
-          <template #default>
-            <span>
-              <el-icon><MoreFilled /></el-icon>
-            </span>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
     <div class="pagination">
       <div>显示{{ totalItems }}个结果中的{{ counts }}</div>
       <el-pagination
@@ -278,18 +222,72 @@
           </div>
         </div>
       </div>
+      <!-- 套餐 -->
+      <div class="detail-info package">
+        <h3>套餐</h3>
+        <div class="package-content">
+          <div
+            v-for="(item, index) in detail.taocan"
+            :key="index"
+            class="package-card"
+          >
+            <div class="card-left">{{ JSON.parse(item.content).ttitle }}</div>
+            <div class="card-right">
+              <div>
+                <span>天数：</span
+                ><span>{{ JSON.parse(item.content).tdays }}</span>
+              </div>
+              <div>
+                <span>价格：</span
+                ><span>{{ JSON.parse(item.content).tprice }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- 详细信息 -->
       <div class="detail-info">
         <h3>详细信息</h3>
         <div class="info-item">
-          <div>
+          <div class="the-info-item">
             <span>开播余额:</span><span>{{ detail.min_price }}</span>
           </div>
-          <div>
+          <div class="the-info-item">
             <span>分成比例:</span><span>{{ detail.divide }}</span>
           </div>
-          <div>
+          <div class="the-info-item">
             <span>更新时间:</span><span>{{ formatTime(detail.uptime) }}</span>
+          </div>
+          <div class="the-info-item">
+            <span>玩法分区:</span>
+            <el-tag
+              v-for="(item, index) in getCategoriesTitle(detail.game_cate_id)"
+              :key="index"
+              style="margin-right: 10px"
+              >{{ item }}</el-tag
+            >
+          </div>
+          <div class="the-info-item">
+            <span>支持语言:</span>
+            <el-tag
+              v-for="(item, index) in getLanguageTitle(detail.game_lang_id)"
+              :key="index"
+              style="margin-right: 10px"
+              >{{ item }}</el-tag
+            >
+          </div>
+          <div class="the-info-item">
+            <span>支持平台:</span>
+            <el-tag
+              v-for="(item, index) in getPlatformsTitle(detail.game_lang_id)"
+              :key="index"
+              style="margin-right: 10px"
+              >{{ item }}</el-tag
+            >
+          </div>
+          <div class="the-info-item">
+            <span>电脑配置:</span>
+            <span>{{ detail.xitong_yaoqiu }}</span>
           </div>
         </div>
       </div>
@@ -312,20 +310,25 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useDateFormat, useDebounceFn, useTimestamp } from '@vueuse/core'
-import { Refresh, MoreFilled, ArrowDown } from '@element-plus/icons-vue'
+import { Refresh, ArrowDown } from '@element-plus/icons-vue'
 // import { useRouter } from 'vue-router'
 import { getMyGameList } from '../../api/mine'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage } from 'element-plus'
 import { getGameUse } from '../../api/rc4'
+import { gameInfo } from '../../api/game'
+import { useStateStore } from '../../store/state'
+
 const timestamp = useTimestamp()
+const stateStore = useStateStore()
 const gameStatus = ref<any>({})
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
+const languages = ref<any>([]) // 获取语言
+const platforms = ref<any>([]) // 获取平台
 const categories = ref<any>([]) // 获取分类
 const tableData = ref<any>([])
 const loading = ref<boolean>(false)
-
 const barrageVisible = ref<boolean>(false)
 const liveRoom = ref<string>('')
 
@@ -334,7 +337,30 @@ const currentPage = ref<number>(1) // 当前页
 const pageSize = ref<number>(12) // 每页显示条数
 const totalItems = ref<number>(0) // 总数据条数
 const detailVisible = ref<boolean>(false) // 详情
-
+const getLanguageTitle = (game_lang_id: any) => {
+  const ids = game_lang_id.split(',').map(Number)
+  const titles = ids.map((id: any) => {
+    const language = languages.value.find((item: any) => item.id === id)
+    return language ? language.title : '未知'
+  })
+  return titles
+}
+const getCategoriesTitle = (game_cate_id: any) => {
+  const ids = game_cate_id.split(',').map(Number)
+  const titles = ids.map((id: any) => {
+    const category = categories.value.find((item: any) => item.id === id)
+    return category ? category.title : '未知'
+  })
+  return titles
+}
+const getPlatformsTitle = (game_pingtai_id: any) => {
+  const ids = game_pingtai_id.split(',').map(Number)
+  const titles = ids.map((id: any) => {
+    const platform = platforms.value.find((item: any) => item.id === id)
+    return platform ? platform.title : '未知'
+  })
+  return titles
+}
 // 当页码发生变化时触发
 function handleCurrentChange(newPage: number) {
   currentPage.value = newPage
@@ -385,14 +411,6 @@ function debounceOnRefresh() {
 }
 const onRefresh = useDebounceFn(debounceOnRefresh, 300)
 
-// 视图方式
-const viewType = ref<string>('list')
-function changeViewList() {
-  viewType.value = 'list'
-}
-function changeViewTable() {
-  viewType.value = 'table'
-}
 // 换页
 const is_drop = ref<boolean>(false)
 function iconChange(e: boolean) {
@@ -402,11 +420,12 @@ const buyID = ref<any>()
 const game_name = ref<any>()
 const detail = ref<any>()
 // 打开详情
-function viewDetail(item) {
+async function viewDetail(item: any) {
+  const res: any = await gameInfo({ id: item.game_id })
+  detail.value = res.data.info
   detailVisible.value = true
   buyID.value = item.game_id
   game_name.value = item.title
-  detail.value = item
   gameStatus.value[buyID.value] = 'purchased'
   window.api.checkGame(item.mg_game_id, item.xiazai_url)
   // console.log(gameStatus.value)
@@ -485,6 +504,7 @@ async function launchGame() {
 window.api.mainCloseGame(() => {
   is_start.value = false
   clearInterval(intervalId.value)
+  stateStore.setState({ success: '', message: '' })
 })
 // // 下载中不允许关闭对话框
 // const isdownloading = computed(() => {
@@ -506,9 +526,12 @@ function connectLive() {
 }
 onMounted(async () => {
   query()
-
+  await globalStore.setLanguage()
   await globalStore.setCategory()
+  await globalStore.setPlatform()
+  languages.value = globalStore.language
   categories.value = globalStore.category
+  platforms.value = globalStore.platform
 })
 // 格式化时间
 function formatTime(time: any) {
@@ -833,10 +856,12 @@ function formatTime(time: any) {
       height: 40px;
     }
     .info-item {
-      height: 80px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      .the-info-item {
+        margin-bottom: 15px;
+      }
       span:first-child {
         margin-right: 20px;
       }

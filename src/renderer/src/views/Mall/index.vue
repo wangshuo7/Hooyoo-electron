@@ -273,14 +273,45 @@
       <div class="detail-info">
         <h3>详细信息</h3>
         <div class="info-item">
-          <div>
+          <div class="the-info-item">
             <span>开播余额:</span><span>{{ detail.min_price }}</span>
           </div>
-          <div>
+          <div class="the-info-item">
             <span>分成比例:</span><span>{{ detail.divide }}</span>
           </div>
-          <div>
+          <div class="the-info-item">
             <span>更新时间:</span><span>{{ formatTime(detail.uptime) }}</span>
+          </div>
+          <div class="the-info-item">
+            <span>玩法分区:</span>
+            <el-tag
+              v-for="(item, index) in getCategoriesTitle(detail.game_cate_id)"
+              :key="index"
+              style="margin-right: 10px"
+              >{{ item }}</el-tag
+            >
+          </div>
+          <div class="the-info-item">
+            <span>支持语言:</span>
+            <el-tag
+              v-for="(item, index) in getLanguageTitle(detail.game_lang_id)"
+              :key="index"
+              style="margin-right: 10px"
+              >{{ item }}</el-tag
+            >
+          </div>
+          <div class="the-info-item">
+            <span>支持平台:</span>
+            <el-tag
+              v-for="(item, index) in getPlatformsTitle(detail.game_lang_id)"
+              :key="index"
+              style="margin-right: 10px"
+              >{{ item }}</el-tag
+            >
+          </div>
+          <div class="the-info-item">
+            <span>电脑配置:</span>
+            <span>{{ detail.xitong_yaoqiu }}</span>
           </div>
         </div>
       </div>
@@ -377,14 +408,18 @@ import { useDateFormat, useTimestamp } from '@vueuse/core'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
 import { ArrowDown } from '@element-plus/icons-vue'
-import { buyGame, getGameList } from '../../api/game'
+import { buyGame, gameInfo, getGameList } from '../../api/game'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage, FormInstance } from 'element-plus'
 import { getGameUse } from '../../api/rc4'
+import { useStateStore } from '../../store/state'
 
 const timestamp = useTimestamp()
+const stateStore = useStateStore()
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
+const languages = ref<any>([]) // 获取语言
+const platforms = ref<any>([]) // 获取平台
 const categories = ref<any>([]) // 获取分类
 const tableData = ref<any>([]) // 所有数据
 const is_drop = ref<boolean>(false) // 换每页条数的箭头变化
@@ -416,9 +451,33 @@ const packages = computed(() => {
     })
   })
 })
+const getLanguageTitle = (game_lang_id: any) => {
+  const ids = game_lang_id.split(',').map(Number)
+  const titles = ids.map((id: any) => {
+    const language = languages.value.find((item: any) => item.id === id)
+    return language ? language.title : '未知'
+  })
+  return titles
+}
+const getCategoriesTitle = (game_cate_id: any) => {
+  const ids = game_cate_id.split(',').map(Number)
+  const titles = ids.map((id: any) => {
+    const category = categories.value.find((item: any) => item.id === id)
+    return category ? category.title : '未知'
+  })
+  return titles
+}
+const getPlatformsTitle = (game_pingtai_id: any) => {
+  const ids = game_pingtai_id.split(',').map(Number)
+  const titles = ids.map((id: any) => {
+    const platform = platforms.value.find((item: any) => item.id === id)
+    return platform ? platform.title : '未知'
+  })
+  return titles
+}
 function onbuyGame() {
   buyVisible.value = true
-  thePackage.value = packages.value[0].id
+  thePackage.value = packages.value[0]?.id
 }
 // 添加表单
 const form = ref<{
@@ -501,11 +560,12 @@ function iconChange(e: boolean) {
 //   my_game.value = res.data.list.map((item: any) => item.mg_game_id)
 // }
 // 打开详情
-function openDetail(item: any) {
+async function openDetail(item: any) {
+  const res: any = await gameInfo({ id: item.game_id })
+  detail.value = res.data.info
   detailVisible.value = true
   buyID.value = item.game_id
   game_name.value = item.title
-  detail.value = item
   // 如果这个游戏已购买，检查游戏是否存在
   if (gameStatus.value[buyID.value] === 'purchased') {
     window.api.checkGame(item.game_id, item.xiazai_url)
@@ -617,6 +677,8 @@ async function launchGame() {
       salts.push(res.salt)
       console.log('salts', salts)
       window.api.startGame(buyID.value, detail.value.v_main)
+      // window.api.startFloat(res)
+      stateStore.setState({ success: 'success', message: '游戏状态正常' })
       is_start.value = true
       start_id.value = buyID.value
       window.api.startGameFailReply(() => {
@@ -631,19 +693,23 @@ async function launchGame() {
       async () => {
         const res: any = await getGameUse({ game_id: buyID.value })
         if (res.code !== 200) {
-          // 弹幕礼物失效 链接弹幕
+          // 弹幕礼物失效
           return console.log('code !== 200')
         }
         if (res.data.status === 'no') {
           return console.log('status == no')
         }
         salts.push(res.salt)
-        const result = areLastThreeEqual(salts)
+        const result = areLastThreeEqual(salts) // 3次一样为true
         if (!result) {
-          //
+          stateStore.setState({ success: 'error', message: '游戏状态正常' })
+        } else {
+          stateStore.setState({ success: 'error', message: '游戏状态异常' })
         }
+        console.log(salts)
       },
       2 * 60 * 1000
+      // 5000
     )
   } else {
     ElMessage.error('请先关闭已打开的游戏')
@@ -652,16 +718,17 @@ async function launchGame() {
 window.api.mainCloseGame(() => {
   is_start.value = false
   clearInterval(intervalId.value)
+  stateStore.setState({ success: '', message: '' })
 })
 watch(
   () => buyVisible.value,
   () => {
     // thePackage.value = undefined
-    // thePackage.value = packages.value[0].id
-    taocanID.value = packages.value[0].taocan_id
+    // thePackage.value = packages.value[0]?.id
+    taocanID.value = packages.value[0]?.taocan_id
     form.value = {
-      tdays: packages.value[0].tdays,
-      tprice: packages.value[0].tprice,
+      tdays: packages.value[0]?.tdays,
+      tprice: packages.value[0]?.tprice,
       code: ''
     }
   }
@@ -677,10 +744,13 @@ function connectLive() {
   }
 }
 onMounted(async () => {
-  // updateMyGame()
   query()
+  await globalStore.setLanguage()
   await globalStore.setCategory()
+  await globalStore.setPlatform()
+  languages.value = globalStore.language
   categories.value = globalStore.category
+  platforms.value = globalStore.platform
 })
 // 格式化时间
 function formatTime(time: any) {
@@ -923,10 +993,12 @@ function formatTime(time: any) {
       height: 40px;
     }
     .info-item {
-      height: 80px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      .the-info-item {
+        margin-bottom: 15px;
+      }
       span:first-child {
         margin-right: 20px;
       }

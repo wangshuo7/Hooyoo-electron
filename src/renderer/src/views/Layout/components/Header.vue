@@ -16,7 +16,11 @@
         >
           <el-avatar
             :size="50"
-            src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+            :src="
+              info?.header_img.includes('http')
+                ? info?.header_img
+                : 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+            "
           >
           </el-avatar>
           <template #dropdown>
@@ -68,7 +72,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -164,6 +168,10 @@ function onDefault() {
 window.api.settingDefaultReply((paths) => {
   form.value.download = paths.downloadPath
   form.value.install = paths.installPath
+})
+
+onMounted(() => {
+  viewPersonal()
 })
 </script>
 

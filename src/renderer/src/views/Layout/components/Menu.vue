@@ -13,63 +13,35 @@
           <el-icon><Menu /></el-icon>
           <template #title>库</template>
         </el-menu-item>
-        <el-button type="success" @click="testRc4">测试加密</el-button>
       </el-menu>
-      <!-- <el-menu class="down" style="margin-top: auto" default-active="1">
-        <el-menu-item index="1" @click="onOpenDownList">
-          <el-icon><Download /></el-icon>
-          <template #title>下载</template>
-        </el-menu-item>
-      </el-menu> -->
-    </div>
-    <!-- <div>
-      <div class="download" @click="onOpenDownList">下载列表</div>
-    </div> -->
-    <!-- <el-dialog v-model="downlistVisible" title="下载列表" width="700">
-      <div
-        style="
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 20px;
-        "
+      <el-menu
+        v-if="res.message"
+        class="down"
+        style="margin-top: auto"
+        default-active="1"
       >
-        <el-button type="primary">全部暂停</el-button>
-        <el-button type="danger">全部取消</el-button>
-      </div>
-      <div v-for="(item, index) in progress" :key="index" class="list-item">
-        <div>{{ item.id }}</div>
-        <div style="display: flex">
-          <el-progress style="width: 80%" :percentage="item.progress" />
-          <el-button>暂停</el-button>
-          <el-button>取消</el-button>
-        </div>
-      </div>
-    </el-dialog> -->
+        <el-menu-item index="1">
+          <template #title>
+            <span
+              :style="{ color: res.success === 'success' ? 'green' : 'red' }"
+              >{{ res.message }}</span
+            >
+          </template>
+        </el-menu-item>
+      </el-menu>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { computed } from 'vue'
 import { PriceTag, Menu } from '@element-plus/icons-vue'
-import { getGameUse } from '../../../api/rc4'
-// import { reactive, ref } from 'vue'
-// import { PriceTag, Menu, Download } from '@element-plus/icons-vue'
-// const downlistVisible = ref<boolean>(false)
-// function onOpenDownList() {
-//   downlistVisible.value = true
-// }
-// const progress = reactive<any>([])
-// window.api.downloadProgress((obj) => {
-// progress[obj.id] = obj.progress
-// })
-
-async function testRc4() {
-  const send_data = {
-    game_id: 57
-  }
-  const res: any = getGameUse(send_data)
-  console.log('res', res)
-}
+import { useStateStore } from '../../../store/state'
+// const message = ref<string>()
+const stateStore = useStateStore()
+const res: any = computed(() => {
+  return stateStore.state
+})
 </script>
 
 <style lang="less" scoped>
