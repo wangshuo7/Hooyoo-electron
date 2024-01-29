@@ -43,8 +43,8 @@ const api = {
     })
   },
   // 启动游戏
-  startGame: (id: any, name: string) =>
-    ipcRenderer.send('start-game', id, name),
+  startGame: (id: any, name: string, key: string) =>
+    ipcRenderer.send('start-game', id, name, key),
   startGameFailReply: (callback: () => void) => {
     ipcRenderer.on('start-game-fail-reply', () => {
       callback()
@@ -59,6 +59,12 @@ const api = {
   },
   // 启动直播间
   startLive: (url: string) => ipcRenderer.send('start-live', url),
+  // 关闭直播间
+  mainCloseLive: (callback: () => void) => {
+    ipcRenderer.on('main-close-live', () => {
+      callback()
+    })
+  },
   // startFloat: (res: any) => ipcRenderer.send('start-float', res),
   removeAllListeners: () =>
     ipcRenderer.removeAllListeners('start-game-fail-reply'),
@@ -99,9 +105,14 @@ const api = {
     })
   },
   // 发送token
-  sendToken: (token: string) => ipcRenderer.send('send-token', token)
+  sendToken: (token: string) => ipcRenderer.send('send-token', token),
   // sendMsgToFloat: (message: string) =>
   //   ipcRenderer.send('send-msg-float', message)
+  sendDataWs: (callback: (res: any) => void) => {
+    ipcRenderer.on('send-data-ws', (_event, res) => {
+      callback(res)
+    })
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

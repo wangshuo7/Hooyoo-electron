@@ -163,6 +163,7 @@
               v-if="gameStatus[detail.game_id] == 'unzipped'"
               size="large"
               type="success"
+              :disabled="is_start_live"
               @click="barrageVisible = true"
               >连接弹幕</el-button
             >
@@ -188,6 +189,7 @@
               v-else-if="gameStatus[detail.game_id] == 'unzipped'"
               size="large"
               type="danger"
+              :disabled="is_start"
               @click="launchGame"
               >启动游戏</el-button
             >
@@ -454,6 +456,7 @@ function areLastThreeEqual(strArray: string[]) {
 }
 const intervalId = ref<any>()
 const is_start = ref<boolean>(false) // 是否启动游戏
+const is_start_live = ref<boolean>(false) // 是否启动直播间
 const start_id = ref<any>() // 启动游戏id
 const salts = reactive<string[]>([])
 // 启动游戏
@@ -463,12 +466,16 @@ async function launchGame() {
     const res: any = await getGameUse({ game_id: buyID.value })
     // console.log('res', res)
     if (res.data.status === 'yes') {
-      if (liveRoom.value) {
-        window.api.startLive(liveRoom.value)
-      }
+      // if (liveRoom.value) {
+      //   window.api.startLive(liveRoom.value)
+      // }
       salts.push(res.salt)
       console.log('salts', salts)
-      window.api.startGame(buyID.value, detail.value.v_main)
+      window.api.startGame(
+        buyID.value,
+        detail.value.v_main,
+        detail.value.miyaostr
+      )
       is_start.value = true
       start_id.value = buyID.value
       window.api.startGameFailReply(() => {
@@ -514,16 +521,35 @@ window.api.mainCloseGame(() => {
 //     return true
 //   }
 // })
+const is_barrage = ref<boolean>(false) // true打开 false关闭
 // 连接弹幕
 function connectLive() {
-  barrageVisible.value = false
+  if (is_barrage.value) {
+    return ElMessage.error('清先关闭已打开的直播间')
+  }
+  // barrageVisible.value = true
+  // 如果已打开游戏
   if (is_start.value) {
     if (start_id.value != buyID.value) {
       return ElMessage.error('请连接已打开游戏的直播间弹幕')
     }
-    return window.api.startLive(liveRoom.value)
+    is_barrage.value = true
+    window.api.startLive(liveRoom.value)
+    is_start_live.value = true
+    barrageVisible.value = false
+    return
+  } else {
+    is_barrage.value = true
+    window.api.startLive(liveRoom.value)
+    is_start_live.value = true
+    barrageVisible.value = false
+    return
   }
 }
+window.api.mainCloseLive(() => {
+  is_start_live.value = false
+  is_barrage.value = false
+})
 onMounted(async () => {
   query()
   await globalStore.setLanguage()

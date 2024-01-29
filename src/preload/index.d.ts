@@ -16,11 +16,12 @@ declare global {
       launchGame: (callback: (id, path) => void) => void
       updateGameStatus: (callback: (id, status) => void) => void
       checkGame: (id, downloadLink: string) => void
-      startGame: (id, name) => void
+      startGame: (id, name, key) => void
       startGameFailReply: (callback: () => void) => void
       mainCloseGame: (callback: () => void) => void
       closeGame: () => void
       startLive: (url: string) => void
+      mainCloseLive: (callback: () => void) => void
       // startFloat: (res: any) => void
       removeAllListeners: () => void
       openDialog: (type: string, options: any) => void
@@ -35,6 +36,7 @@ declare global {
       initGameStatus: (callback: () => void) => void
       sendToken: (token: string) => void
       // sendMsgToFloat: (message: string) => void
+      sendDataWs: (callback: (res: any) => void) => void
     }
   }
 }

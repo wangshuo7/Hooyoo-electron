@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Layout from '../views/Layout/index.vue'
+import { isLogin } from '../api/rc4'
 const routes = [
   {
     path: '/',
@@ -33,6 +34,23 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.beforeEach(async (to, _from, next) => {
+  const res: any = await isLogin()
+  if (to.path === '/login') {
+    if (res.code === 200) {
+      next('/mall')
+    } else {
+      next()
+    }
+  } else {
+    if (res.code !== 200) {
+      next('/login')
+    } else {
+      next()
+    }
+  }
 })
 
 export function useRouter() {

@@ -97,7 +97,9 @@
       </div>
     </div>
     <div class="pagination">
-      <div>显示{{ totalItems }}个结果中的{{ counts }}</div>
+      <div class="pagination-view">
+        显示{{ totalItems }}个结果中的{{ counts }}
+      </div>
       <el-pagination
         :page-size="pageSize"
         :total="totalItems"
@@ -159,6 +161,7 @@
               v-if="gameStatus[detail.game_id] == 'unzipped'"
               size="large"
               type="success"
+              :disabled="is_start_live"
               @click="barrageVisible = true"
               >连接弹幕</el-button
             >
@@ -194,6 +197,7 @@
               v-else-if="gameStatus[detail.game_id] == 'unzipped'"
               size="large"
               type="danger"
+              :disabled="is_start"
               @click="launchGame"
               >启动游戏</el-button
             >
@@ -437,7 +441,10 @@ const secondVisible = ref<boolean>(false)
 const barrageVisible = ref<boolean>(false)
 const liveRoom = ref<string>('')
 const ruleFormRef = ref<FormInstance>()
-
+window.api.sendDataWs((res: any) => {
+  console.log('----------------------------')
+  console.log(res)
+})
 // 套餐
 const thePackage = ref<number>()
 const packages = computed(() => {
@@ -452,24 +459,24 @@ const packages = computed(() => {
   })
 })
 const getLanguageTitle = (game_lang_id: any) => {
-  const ids = game_lang_id.split(',').map(Number)
-  const titles = ids.map((id: any) => {
+  const ids = game_lang_id.split(',')?.map(Number)
+  const titles = ids?.map((id: any) => {
     const language = languages.value.find((item: any) => item.id === id)
     return language ? language.title : '未知'
   })
   return titles
 }
 const getCategoriesTitle = (game_cate_id: any) => {
-  const ids = game_cate_id.split(',').map(Number)
-  const titles = ids.map((id: any) => {
+  const ids = game_cate_id.split(',')?.map(Number)
+  const titles = ids?.map((id: any) => {
     const category = categories.value.find((item: any) => item.id === id)
     return category ? category.title : '未知'
   })
   return titles
 }
 const getPlatformsTitle = (game_pingtai_id: any) => {
-  const ids = game_pingtai_id.split(',').map(Number)
-  const titles = ids.map((id: any) => {
+  const ids = game_pingtai_id.split(',')?.map(Number)
+  const titles = ids?.map((id: any) => {
     const platform = platforms.value.find((item: any) => item.id === id)
     return platform ? platform.title : '未知'
   })
@@ -523,7 +530,7 @@ async function query() {
     tableData.value = response?.data?.list
     totalItems.value = response?.data?.count
     // console.log('now', timestamp.value / 1000)
-    tableData.value.map((item: any) => {
+    tableData.value?.map((item: any) => {
       if (item.game_buy_end_time === null) {
         return (gameStatus.value[item.game_id] = 'nopurchased')
       } else if (item.game_buy_end_time >= timestamp.value / 1000) {
@@ -562,7 +569,7 @@ function iconChange(e: boolean) {
 // 打开详情
 async function openDetail(item: any) {
   const res: any = await gameInfo({ id: item.game_id })
-  detail.value = res.data.info
+  detail.value = res?.data?.info
   detailVisible.value = true
   buyID.value = item.game_id
   game_name.value = item.title
@@ -577,6 +584,7 @@ async function openDetail(item: any) {
 // 更改安装路径后重置游戏状态
 window.api.initGameStatus(() => {
   gameStatus.value = {}
+  query()
 })
 
 // 选择套餐
@@ -662,6 +670,7 @@ function areLastThreeEqual(strArray: string[]) {
 }
 const intervalId = ref<any>()
 const is_start = ref<boolean>(false) // 是否启动游戏
+const is_start_live = ref<boolean>(false) // 是否启动直播间
 const start_id = ref<any>() // 启动游戏id
 const salts = reactive<string[]>([])
 // 启动游戏
@@ -671,12 +680,16 @@ async function launchGame() {
     const res: any = await getGameUse({ game_id: buyID.value })
     // console.log('res', res)
     if (res.data.status === 'yes') {
-      if (liveRoom.value) {
-        window.api.startLive(liveRoom.value)
-      }
+      // if (liveRoom.value) {
+      //   window.api.startLive(liveRoom.value)
+      // }
       salts.push(res.salt)
       console.log('salts', salts)
-      window.api.startGame(buyID.value, detail.value.v_main)
+      window.api.startGame(
+        buyID.value,
+        detail.value.v_main,
+        detail.value.miyaostr
+      )
       // window.api.startFloat(res)
       stateStore.setState({ success: 'success', message: '游戏状态正常' })
       is_start.value = true
@@ -733,16 +746,35 @@ watch(
     }
   }
 )
+const is_barrage = ref<boolean>(false) // true打开 false关闭
 // 连接弹幕
 function connectLive() {
-  barrageVisible.value = false
+  if (is_barrage.value) {
+    return ElMessage.error('清先关闭已打开的直播间')
+  }
+  // barrageVisible.value = true
+  // 如果已打开游戏
   if (is_start.value) {
     if (start_id.value != buyID.value) {
       return ElMessage.error('请连接已打开游戏的直播间弹幕')
     }
-    return window.api.startLive(liveRoom.value)
+    is_barrage.value = true
+    window.api.startLive(liveRoom.value)
+    is_start_live.value = true
+    barrageVisible.value = false
+    return
+  } else {
+    is_barrage.value = true
+    window.api.startLive(liveRoom.value)
+    is_start_live.value = true
+    barrageVisible.value = false
+    return
   }
 }
+window.api.mainCloseLive(() => {
+  is_start_live.value = false
+  is_barrage.value = false
+})
 onMounted(async () => {
   query()
   await globalStore.setLanguage()
@@ -893,6 +925,9 @@ function formatTime(time: any) {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  .pagination-view {
+    width: 180px;
+  }
   :deep(.el-pagination) {
     button {
       width: 58px;

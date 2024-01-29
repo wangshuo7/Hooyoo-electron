@@ -16,7 +16,6 @@ const request = axios.create({
 // 请求拦截器
 request.interceptors.request.use(
   (config: AxiosRequestConfig): any => {
-    console.log('aaaa', config.data)
     const authToken = localStorage.getItem('authtoken')
     const salt =
       'fdsjfkdj7789附件是777744164878#%*(*&%@打开哦怕,,8飞弹8风是9放到7是否8'
