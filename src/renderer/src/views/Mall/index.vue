@@ -134,7 +134,7 @@
     </div>
   </div>
   <!-- 详情 -->
-  <el-dialog v-model="detailVisible" :title="game_name" width="945">
+  <el-dialog v-model="detailVisible" :title="game_name" width="945" top="10vh">
     <div class="detail">
       <div
         class="detail-head"
@@ -162,7 +162,7 @@
               size="large"
               type="success"
               :disabled="is_start_live"
-              @click="barrageVisible = true"
+              @click="onDanmuBtn"
               >连接弹幕</el-button
             >
             <el-button
@@ -747,6 +747,12 @@ watch(
   }
 )
 const is_barrage = ref<boolean>(false) // true打开 false关闭
+function onDanmuBtn() {
+  barrageVisible.value = true
+  if (localStorage.getItem('liveUrl')) {
+    liveRoom.value = localStorage.getItem('liveUrl') + ''
+  }
+}
 // 连接弹幕
 function connectLive() {
   if (is_barrage.value) {
@@ -755,17 +761,22 @@ function connectLive() {
   // barrageVisible.value = true
   // 如果已打开游戏
   if (is_start.value) {
+    if (!liveRoom.value) {
+      return ElMessage.error('请填写直播间地址')
+    }
     if (start_id.value != buyID.value) {
       return ElMessage.error('请连接已打开游戏的直播间弹幕')
     }
     is_barrage.value = true
     window.api.startLive(liveRoom.value)
+    localStorage.setItem('liveUrl', liveRoom.value)
     is_start_live.value = true
     barrageVisible.value = false
     return
   } else {
     is_barrage.value = true
     window.api.startLive(liveRoom.value)
+    localStorage.setItem('liveUrl', liveRoom.value)
     is_start_live.value = true
     barrageVisible.value = false
     return
