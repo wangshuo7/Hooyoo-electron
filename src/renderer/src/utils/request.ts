@@ -1,8 +1,12 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '../router'
+const baseURL =
+  process.env.NODE_ENV === 'production'
+    ? 'http://test-box-server.huyouyun.cn'
+    : '/api'
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: baseURL,
   timeout: 5000, // 请求超时时间
   headers: {
     authToken: ''

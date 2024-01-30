@@ -26,7 +26,7 @@ const store = new Store()
 //   installPath: path.join(app.getPath('documents'), 'huyouyun_game_install')
 // })
 const gameStatus = {}
-let wsClient: any
+let wsServer: any
 let mainWindow: any
 let liveRoom: any
 let connectKey: string
@@ -65,33 +65,27 @@ function createWindow(): void {
     }
   })
   const server = new WebSocket.Server({ port: 8080 })
-  server.on('connection', (socket) => {
-    wsClient = socket
+  server.on('connection', (socket: any) => {
+    console.log('socket', socket)
+    wsServer = socket
     console.log('Client connected')
     // 监听来自客户端的消息
     socket.on('message', (message) => {
       // console.log(`Received: ${message}`)
       // console.log('bbbbbbbbbbbb', message)
-
       mainWindow.webContents.send('send-data-ws', JSON.parse(message))
-
-      // 向客户端发送消息
-      const rc4Key = md5(`PojieSqj521${gameId}${connectKey}`) + authToken
-
-      console.log(123, JSON.parse(message))
-
-      const danmuJson = {
-        hello: 'world'
-      }
-      // console.log('ahhahaha', message.toString('utf-8'))
-
-      const encrypt = rc4Encrypt(rc4Key, JSON.stringify(danmuJson))
-      const bufferData: Buffer = Buffer.from(encrypt, 'hex')
-
-      socket.send(bufferData, {
-        binary: true
-      })
-
+      // // 向客户端发送消息
+      // const rc4Key = md5(`PojieSqj521${gameId}${connectKey}`) + authToken
+      // console.log(123, JSON.parse(message))
+      // const danmuJson = {
+      //   hello: 'world'
+      // }
+      // // console.log('ahhahaha', message.toString('utf-8'))
+      // const encrypt = rc4Encrypt(rc4Key, JSON.stringify(danmuJson))
+      // const bufferData: Buffer = Buffer.from(encrypt, 'hex')
+      // socket.send(bufferData, {
+      //   binary: true
+      // })
       // socket.send(rc4Encrypt(rc4Key, JSON.stringify(message)), {
       //   binary: true
       // })
@@ -141,11 +135,6 @@ function createWindow(): void {
 
   // 监听窗口取消最大化事件
   mainWindow.on('unmaximize', sendMaximizeStatus)
-}
-function sendDanmu(obj) {
-  const encrypt = rc4Encrypt(rc4Key, JSON.stringify(obj))
-  const bufferData = Buffer.from(encrypt, 'hex')
-  return bufferData
 }
 
 app.whenReady().then(() => {
@@ -433,39 +422,7 @@ function closeLiveRoom() {
 // }
 // 打开直播间
 ipcMain.on('start-live', async (_event, url: string) => {
-  // const res = await isWebSocketServiceAvailable()
-  // if (!res) {
-  //   return console.log(2222222, res)
-  // }
-
   liveRoom = new BrowserWindow()
-  // wsClient = new WebSocket('ws://127.0.0.1:8080')
-  // // console.log('wsClient', wsClient)
-  // // 监听连接打开事件
-  // wsClient.on('open', () => {
-  //   // console.log('WebSocket 连接已打开')
-  //   // 在连接打开后，发送消息到服务器
-  //   const messageToSend = {
-  //     type: 'chat',
-  //     content: 'Hello, WebSocket Server!'
-  //   }
-
-  //   // 将消息对象转为字符串，并发送到服务器
-  //   wsClient.send(JSON.stringify(messageToSend))
-  // })
-
-  // // 监听接收消息事件
-  // wsClient.on('message', () => {
-  //   // console.log('收到服务器消息:', data)
-  //   // 在这里处理接收到的消息
-  //   // 你可以通过 ipcMain 发送消息到渲染进程
-  //   // 例如： mainWindow.webContents.send('server-message', data);
-  // })
-
-  // // 监听连接关闭事件
-  // wsClient.on('close', () => {
-  //   // console.log('WebSocket 连接已关闭')
-  // })
   liveRoom.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -493,9 +450,6 @@ ipcMain.on('start-live', async (_event, url: string) => {
       // console.log('WebSocket frame received: ', payloadData)
       const buff = Buffer.from(payloadData, 'base64')
       deserializeWebsocketMessage(buff)
-      // const pbData = deserializeWebsocketMessage(buff)
-      // console.log('--------------------', pbData)
-      // liveRoom.webContents.send('danmu-message', payloadData)
     }
   })
 
@@ -587,7 +541,6 @@ function deserializeMessage(protoName, binaryMessage) {
 function pb2json(this: any, pbData: any) {
   try {
     const webcastResponse = deserializeMessage('WebcastResponse', pbData)
-    // console.log('消息解码成功')
     webcastResponse.messages
       .filter((x) => x.decodedData)
       .forEach((message) => {
@@ -611,24 +564,41 @@ function pb2json(this: any, pbData: any) {
             }
             break
           case 'WebcastRoomUserSeqMessage':
+            mainWindow.webContents.send('send-data-ws', simplifiedObj)
+
             // console.log('MessageEvents.ROOMUSER', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+            wsServer.send(simplifiedObj)
+
             break
           case 'WebcastChatMessage':
             //console.log("MessageEvents.CHAT", simplifiedObj);
             // console.log('3', simplifiedObj)
-            wsClient?.send(
-              sendDanmu(simplifiedObj),
-              { binary: true },
-              (data) => {
-                console.log(3333333, data)
-              }
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
             )
+
             break
           case 'WebcastMemberMessage':
             //console.log("MessageEvents.MEMBER", simplifiedObj);
-            // console.log('1', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            // eslint-disable-next-line no-case-declarations
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
             break
           case 'WebcastGiftMessage':
             // Add extended gift info if option enabled //TODO:待修复礼物问题
@@ -637,52 +607,126 @@ function pb2json(this: any, pbData: any) {
                 }*/
             //console.log("MessageEvents.GIFT", simplifiedObj);
             // console.log('4', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
             break
           case 'WebcastSocialMessage':
             // console.log('MessageEvents.SOCIAL', simplifiedObj)
             if (simplifiedObj.displayType?.includes('follow')) {
               //console.log("CustomEvents.FOLLOW", simplifiedObj);
               // console.log('5', simplifiedObj)
-              wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+              // wsServer?.send(
+              //   Buffer.from(
+              //     rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+              //     'hex'
+              //   ),
+              //   { binary: true }
+              // )
             }
             if (simplifiedObj.displayType?.includes('share')) {
               // console.log('CustomEvents.SHARE', simplifiedObj)
-              wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+              wsServer?.send(
+                Buffer.from(
+                  rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                  'hex'
+                ),
+                { binary: true }
+              )
             }
             break
           case 'WebcastLikeMessage':
             //console.log("MessageEvents.LIKE", simplifiedObj);
             // console.log('2', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
           case 'WebcastQuestionNewMessage':
             // console.log('MessageEvents.QUESTIONNEW', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
           case 'WebcastLinkMicBattle':
             // console.log('MessageEvents.LINKMICBATTLE', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
           case 'WebcastLinkMicArmies':
             // console.log('MessageEvents.LINKMICARMIES', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
           case 'WebcastLiveIntroMessage':
             // console.log('MessageEvents.LIVEINTRO', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
           case 'WebcastEmoteChatMessage':
             // console.log('MessageEvents.EMOTE', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
           case 'WebcastEnvelopeMessage':
             // console.log('MessageEvents.ENVELOPE', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
           case 'WebcastSubNotifyMessage':
             // console.log('MessageEvents.SUBSCRIBE', simplifiedObj)
-            wsClient?.send(sendDanmu(simplifiedObj), { binary: true })
+            wsServer?.send(
+              Buffer.from(
+                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                'hex'
+              ),
+              { binary: true }
+            )
+
             break
         }
       })

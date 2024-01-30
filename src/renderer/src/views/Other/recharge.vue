@@ -90,7 +90,7 @@ import {
   rechargeCard,
   rechargeWeixin
 } from '../../api/wallet'
-import { getConfig } from '../../api/golbal'
+import { getConfig } from '../../api/global'
 
 const dialogVisible = ref<boolean>(false)
 const vx_price = ref<number>(0)

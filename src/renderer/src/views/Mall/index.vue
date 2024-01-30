@@ -278,10 +278,44 @@
         <h3>详细信息</h3>
         <div class="info-item">
           <div class="the-info-item">
-            <span>开播余额:</span><span>{{ detail.min_price }}</span>
+            <span>开播限制:</span><span>{{ detail.min_price }} 钻石</span>
           </div>
           <div class="the-info-item">
-            <span>分成比例:</span><span>{{ detail.divide }}</span>
+            <span>分成比例:</span>
+            <span>每收到 100 礼物扣除 {{ computedDiamond() }} 钻石 </span>
+            <!-- <span>{{ detail.divide }}</span> -->
+            <el-tooltip
+              effect="dark"
+              :offset="10"
+              :show-arrow="true"
+              placement="right"
+            >
+              <template #content>
+                分成比例：
+                <span v-if="detail.jisuan_bl.bl_gonghui !== 0">
+                  {{ detail.jisuan_bl.bl_gonghui }}%
+                </span>
+                <span> + </span>
+                <span v-if="detail.jisuan_bl.bl_pingtai !== 0">
+                  {{ detail.jisuan_bl.bl_pingtai }}%
+                </span>
+                <span> + </span>
+                <span v-if="detail.jisuan_bl.bl_youxizuozhe !== 0">
+                  {{ detail.jisuan_bl.bl_youxizuozhe }}%
+                </span>
+                <span> = </span>
+                <span>
+                  {{
+                    detail.jisuan_bl.bl_gonghui +
+                    detail.jisuan_bl.bl_pingtai +
+                    detail.jisuan_bl.bl_youxizuozhe
+                  }}%
+                </span>
+              </template>
+              <span style="margin-left: 10px; position: relative; top: 1px"
+                ><el-icon><QuestionFilled /></el-icon
+              ></span>
+            </el-tooltip>
           </div>
           <div class="the-info-item">
             <span>更新时间:</span><span>{{ formatTime(detail.uptime) }}</span>
@@ -408,7 +442,9 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useDateFormat, useTimestamp } from '@vueuse/core'
+import { QuestionFilled } from '@element-plus/icons-vue'
+import { useTimestamp } from '@vueuse/core'
+import Moment from 'moment'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
 import { ArrowDown } from '@element-plus/icons-vue'
@@ -441,6 +477,18 @@ const secondVisible = ref<boolean>(false)
 const barrageVisible = ref<boolean>(false)
 const liveRoom = ref<string>('')
 const ruleFormRef = ref<FormInstance>()
+const ratio = ref<any>()
+function computedDiamond() {
+  const res =
+    100 *
+    0.1 *
+    ratio.value *
+    ((detail.value.jisuan_bl.bl_gonghui +
+      detail.value.jisuan_bl.bl_pingtai +
+      detail.value.jisuan_bl.bl_youxizuozhe) /
+      100)
+  return res
+}
 window.api.sendDataWs((res: any) => {
   console.log('----------------------------')
   console.log(res)
@@ -791,13 +839,15 @@ onMounted(async () => {
   await globalStore.setLanguage()
   await globalStore.setCategory()
   await globalStore.setPlatform()
+  await globalStore.getRatio()
   languages.value = globalStore.language
   categories.value = globalStore.category
   platforms.value = globalStore.platform
+  ratio.value = globalStore.ratio
 })
 // 格式化时间
 function formatTime(time: any) {
-  return useDateFormat(time * 1000, 'YYYY-MM-DD HH:mm:ss')
+  return time ? Moment(time * 1000).format('YYYY-MM-DD HH:mm:ss') : '-'
 }
 </script>
 

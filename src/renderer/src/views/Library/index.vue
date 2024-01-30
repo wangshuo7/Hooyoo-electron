@@ -255,7 +255,40 @@
             <span>开播余额:</span><span>{{ detail.min_price }}</span>
           </div>
           <div class="the-info-item">
-            <span>分成比例:</span><span>{{ detail.divide }}</span>
+            <span>分成比例:</span>
+            <span>每收到 100 礼物扣除 {{ computedDiamond() }} 钻石 </span>
+            <el-tooltip
+              effect="dark"
+              :offset="10"
+              :show-arrow="true"
+              placement="right"
+            >
+              <template #content>
+                分成比例：
+                <span v-if="detail.jisuan_bl.bl_gonghui !== 0">
+                  {{ detail.jisuan_bl.bl_gonghui }}%
+                </span>
+                <span> + </span>
+                <span v-if="detail.jisuan_bl.bl_pingtai !== 0">
+                  {{ detail.jisuan_bl.bl_pingtai }}%
+                </span>
+                <span> + </span>
+                <span v-if="detail.jisuan_bl.bl_youxizuozhe !== 0">
+                  {{ detail.jisuan_bl.bl_youxizuozhe }}%
+                </span>
+                <span> = </span>
+                <span>
+                  {{
+                    detail.jisuan_bl.bl_gonghui +
+                    detail.jisuan_bl.bl_pingtai +
+                    detail.jisuan_bl.bl_youxizuozhe
+                  }}%
+                </span>
+              </template>
+              <span style="margin-left: 10px; position: relative; top: 1px"
+                ><el-icon><QuestionFilled /></el-icon
+              ></span>
+            </el-tooltip>
           </div>
           <div class="the-info-item">
             <span>更新时间:</span><span>{{ formatTime(detail.uptime) }}</span>
@@ -311,8 +344,10 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useDateFormat, useDebounceFn, useTimestamp } from '@vueuse/core'
+import { useDebounceFn, useTimestamp } from '@vueuse/core'
 import { Refresh, ArrowDown } from '@element-plus/icons-vue'
+import { QuestionFilled } from '@element-plus/icons-vue'
+import Moment from 'moment'
 // import { useRouter } from 'vue-router'
 import { getMyGameList } from '../../api/mine'
 import { useGlobalStore } from '../../store/globalStore'
@@ -329,6 +364,7 @@ const queryForm = ref<any>({})
 const languages = ref<any>([]) // 获取语言
 const platforms = ref<any>([]) // 获取平台
 const categories = ref<any>([]) // 获取分类
+const ratio = ref<any>() // 分成比例
 const tableData = ref<any>([])
 const loading = ref<boolean>(false)
 const barrageVisible = ref<boolean>(false)
@@ -339,6 +375,18 @@ const currentPage = ref<number>(1) // 当前页
 const pageSize = ref<number>(12) // 每页显示条数
 const totalItems = ref<number>(0) // 总数据条数
 const detailVisible = ref<boolean>(false) // 详情
+function computedDiamond() {
+  const res =
+    100 *
+    0.1 *
+    ratio.value *
+    ((detail.value.jisuan_bl.bl_gonghui +
+      detail.value.jisuan_bl.bl_pingtai +
+      detail.value.jisuan_bl.bl_youxizuozhe) /
+      100)
+  return res
+}
+
 const getLanguageTitle = (game_lang_id: any) => {
   const ids = game_lang_id.split(',').map(Number)
   const titles = ids.map((id: any) => {
@@ -566,13 +614,15 @@ onMounted(async () => {
   await globalStore.setLanguage()
   await globalStore.setCategory()
   await globalStore.setPlatform()
+  await globalStore.getRatio()
   languages.value = globalStore.language
   categories.value = globalStore.category
   platforms.value = globalStore.platform
+  ratio.value = globalStore.ratio
 })
 // 格式化时间
 function formatTime(time: any) {
-  return useDateFormat(time * 1000, 'YYYY-MM-DD HH:mm:ss')
+  return time ? Moment(time * 1000).format('YYYY-MM-DD HH:mm:ss') : '-'
 }
 </script>
 
