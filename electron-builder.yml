@@ -47,4 +47,4 @@ appImage:
 npmRebuild: false
 publish:
   provider: generic
-  url: https://example.com/auto-updates
+  url: http://61.160.236.29:886/box/upload/dist

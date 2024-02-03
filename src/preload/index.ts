@@ -112,6 +112,37 @@ const api = {
     ipcRenderer.on('send-data-ws', (_event, res) => {
       callback(res)
     })
+  },
+  // 更新
+  checkUpdates: () => ipcRenderer.send('check-updates-first'),
+  // 打印
+  printUpdaterMessage: (callback: (res: any) => void) => {
+    ipcRenderer.on('print-updater-message', (_event, res) => {
+      callback(res)
+    })
+  },
+  // 有可用更新
+  updateAvailable: (callback: (res: any) => void) => {
+    ipcRenderer.on('update-available', (_event, res) => {
+      callback(res)
+    })
+  },
+  confirmUpdate: () => ipcRenderer.send('confirm-update'),
+  edownloadProgress: (callback: (res: any) => void) => {
+    ipcRenderer.on('e-download-progress', (_event, res) => {
+      callback(res)
+    })
+  },
+  updateDownloaded: (callback: (res: any) => void) => {
+    ipcRenderer.on('update-downloaded', (_event, res) => {
+      callback(res)
+    })
+  },
+  updateNow: () => ipcRenderer.send('update-now'),
+  updateError: (callback: (err: any) => void) => {
+    ipcRenderer.on('update-error', (_event, err) => {
+      callback(err)
+    })
   }
 }
 

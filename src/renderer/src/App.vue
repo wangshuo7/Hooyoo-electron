@@ -1,12 +1,12 @@
 <template>
   <TitleBar></TitleBar>
   <router-view></router-view>
+  <Update />
 </template>
 
 <script setup lang="ts">
 import TitleBar from './components/TitleBar.vue'
-
-window.api.sendMessage('Hello from App.vue!')
+import Update from './components/Update.vue'
 </script>
 
 <style lang="less">

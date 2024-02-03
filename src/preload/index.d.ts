@@ -37,6 +37,14 @@ declare global {
       sendToken: (token: string) => void
       // sendMsgToFloat: (message: string) => void
       sendDataWs: (callback: (res: any) => void) => void
+      checkUpdates: () => void
+      printUpdaterMessage: (callback: (res: any) => void) => void
+      updateAvailable: (callback: (res: any) => void) => void
+      confirmUpdate: () => void
+      edownloadProgress: (callback: (res: any) => void) => void
+      updateDownloaded: (callback: () => void) => void
+      updateNow: () => void
+      updateError: (callback: (err: any) => void) => void
     }
   }
 }

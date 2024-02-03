@@ -278,7 +278,13 @@
         <h3>详细信息</h3>
         <div class="info-item">
           <div class="the-info-item">
-            <span>开播限制:</span><span>{{ detail.min_price }} 钻石</span>
+            <span>开播限制:</span
+            ><span>{{
+              detail.min_price != '0.00' ? detail.min_price : '无'
+            }}</span>
+            <span v-if="detail.min_price != '0.00'" style="margin-left: 5px"
+              >钻石</span
+            >
           </div>
           <div class="the-info-item">
             <span>分成比例:</span>
@@ -341,7 +347,7 @@
           <div class="the-info-item">
             <span>支持平台:</span>
             <el-tag
-              v-for="(item, index) in getPlatformsTitle(detail.game_lang_id)"
+              v-for="(item, index) in getPlatformsTitle(detail.game_pingtai_id)"
               :key="index"
               style="margin-right: 10px"
               >{{ item }}</el-tag
@@ -453,7 +459,6 @@ import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage, FormInstance } from 'element-plus'
 import { getGameUse } from '../../api/rc4'
 import { useStateStore } from '../../store/state'
-
 const timestamp = useTimestamp()
 const stateStore = useStateStore()
 const globalStore = useGlobalStore()
@@ -802,7 +807,7 @@ function onDanmuBtn() {
   }
 }
 // 连接弹幕
-function connectLive() {
+async function connectLive() {
   if (is_barrage.value) {
     return ElMessage.error('清先关闭已打开的直播间')
   }

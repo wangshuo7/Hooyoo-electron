@@ -1,4 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import WebSocket from 'ws'
@@ -15,7 +16,59 @@ import { promisify } from 'node:util'
 import { unzip as zlibUnzip } from 'node:zlib'
 import md5 from 'md5'
 import { rc4Encrypt } from './public/rc4'
+/**
+ * electron自动更新
+ */
+autoUpdater.setFeedURL('http://61.160.236.29:886/box/upload/dist')
+autoUpdater.autoDownload = false
+// 1. 渲染进程App.vue触发获取更新，开始进行更新流程
+ipcMain.on('check-updates-first', () => {
+  autoUpdater.checkForUpdates()
+})
+autoUpdater.on('error', (error) => {
+  printUpdaterMessage('error')
+  mainWindow.webContents.send('update-error', error)
+})
+// 2. 开始检查是否有更新
+autoUpdater.on('checking-for-update', function () {
+  printUpdaterMessage('checking')
+})
+// 3. 有更新时触发
+autoUpdater.on('update-available', (info) => {
+  printUpdaterMessage('updateAvailable')
+  mainWindow.webContents.send('update-available', info)
+})
+// 7. 收到确认更新提示，执行下载
+ipcMain.on('confirm-update', () => {
+  autoUpdater.downloadUpdate()
+})
+autoUpdater.on('update-not-available', () => {
+  printUpdaterMessage('updateNotAvailable')
+})
 
+// 8. 下载进度，包含进度百分比、下载速度、已下载字节、总字节等
+autoUpdater.on('download-progress', (progressObj) => {
+  printUpdaterMessage('downloadProgress')
+  mainWindow.webContents.send('e-download-progress', progressObj)
+})
+// 10. 下载完成，是否立即执行更新安装操作
+autoUpdater.on('update-downloaded', () => {
+  mainWindow.webContents.send('update-downloaded')
+  // 12.立即更新安装
+  ipcMain.on('update-now', () => {
+    autoUpdater.quitAndInstall()
+  })
+})
+function printUpdaterMessage(arg: any) {
+  const message = {
+    error: '更新出错',
+    checking: '正在检查更新',
+    updateAvailable: '检测到新版本',
+    downloadProgress: '下载中',
+    updateNotAvailable: '无新版本'
+  }
+  mainWindow.webContents.send('print-updater-message', message[arg] ?? arg)
+}
 // 将 zlib.unzip 转换为 promisify(zlib.unzip)
 const unzip = promisify(zlibUnzip)
 let authToken = ''
@@ -48,7 +101,7 @@ function createWindow(): void {
       height: 60
     },
     width: is.dev ? 1800 : 1060,
-    height: 1060,
+    height: 1100,
     minWidth: 1060,
     minHeight: 580,
     show: false, // 窗口是否在创建时显示
@@ -163,7 +216,6 @@ app.on('window-all-closed', () => {
 ipcMain.on('message', (_event, message) => {
   console.log(message)
 })
-
 // 关闭
 ipcMain.on('quit', () => {
   app.quit()
@@ -564,8 +616,7 @@ function pb2json(this: any, pbData: any) {
             }
             break
           case 'WebcastRoomUserSeqMessage':
-            mainWindow.webContents.send('send-data-ws', simplifiedObj)
-
+            // 前三观众
             // console.log('MessageEvents.ROOMUSER', simplifiedObj)
             wsServer?.send(
               Buffer.from(
@@ -578,8 +629,8 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastChatMessage':
+            // 弹幕信息
             //console.log("MessageEvents.CHAT", simplifiedObj);
-            // console.log('3', simplifiedObj)
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
@@ -590,8 +641,8 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastMemberMessage':
+            // 进入直播间（来了）
             //console.log("MessageEvents.MEMBER", simplifiedObj);
-            // eslint-disable-next-line no-case-declarations
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
@@ -601,12 +652,12 @@ function pb2json(this: any, pbData: any) {
             )
             break
           case 'WebcastGiftMessage':
+            // 礼物
             // Add extended gift info if option enabled //TODO:待修复礼物问题
             /*  if (Array.isArray(this.#availableGifts) && simplifiedObj.giftId) {
                   simplifiedObj.extendedGiftInfo = this.#availableGifts.find((x) => x.id === simplifiedObj.giftId);
                 }*/
             //console.log("MessageEvents.GIFT", simplifiedObj);
-            // console.log('4', simplifiedObj)
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
@@ -618,17 +669,18 @@ function pb2json(this: any, pbData: any) {
           case 'WebcastSocialMessage':
             // console.log('MessageEvents.SOCIAL', simplifiedObj)
             if (simplifiedObj.displayType?.includes('follow')) {
+              // 关注
               //console.log("CustomEvents.FOLLOW", simplifiedObj);
-              // console.log('5', simplifiedObj)
-              // wsServer?.send(
-              //   Buffer.from(
-              //     rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-              //     'hex'
-              //   ),
-              //   { binary: true }
-              // )
+              wsServer?.send(
+                Buffer.from(
+                  rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
+                  'hex'
+                ),
+                { binary: true }
+              )
             }
             if (simplifiedObj.displayType?.includes('share')) {
+              // 分享
               // console.log('CustomEvents.SHARE', simplifiedObj)
               wsServer?.send(
                 Buffer.from(
@@ -640,6 +692,7 @@ function pb2json(this: any, pbData: any) {
             }
             break
           case 'WebcastLikeMessage':
+            // 点赞
             //console.log("MessageEvents.LIKE", simplifiedObj);
             // console.log('2', simplifiedObj)
             wsServer?.send(
@@ -652,6 +705,7 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastQuestionNewMessage':
+            // 未知
             // console.log('MessageEvents.QUESTIONNEW', simplifiedObj)
             wsServer?.send(
               Buffer.from(
@@ -663,6 +717,7 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastLinkMicBattle':
+            // 未知
             // console.log('MessageEvents.LINKMICBATTLE', simplifiedObj)
             wsServer?.send(
               Buffer.from(
@@ -674,7 +729,8 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastLinkMicArmies':
-            // console.log('MessageEvents.LINKMICARMIES', simplifiedObj)
+            // 未知
+            // mainWindow.webContents.send('send-data-ws', simplifiedObj)
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
@@ -685,7 +741,7 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastLiveIntroMessage':
-            // console.log('MessageEvents.LIVEINTRO', simplifiedObj)
+            // 未知
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
@@ -696,7 +752,7 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastEmoteChatMessage':
-            // console.log('MessageEvents.EMOTE', simplifiedObj)
+            // 未知
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
@@ -707,7 +763,7 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastEnvelopeMessage':
-            // console.log('MessageEvents.ENVELOPE', simplifiedObj)
+            // 未知
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
@@ -718,7 +774,7 @@ function pb2json(this: any, pbData: any) {
 
             break
           case 'WebcastSubNotifyMessage':
-            // console.log('MessageEvents.SUBSCRIBE', simplifiedObj)
+            // 未知
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
