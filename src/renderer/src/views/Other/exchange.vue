@@ -15,12 +15,12 @@
             @input="viewInfo"
           ></el-input>
         </el-form-item>
-        <el-form-item>
+        <!-- <el-form-item>
           <el-button type="primary" @click="onBuyGame">兑换</el-button>
-        </el-form-item>
-        <el-form-item>
+        </el-form-item> -->
+        <!-- <el-form-item>
           <el-button @click="clear">取消</el-button>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <div v-if="info">
         <el-alert
@@ -61,7 +61,10 @@
               ￥{{ info?.cuxiao_price ? info?.cuxiao_price : info?.price }}
             </div>
             <div class="btns">
-              <el-link
+              <el-button size="large" type="primary" @click="onBuyGame"
+                >兑换</el-button
+              >
+              <!-- <el-link
                 style="margin-left: 12px"
                 target="_bank"
                 :href="info?.doc_url"
@@ -76,7 +79,7 @@
                 :disabled="!info.kefu"
               >
                 客服
-              </el-button>
+              </el-button> -->
             </div>
           </div>
         </div>
@@ -96,10 +99,10 @@ async function viewInfo() {
   info.value = res.data.info
   console.log(info.value)
 }
-function clear() {
-  code.value = ''
-  info.value = null
-}
+// function clear() {
+//   code.value = ''
+//   info.value = null
+// }
 // 兑换游戏
 async function onBuyGame() {
   try {

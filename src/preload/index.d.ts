@@ -36,7 +36,6 @@ declare global {
       initGameStatus: (callback: () => void) => void
       sendToken: (token: string) => void
       // sendMsgToFloat: (message: string) => void
-      sendDataWs: (callback: (res: any) => void) => void
       checkUpdates: () => void
       printUpdaterMessage: (callback: (res: any) => void) => void
       updateAvailable: (callback: (res: any) => void) => void
@@ -45,6 +44,7 @@ declare global {
       updateDownloaded: (callback: () => void) => void
       updateNow: () => void
       updateError: (callback: (err: any) => void) => void
+      sendAnchorData: (callback: (res: any) => void) => void
     }
   }
 }

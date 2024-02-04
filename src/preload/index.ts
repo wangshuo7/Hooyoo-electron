@@ -108,11 +108,6 @@ const api = {
   sendToken: (token: string) => ipcRenderer.send('send-token', token),
   // sendMsgToFloat: (message: string) =>
   //   ipcRenderer.send('send-msg-float', message)
-  sendDataWs: (callback: (res: any) => void) => {
-    ipcRenderer.on('send-data-ws', (_event, res) => {
-      callback(res)
-    })
-  },
   // 更新
   checkUpdates: () => ipcRenderer.send('check-updates-first'),
   // 打印
@@ -142,6 +137,11 @@ const api = {
   updateError: (callback: (err: any) => void) => {
     ipcRenderer.on('update-error', (_event, err) => {
       callback(err)
+    })
+  },
+  sendAnchorData: (callback: (res: any) => void) => {
+    ipcRenderer.on('send-anchor-data', (_event, res) => {
+      callback(res)
     })
   }
 }

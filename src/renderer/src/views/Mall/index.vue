@@ -57,6 +57,7 @@
         class="list-item"
         @click="openDetail(item)"
       >
+        <!-- @click="openDetail(item)" -->
         <!-- v-if="hasPurchasedGame(item.game_id)" -->
         <el-tag
           v-if="gameStatus[item.game_id] !== 'nopurchased'"
@@ -444,12 +445,19 @@
       <el-button type="primary" @click="connectLive">确定</el-button>
     </template>
   </el-dialog>
+  <!-- <GameDetail
+    :id="gameId"
+    :page="mall"
+    :visible="gameDetailVisible"
+    @close="closeDetailDialog"
+  ></GameDetail> -->
 </template>
 
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { QuestionFilled } from '@element-plus/icons-vue'
 import { useTimestamp } from '@vueuse/core'
+// import GameDetail from '../Detail/index.vue'
 import Moment from 'moment'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
@@ -459,6 +467,16 @@ import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage, FormInstance } from 'element-plus'
 import { getGameUse } from '../../api/rc4'
 import { useStateStore } from '../../store/state'
+
+// const gameDetailVisible = ref<boolean>(false)
+// const gameId = ref<any>()
+// function openGameDetail(item: any) {
+//   gameId.value = item.game_id
+//   gameDetailVisible.value = true
+// }
+// function closeDetailDialog() {
+//   gameDetailVisible.value = false
+// }
 const timestamp = useTimestamp()
 const stateStore = useStateStore()
 const globalStore = useGlobalStore()
@@ -494,10 +512,6 @@ function computedDiamond() {
       100)
   return res
 }
-window.api.sendDataWs((res: any) => {
-  console.log('----------------------------')
-  console.log(res)
-})
 // 套餐
 const thePackage = ref<number>()
 const packages = computed(() => {
@@ -596,7 +610,6 @@ async function query() {
       }
       return
     })
-    // console.log('gameStatus', gameStatus.value)
     loading.value = false
   } catch (error) {
     console.error('Error fetching data: ', error)
@@ -631,9 +644,6 @@ async function openDetail(item: any) {
     window.api.checkGame(item.game_id, item.xiazai_url)
   }
 }
-// window.api.checkGameReply((id) => {
-//   hasPurchasedGame(id)
-// })
 // 更改安装路径后重置游戏状态
 window.api.initGameStatus(() => {
   gameStatus.value = {}
@@ -678,17 +688,20 @@ async function confirm() {
   const res: any = await buyGame({
     game_id: buyID.value,
     taocan_id: taocanID.value,
-    // tdays: form.value.tdays,
-    // tprice: form.value.tprice,
     code: form.value.code
   })
   if (res.code === 200) {
     ElMessage.success('购买成功')
     buyVisible.value = false
     secondVisible.value = false
+    detailVisible.value = false
+    query()
+    // openDetail(detail.value)
+    // 检测是否存在游戏
+    // window.api.checkGame(detail.value.game_id, detail.value.xiazai_url)
+    // console.log(gameStatus.value[detail.value.game_id])
     // updateMyGame()
     // gameStatus.value[buyID.value] = 'purchased'
-    query()
   }
 }
 // 以对象的形式保存下载进度 {id:progress, id1:progress1}
@@ -838,6 +851,11 @@ async function connectLive() {
 window.api.mainCloseLive(() => {
   is_start_live.value = false
   is_barrage.value = false
+})
+const anchorInfo = ref<any>()
+window.api.sendAnchorData((res) => {
+  anchorInfo.value = res
+  console.log(anchorInfo.value)
 })
 onMounted(async () => {
   query()

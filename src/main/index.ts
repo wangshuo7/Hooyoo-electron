@@ -123,26 +123,7 @@ function createWindow(): void {
     wsServer = socket
     console.log('Client connected')
     // 监听来自客户端的消息
-    socket.on('message', (message) => {
-      // console.log(`Received: ${message}`)
-      // console.log('bbbbbbbbbbbb', message)
-      mainWindow.webContents.send('send-data-ws', JSON.parse(message))
-      // // 向客户端发送消息
-      // const rc4Key = md5(`PojieSqj521${gameId}${connectKey}`) + authToken
-      // console.log(123, JSON.parse(message))
-      // const danmuJson = {
-      //   hello: 'world'
-      // }
-      // // console.log('ahhahaha', message.toString('utf-8'))
-      // const encrypt = rc4Encrypt(rc4Key, JSON.stringify(danmuJson))
-      // const bufferData: Buffer = Buffer.from(encrypt, 'hex')
-      // socket.send(bufferData, {
-      //   binary: true
-      // })
-      // socket.send(rc4Encrypt(rc4Key, JSON.stringify(message)), {
-      //   binary: true
-      // })
-    })
+    socket.on('message', () => {})
 
     // 监听连接关闭事件
     socket.on('close', () => {
@@ -191,7 +172,6 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
   app.on('browser-window-created', (_, window) => {
@@ -201,12 +181,10 @@ app.whenReady().then(() => {
   createWindow()
 
   app.on('activate', function () {
-    // 监听 activate 事件，在 macOS 上点击 dock 图标时重新创建窗口
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
-// 监听 window-all-closed 事件，在所有窗口关闭时退出应用程序
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
@@ -493,18 +471,60 @@ ipcMain.on('start-live', async (_event, url: string) => {
   liveRoom.webContents.debugger.on('detach', (_event: any, reason: any) => {
     console.log('Debugger detached due to: 123456', reason)
   })
-  liveRoom.webContents.debugger.on('message', (_event, method, params) => {
-    if (method === 'Network.webSocketFrameReceived') {
-      // console.log(event)
-      // 处理 WebSocket 数据接收事件
-      const payloadData = params.response.payloadData
-      // 在这里处理弹幕数据 payloadData
-      // console.log('WebSocket frame received: ', payloadData)
-      const buff = Buffer.from(payloadData, 'base64')
-      deserializeWebsocketMessage(buff)
+  liveRoom.webContents.debugger.on(
+    'message',
+    async (_event, method, params) => {
+      if (method === 'Network.webSocketFrameReceived') {
+        // console.log(event)
+        // 处理 WebSocket 数据接收事件
+        const payloadData = params.response.payloadData
+        // 在这里处理弹幕数据 payloadData
+        // console.log('WebSocket frame received: ', payloadData)
+        const buff = Buffer.from(payloadData, 'base64')
+        deserializeWebsocketMessage(buff)
+      }
+      if (method === 'Network.responseReceived') {
+        if (
+          params.response.url.includes('tiktok.com/webcast/room/enter/?aid=')
+        ) {
+          try {
+            const response = await liveRoom.webContents.debugger.sendCommand(
+              'Network.getResponseBody',
+              {
+                requestId: params.requestId
+              }
+            )
+            const info = JSON.parse(response.body).data.user
+            info['from'] = 'tiktok'
+            mainWindow.webContents.send('send-anchor-data', info)
+            // console.log('tiktok', info)
+          } catch (error) {
+            console.error('tiktok error:', error)
+          }
+        }
+        if (
+          params.response.url.includes(
+            'live.douyin.com/webcast/room/web/enter/?aid='
+          )
+        ) {
+          try {
+            const response = await liveRoom.webContents.debugger.sendCommand(
+              'Network.getResponseBody',
+              {
+                requestId: params.requestId
+              }
+            )
+            const info = JSON.parse(response.body).data.user
+            info['from'] = 'douyin'
+            mainWindow.webContents.send('send-anchor-data', info)
+            // console.log('douyin', info)
+          } catch (error) {
+            console.error('douyin error:', error)
+          }
+        }
+      }
     }
-  })
-
+  )
   liveRoom.webContents.debugger.sendCommand('Network.enable')
 })
 ipcMain.on('send-token', (_event, token: string) => {
@@ -730,7 +750,6 @@ function pb2json(this: any, pbData: any) {
             break
           case 'WebcastLinkMicArmies':
             // 未知
-            // mainWindow.webContents.send('send-data-ws', simplifiedObj)
             wsServer?.send(
               Buffer.from(
                 rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),

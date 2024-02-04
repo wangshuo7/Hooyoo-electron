@@ -17,11 +17,6 @@ const routes = [
         path: '/library',
         name: 'Library',
         component: () => import('../views/Library/index.vue')
-      },
-      {
-        path: '/detail/:id',
-        name: 'Detail',
-        component: () => import('../views/Detail/index.vue')
       }
     ]
   },

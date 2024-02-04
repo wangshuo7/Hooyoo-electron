@@ -447,10 +447,8 @@ async function query() {
       cate_id: queryForm.value.cate
     })
     tableData.value = response?.data?.list.filter((item: any) => {
-      console.log(item)
       return item.end_time !== null && item.end_time >= timestamp.value / 1000
     })
-    console.log(tableData.value)
     totalItems.value = response?.data?.count
     loading.value = false
     tableData.value.map((item) => {
