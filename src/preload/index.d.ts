@@ -45,6 +45,10 @@ declare global {
       updateNow: () => void
       updateError: (callback: (err: any) => void) => void
       sendAnchorData: (callback: (res: any) => void) => void
+      getGift: (callback: (res: any) => void) => void
+      getAnchorFail: (callback: (res: any) => void) => void
+      rendererCloseGame: () => void
+      showNotification: (title: string, body: string) => void
     }
   }
 }

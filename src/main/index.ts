@@ -1,4 +1,11 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import {
+  app,
+  shell,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  Notification
+} from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -119,7 +126,7 @@ function createWindow(): void {
   })
   const server = new WebSocket.Server({ port: 8080 })
   server.on('connection', (socket: any) => {
-    console.log('socket', socket)
+    // console.log('socket', socket)
     wsServer = socket
     console.log('Client connected')
     // 监听来自客户端的消息
@@ -190,7 +197,16 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
-
+// 显示通知
+ipcMain.on('show-notification', function (_event, head, message) {
+  const notification = new Notification({
+    title: head,
+    body: message,
+    silent: true,
+    icon: join(__dirname, '../../public/huyou.ico')
+  })
+  notification.show()
+})
 ipcMain.on('message', (_event, message) => {
   console.log(message)
 })
@@ -294,6 +310,7 @@ ipcMain.on('start-game', (event, id, name, key) => {
   gameId = id + ''
   connectKey = key
   rc4Key = md5(`PojieSqj521${gameId}${connectKey}`) + authToken
+  console.log(123, rc4Key)
 
   // const gameFolderPath = `D:\\hooyoo\\game${id}`
   const gameFolderPath = path.join(
@@ -308,6 +325,7 @@ ipcMain.on('start-game', (event, id, name, key) => {
     const filePath = path.join(gameFolderPath, exeFiles[0])
     // 启动文件
     // spawn(filePath + ' ' + authToken, [], { detached: true, stdio: 'ignore' })
+    console.log(authToken)
     gameProcess = spawn(filePath, ['-token=' + authToken], {
       detached: true,
       stdio: 'ignore'
@@ -391,6 +409,10 @@ ipcMain.on('setting-default', (event) => {
     installPath: path.join(app.getPath('documents'), 'huyouyun_game_install')
   }
   event.reply('setting-default-reply', paths)
+})
+ipcMain.on('renderer-close-game', () => {
+  gameProcess.kill()
+  mainWindow.webContents.send('main-close-game')
 })
 // 打开浮层
 // ipcMain.on('start-float', (_event, res) => {
@@ -500,11 +522,13 @@ ipcMain.on('start-live', async (_event, url: string) => {
             // console.log('tiktok', info)
           } catch (error) {
             console.error('tiktok error:', error)
+            mainWindow.webContents.send('get-anchor-fail')
+            closeLiveRoom()
           }
         }
         if (
           params.response.url.includes(
-            'live.douyin.com/webcast/room/web/enter/?aid='
+            'douyin.com/webcast/room/web/enter/?aid='
           )
         ) {
           try {
@@ -520,6 +544,8 @@ ipcMain.on('start-live', async (_event, url: string) => {
             // console.log('douyin', info)
           } catch (error) {
             console.error('douyin error:', error)
+            mainWindow.webContents.send('get-anchor-fail')
+            closeLiveRoom()
           }
         }
       }
@@ -610,6 +636,141 @@ function deserializeMessage(protoName, binaryMessage) {
   }
   return webcastData
 }
+function sendWsData(data: any) {
+  wsServer?.send(Buffer.from(rc4Encrypt(rc4Key, JSON.stringify(data)), 'hex'), {
+    binary: true
+  })
+}
+// 进房
+function initMemberData(obj: any) {
+  const send_data = {
+    type: 'live_member',
+    data: [
+      {
+        msg_id: obj.msgId,
+        nickname: obj.nickname,
+        sec_openid: obj.userId,
+        avatar_url: obj.profilePictureUrl,
+        timestamp: new Date().getTime()
+      }
+    ]
+  }
+  sendWsData(send_data)
+}
+// 礼物
+function initGiftData(obj: any) {
+  const giftCount = computedGiftNum(obj)
+  const send_data = {
+    type: 'live_gift',
+    data: [
+      {
+        msg_id: obj.msgId,
+        sec_openid: obj.userId,
+        avatar_url: obj.profilePictureUrl,
+        nickname: obj.nickname,
+        timestamp: new Date().getTime(),
+        sec_gift_id: obj.giftId,
+        gift_num: giftCount, // 数量 -> 需要计算
+        gift_value: obj.diamondCount * giftCount
+      }
+    ]
+  }
+  if (giftCount) {
+    sendWsData(send_data)
+    mainWindow.webContents.send('get-gift', send_data.data[0])
+  }
+}
+// 分享
+function initShareData(obj: any) {
+  const send_data = {
+    type: 'live_share',
+    data: [
+      {
+        msg_id: obj.msgId,
+        sec_openid: obj.userId,
+        avatar_url: obj.profilePictureUrl,
+        nickname: obj.nickname,
+        timestamp: new Date().getTime()
+      }
+    ]
+  }
+  sendWsData(send_data)
+}
+// 弹幕
+function initChatData(obj: any) {
+  const send_data = {
+    type: 'live_comment',
+    data: [
+      {
+        msg_id: obj.msgId,
+        sec_openid: obj.userId,
+        content: obj.comment,
+        avatar_url: obj.profilePictureUrl,
+        nickname: obj.nickname,
+        timestamp: new Date().getTime()
+      }
+    ]
+  }
+  sendWsData(send_data)
+}
+// 关注
+function initFollowData(obj: any) {
+  const send_data = {
+    type: 'live_follow',
+    data: [
+      {
+        msg_id: obj.msgId,
+        sec_openid: obj.userId,
+        avatar_url: obj.profilePictureUrl,
+        nickname: obj.nickname,
+        timestamp: new Date().getTime()
+      }
+    ]
+  }
+  sendWsData(send_data)
+}
+// 点赞
+function initLikeData(obj: any) {
+  const send_data = {
+    type: 'live_like',
+    data: [
+      {
+        msg_id: obj.msgId,
+        nickname: obj.nickname,
+        sec_openid: obj.userId,
+        avatar_url: obj.profilePictureUrl,
+        like_num: obj.likeCount,
+        timestamp: new Date().getTime()
+      }
+    ]
+  }
+  sendWsData(send_data)
+}
+
+// 计算礼物数量
+const filterGift = {}
+function computedGiftNum(data: any) {
+  const tempId = `${data.userId}_${data.giftId}_${data.groupId}`
+
+  // 第一种情况--高价礼物单点
+  if (!data.groupId) {
+    return data.repeatCount
+  }
+  if (filterGift[tempId]) {
+    // 之前记录的比这次大，返回0
+    if (data.repeatCount <= filterGift[tempId]) {
+      filterGift[tempId] = data.repeatCount
+      return 0
+    }
+    // 之前记录过，求差
+    const count = data.repeatCount - filterGift[tempId]
+    filterGift[tempId] = data.repeatCount
+    return count
+  }
+  // 之前没记录过，取值
+  filterGift[tempId] = data.repeatCount
+  return data.repeatCount
+}
 function pb2json(this: any, pbData: any) {
   try {
     const webcastResponse = deserializeMessage('WebcastResponse', pbData)
@@ -617,12 +778,6 @@ function pb2json(this: any, pbData: any) {
       .filter((x) => x.decodedData)
       .forEach((message) => {
         const simplifiedObj = simplifyObject(message.decodedData)
-        // console.log(
-        //   'ControlEvents.DECODEDDATA',
-        //   message.type,
-        //   simplifiedObj,
-        //   message.binary
-        // )
         let action
         switch (message.type) {
           case 'WebcastControlMessage':
@@ -637,171 +792,55 @@ function pb2json(this: any, pbData: any) {
             break
           case 'WebcastRoomUserSeqMessage':
             // 前三观众
-            // console.log('MessageEvents.ROOMUSER', simplifiedObj)
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-            wsServer.send(simplifiedObj)
-
             break
           case 'WebcastChatMessage':
             // 弹幕信息
-            //console.log("MessageEvents.CHAT", simplifiedObj);
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
+            initChatData(simplifiedObj)
             break
           case 'WebcastMemberMessage':
             // 进入直播间（来了）
-            //console.log("MessageEvents.MEMBER", simplifiedObj);
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
+            initMemberData(simplifiedObj)
             break
           case 'WebcastGiftMessage':
             // 礼物
-            // Add extended gift info if option enabled //TODO:待修复礼物问题
-            /*  if (Array.isArray(this.#availableGifts) && simplifiedObj.giftId) {
-                  simplifiedObj.extendedGiftInfo = this.#availableGifts.find((x) => x.id === simplifiedObj.giftId);
-                }*/
-            //console.log("MessageEvents.GIFT", simplifiedObj);
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
+            initGiftData(simplifiedObj)
             break
           case 'WebcastSocialMessage':
-            // console.log('MessageEvents.SOCIAL', simplifiedObj)
             if (simplifiedObj.displayType?.includes('follow')) {
               // 关注
-              //console.log("CustomEvents.FOLLOW", simplifiedObj);
-              wsServer?.send(
-                Buffer.from(
-                  rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                  'hex'
-                ),
-                { binary: true }
-              )
+              initFollowData(simplifiedObj)
             }
             if (simplifiedObj.displayType?.includes('share')) {
               // 分享
-              // console.log('CustomEvents.SHARE', simplifiedObj)
-              wsServer?.send(
-                Buffer.from(
-                  rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                  'hex'
-                ),
-                { binary: true }
-              )
+              initShareData(simplifiedObj)
             }
             break
           case 'WebcastLikeMessage':
             // 点赞
-            //console.log("MessageEvents.LIKE", simplifiedObj);
-            // console.log('2', simplifiedObj)
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
+            initLikeData(simplifiedObj)
             break
           case 'WebcastQuestionNewMessage':
             // 未知
             // console.log('MessageEvents.QUESTIONNEW', simplifiedObj)
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
             break
           case 'WebcastLinkMicBattle':
             // 未知
             // console.log('MessageEvents.LINKMICBATTLE', simplifiedObj)
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
             break
           case 'WebcastLinkMicArmies':
             // 未知
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
             break
           case 'WebcastLiveIntroMessage':
             // 未知
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
             break
           case 'WebcastEmoteChatMessage':
             // 未知
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
             break
           case 'WebcastEnvelopeMessage':
             // 未知
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
             break
           case 'WebcastSubNotifyMessage':
             // 未知
-            wsServer?.send(
-              Buffer.from(
-                rc4Encrypt(rc4Key, JSON.stringify(simplifiedObj)),
-                'hex'
-              ),
-              { binary: true }
-            )
-
             break
         }
       })

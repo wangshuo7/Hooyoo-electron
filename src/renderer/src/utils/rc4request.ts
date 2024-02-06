@@ -4,7 +4,7 @@ import { rc4Encrypt, rc4Decrypt } from './rc4'
 
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'http://test-box-server.huyouyun.cn'
+    ? 'http://box-server.huyouyun.cn'
     : '/api'
 const request = axios.create({
   baseURL: baseURL,

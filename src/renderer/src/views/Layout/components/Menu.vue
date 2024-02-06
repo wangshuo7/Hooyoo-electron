@@ -1,7 +1,11 @@
 <template>
   <div class="menu-box">
     <div class="logo">
-      <el-image class="logo-img" src="./system/hooyoo.gif"></el-image>
+      <el-image
+        class="logo-img"
+        src="./system/hooyoo.gif"
+        @click="onOpenBetaTool"
+      ></el-image>
     </div>
     <div style="height: 85%; display: flex; flex-direction: column">
       <el-menu text-color="#757575" default-active="mall" router>
@@ -31,17 +35,39 @@
       </el-menu>
     </div>
   </div>
+  <BetaTool :visible="toolVisible" @close="closeBetaTool"></BetaTool>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { PriceTag, Menu } from '@element-plus/icons-vue'
 import { useStateStore } from '../../../store/state'
+import BetaTool from '../../Other/betaTool.vue'
 // const message = ref<string>()
 const stateStore = useStateStore()
 const res: any = computed(() => {
   return stateStore.state
 })
+const toolVisible = ref<boolean>(false)
+const clickCount = ref<number>(0)
+const clickTimer = ref<any>(null)
+function onOpenBetaTool() {
+  clickCount.value++
+  if (clickCount.value === 1) {
+    clickTimer.value = setTimeout(() => {
+      if (clickCount.value >= 10) {
+        toolVisible.value = true
+        clickCount.value = 0
+      } else {
+        clickCount.value = 0
+      }
+      clearTimeout(clickTimer.value)
+    }, 2000)
+  }
+}
+function closeBetaTool() {
+  toolVisible.value = false
+}
 </script>
 
 <style lang="less" scoped>

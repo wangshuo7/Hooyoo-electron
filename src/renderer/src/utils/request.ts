@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 import router from '../router'
 const baseURL =
   process.env.NODE_ENV === 'production'
-    ? 'http://test-box-server.huyouyun.cn'
+    ? 'http://box-server.huyouyun.cn'
     : '/api'
 const request = axios.create({
   baseURL: baseURL,

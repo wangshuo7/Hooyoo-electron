@@ -45,7 +45,7 @@
           :style="{
             backgroundImage:
               'linear-gradient(to right, rgba(51, 54, 58, 1) 0%, rgba(51, 54, 58, 1) 40%, rgba(51, 54, 58, 0) 70%), url(' +
-              (info?.icon.includes('http') ? info?.icon : '/danzhu-card.jpg') +
+              (info?.icon?.includes('http') ? info?.icon : '/danzhu-card.jpg') +
               ')',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'right'

@@ -143,7 +143,22 @@ const api = {
     ipcRenderer.on('send-anchor-data', (_event, res) => {
       callback(res)
     })
-  }
+  },
+  getGift: (callback: (res: any) => void) => {
+    ipcRenderer.on('get-gift', (_event, res) => {
+      callback(res)
+    })
+  },
+  getAnchorFail: (callback: (res: any) => void) => {
+    ipcRenderer.on('get-anchor-fail', (_event, res) => {
+      callback(res)
+    })
+  },
+  // 渲染进程关闭游戏
+  rendererCloseGame: () => ipcRenderer.send('renderer-close-game'),
+  // 显示通知
+  showNotification: (title: string, body: string) =>
+    ipcRenderer.send('show-notification', title, body)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
