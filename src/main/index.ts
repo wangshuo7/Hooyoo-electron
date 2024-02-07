@@ -22,7 +22,7 @@ import protobufjs from 'protobufjs'
 import { promisify } from 'node:util'
 import { unzip as zlibUnzip } from 'node:zlib'
 import md5 from 'md5'
-import { rc4Encrypt } from './public/rc4'
+import { rc4Encrypt2 } from './public/rc4'
 /**
  * electron自动更新
  */
@@ -544,8 +544,8 @@ ipcMain.on('start-live', async (_event, url: string) => {
             // console.log('douyin', info)
           } catch (error) {
             console.error('douyin error:', error)
-            mainWindow.webContents.send('get-anchor-fail')
-            closeLiveRoom()
+            // mainWindow.webContents.send('get-anchor-fail')
+            // closeLiveRoom()
           }
         }
       }
@@ -637,7 +637,11 @@ function deserializeMessage(protoName, binaryMessage) {
   return webcastData
 }
 function sendWsData(data: any) {
-  wsServer?.send(Buffer.from(rc4Encrypt(rc4Key, JSON.stringify(data)), 'hex'), {
+  const msgData = JSON.stringify(data)
+  const encoder = new TextEncoder()
+  const utf8Encoded = encoder.encode(msgData)
+  const utf8Buffer = Buffer.from(utf8Encoded)
+  wsServer?.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
     binary: true
   })
 }

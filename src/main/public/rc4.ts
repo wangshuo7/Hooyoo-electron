@@ -37,6 +37,45 @@ export function rc4Encrypt(key: any, plaintext: any) {
   return result
 }
 
+export function rc4Encrypt2(key: any, plaintext: Buffer) {
+  const S: number[] = []
+  let result = ''
+
+  // 初始化S盒
+  for (let i = 0; i < 256; i++) {
+    S[i] = i
+  }
+
+  let j = 0
+  for (let i = 0; i < 256; i++) {
+    j = (j + S[i] + key.charCodeAt(i % key.length)) % 256
+    // 交换S[i]和S[j]
+    const temp = S[i]
+    S[i] = S[j]
+    S[j] = temp
+  }
+
+  let i = 0
+  j = 0
+  for (let k = 0; k < plaintext.length; k++) {
+    i = (i + 1) % 256
+    j = (j + S[i]) % 256
+    // 交换S[i]和S[j]
+    const temp = S[i]
+    S[i] = S[j]
+    S[j] = temp
+    // 生成密钥流
+    const t = (S[i] + S[j]) % 256
+    const keyStream = S[t]
+    // 对明文进行异或操作
+    const ciphertext = plaintext[k] ^ keyStream
+    // 将密文转换为十六进制字符串
+    result += ('0' + ciphertext.toString(16)).slice(-2)
+  }
+
+  return result
+}
+
 export function rc4Decrypt(key, ciphertext) {
   let plaintext = ''
   const encryptedBytes: any = []
