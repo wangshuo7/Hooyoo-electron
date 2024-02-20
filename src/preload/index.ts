@@ -158,7 +158,11 @@ const api = {
   rendererCloseGame: () => ipcRenderer.send('renderer-close-game'),
   // 显示通知
   showNotification: (title: string, body: string) =>
-    ipcRenderer.send('show-notification', title, body)
+    ipcRenderer.send('show-notification', title, body),
+  // 测试工具
+  sendBetaWs: (data: any) => ipcRenderer.send('send-beta-ws', data),
+  // 游戏语言
+  sendLanguage: (id: any) => ipcRenderer.send('send-language', id)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

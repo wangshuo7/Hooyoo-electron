@@ -92,6 +92,7 @@ let liveRoom: any
 let connectKey: string
 let gameId: string
 let rc4Key: string
+let lan: any = 13
 // let floatWin: any
 // function reverseStr(str: string) {
 //   return str?.split('')?.reverse()?.join('')
@@ -326,7 +327,7 @@ ipcMain.on('start-game', (event, id, name, key) => {
     // 启动文件
     // spawn(filePath + ' ' + authToken, [], { detached: true, stdio: 'ignore' })
     console.log(authToken)
-    gameProcess = spawn(filePath, ['-token=' + authToken], {
+    gameProcess = spawn(filePath, ['-token=' + authToken, '-lan=' + lan], {
       detached: true,
       stdio: 'ignore'
     })
@@ -480,6 +481,24 @@ ipcMain.on('start-live', async (_event, url: string) => {
     return { action: 'deny' }
   })
   liveRoom.loadURL(url)
+  setInterval(() => {
+    if (liveRoom) {
+      const { width, height } = liveRoom.getBounds()
+      const newX = Math.floor(Math.random() * width)
+      const newY = Math.floor(Math.random() * height)
+      liveRoom.webContents.sendInputEvent({
+        type: 'mouseMove',
+        x: newX,
+        y: newY
+      })
+    } else {
+      console.log('窗口不存在')
+      // 以下代码放到直播间窗口console中运行以测试模拟鼠标位置
+      // window.addEventListener('mousemove', (event) => {
+      //   console.log('Mouse moved:', event.clientX, event.clientY)
+      // })
+    }
+  }, 10 * 1000)
   liveRoom.on('closed', () => {
     liveRoom = null
     mainWindow.webContents.send('main-close-live')
@@ -555,6 +574,13 @@ ipcMain.on('start-live', async (_event, url: string) => {
 })
 ipcMain.on('send-token', (_event, token: string) => {
   authToken = token
+})
+ipcMain.on('send-language', (_event, id: any) => {
+  lan = id
+})
+// 模拟测试
+ipcMain.on('send-beta-ws', (_event, data: any) => {
+  sendWsData(data)
 })
 const tiktokSchemaPath = path.resolve(
   __dirname,
@@ -636,6 +662,7 @@ function deserializeMessage(protoName, binaryMessage) {
   }
   return webcastData
 }
+// 发给客户端
 function sendWsData(data: any) {
   const msgData = JSON.stringify(data)
   const encoder = new TextEncoder()

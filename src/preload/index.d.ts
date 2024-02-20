@@ -49,6 +49,8 @@ declare global {
       getAnchorFail: (callback: (res: any) => void) => void
       rendererCloseGame: () => void
       showNotification: (title: string, body: string) => void
+      sendBetaWs: (data: any) => void
+      sendLanguage: (id: any) => void
     }
   }
 }

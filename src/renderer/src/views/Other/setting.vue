@@ -1,32 +1,42 @@
 <template>
   <el-dialog
     v-model="settingVisible"
-    title="游戏设置"
+    :title="$t('setting.title')"
     width="500px"
     @close="closeSettingDialog"
   >
     <el-form :form="form" inline class="setting-form">
-      <div class="form-item-title">下载地址</div>
+      <div class="form-item-title">{{ $t('setting.download_url') }}</div>
       <el-form-item prop="download">
         <el-input v-model.trim="form.download"></el-input>
       </el-form-item>
       <el-form-item
-        ><el-button @click="changeDownloadPath">修改</el-button></el-form-item
+        ><el-button @click="changeDownloadPath">{{
+          $t('buttons.modify')
+        }}</el-button></el-form-item
       >
-      <div class="form-item-title">安装地址</div>
+      <div class="form-item-title">{{ $t('setting.install_url') }}</div>
       <el-form-item prop="install">
         <el-input v-model.trim="form.install"></el-input>
       </el-form-item>
       <el-form-item
-        ><el-button @click="changeInstallPath">修改</el-button></el-form-item
+        ><el-button @click="changeInstallPath">{{
+          $t('buttons.modify')
+        }}</el-button></el-form-item
       >
       <div>
-        <el-button type="info" @click="onDefault">恢复默认</el-button>
+        <el-button type="info" @click="onDefault">{{
+          $t('setting.default')
+        }}</el-button>
       </div>
     </el-form>
     <template #footer>
-      <el-button @click="settingVisible = false">取消</el-button>
-      <el-button type="primary" @click="onChangePaths">确定</el-button>
+      <el-button @click="settingVisible = false">{{
+        $t('buttons.cancel')
+      }}</el-button>
+      <el-button type="primary" @click="onChangePaths">{{
+        $t('buttons.confirm')
+      }}</el-button>
     </template>
   </el-dialog>
 </template>

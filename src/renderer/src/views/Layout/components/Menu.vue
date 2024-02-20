@@ -55,7 +55,7 @@ function onOpenBetaTool() {
   clickCount.value++
   if (clickCount.value === 1) {
     clickTimer.value = setTimeout(() => {
-      if (clickCount.value >= 10) {
+      if (clickCount.value >= 5) {
         toolVisible.value = true
         clickCount.value = 0
       } else {

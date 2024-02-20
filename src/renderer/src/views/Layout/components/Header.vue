@@ -9,6 +9,21 @@
         <el-button class="info-item" @click="onExchange">
           <span style="font-size: 16px">兑</span>
         </el-button>
+        <el-dropdown trigger="click" class="info-item" @command="changeLang">
+          <el-button style="width: 40px; height: 40px; border-radius: 50%">
+            <i class="iconfont" style="font-size: 24px">&#xe6ed;</i>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu class="dropdown">
+              <el-dropdown-item
+                v-for="item in lang"
+                :key="item.id"
+                :command="item"
+                >{{ item.title }}</el-dropdown-item
+              >
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
         <el-button class="info-item" @click="onSetting">
           <el-icon><Setting /></el-icon>
         </el-button>
@@ -60,8 +75,6 @@
 </template>
 
 <script lang="ts" setup>
-// import { shell } from 'electron'
-// import axios from 'axios'
 import { ref, onMounted } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
@@ -69,21 +82,11 @@ import TheExchange from '../../Other/exchange.vue'
 import TheRecharge from '../../Other/recharge.vue'
 import TheSetting from '../../Other/setting.vue'
 import { getPersonalInfo } from '../../../api/wallet'
+import { useGlobalStore } from '../../../store/globalStore'
+import i18n from '../../../utils/i18n'
+const globalStore = useGlobalStore()
+const lang = ref<any>()
 const token = localStorage.getItem('authtoken')
-// const onGoBackground = () => {
-//   if (token) {
-//     axios
-//       .post('http://localhost:5174/', { token: token })
-//       .then(() => {
-//         shell.openExternal('http://localhost:5174/')
-//       })
-//       .catch((err) => {
-//         console.log('登录失败', err)
-//       })
-//   } else {
-//     console.log('authtoken 为空')
-//   }
-// }
 const info = ref<any>()
 const router = useRouter()
 const settingVisible = ref<boolean>(false)
@@ -123,8 +126,27 @@ function closeRechargeDialog() {
 function onOpenManage() {
   window.open(`http://localhost:5174/?auth=${token}`, '_blank')
 }
-onMounted(() => {
+function changeLang(item: any) {
+  if (item.id == 13) {
+    localStorage.setItem('lang', 'en')
+    i18n.global.locale = 'en'
+    window.api.sendLanguage(13)
+  }
+  if (item.id == 39) {
+    localStorage.setItem('lang', 'tw')
+    i18n.global.locale = 'tw'
+    window.api.sendLanguage(39)
+  }
+  if (item.id == 11) {
+    localStorage.setItem('lang', 'zh')
+    i18n.global.locale = 'zh'
+    window.api.sendLanguage(11)
+  }
+}
+onMounted(async () => {
   viewPersonal()
+  await globalStore.setLanguage()
+  lang.value = globalStore.language
 })
 </script>
 
