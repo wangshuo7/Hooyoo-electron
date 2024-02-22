@@ -37,9 +37,9 @@ export function rc4Encrypt(key: any, plaintext: any) {
   return result
 }
 
-export function rc4Decrypt(key, ciphertext) {
+export function rc4Decrypt(key: any, ciphertext: any) {
   let plaintext = ''
-  const encryptedBytes: any = []
+  const encryptedBytes: any[] = []
 
   // 将十六进制字符串转换为字节数组
   for (let i = 0; i < ciphertext.length; i += 2) {
@@ -80,4 +80,12 @@ export function rc4Decrypt(key, ciphertext) {
   }
 
   return plaintext
+}
+
+export function utf8Encode(str) {
+  return unescape(encodeURIComponent(str))
+}
+
+export function utf8Decode(str) {
+  return decodeURIComponent(escape(str))
 }

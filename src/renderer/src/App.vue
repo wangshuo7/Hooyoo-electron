@@ -7,6 +7,7 @@
 <script setup lang="ts">
 import TitleBar from './components/TitleBar.vue'
 import Update from './components/Update.vue'
+
 window.api.sendToken(localStorage.getItem('authtoken') || '')
 </script>
 

@@ -525,6 +525,7 @@ async function launchGame() {
       console.log('salts', salts)
       window.api.startGame(
         buyID.value,
+        localStorage.getItem('lang'),
         detail.value.v_main,
         detail.value.miyaostr
       )

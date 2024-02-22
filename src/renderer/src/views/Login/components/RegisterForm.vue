@@ -2,53 +2,53 @@
   <el-form
     ref="ruleFormRef"
     :model="form"
-    label-width="70px"
+    label-width="78px"
     :rules="rules"
     :hide-required-asterisk="true"
   >
-    <el-form-item label="用户名" prop="username">
+    <el-form-item :label="$t('login.user')" prop="username">
       <el-input
         v-model="form.username"
         class="input"
-        placeholder="请输入用户名"
+        :placeholder="$t('login.user_placeholder')"
       ></el-input>
     </el-form-item>
-    <el-form-item label="密码" prop="password">
+    <el-form-item :label="$t('login.password')" prop="password">
       <el-input
         v-model="form.password"
         class="input"
         type="password"
-        placeholder="请输入密码"
+        :placeholder="$t('login.password_placeholder')"
       ></el-input>
     </el-form-item>
     <transition name="slide-fade">
       <div v-if="more_info" class="more-info-container">
-        <el-form-item label="手机号" prop="mobile">
+        <el-form-item :label="$t('login.phone')" prop="mobile">
           <el-input
             v-model="form.mobile"
             class="input"
-            placeholder="请输入手机号"
+            :placeholder="$t('login.phone_placeholder')"
           ></el-input>
         </el-form-item>
-        <el-form-item label="昵称" prop="nickname">
+        <el-form-item :label="$t('login.nickname')" prop="nickname">
           <el-input
             v-model="form.nickname"
             class="input"
-            placeholder="请输入昵称"
+            :placeholder="$t('login.nickname_placeholder')"
           ></el-input>
         </el-form-item>
-        <el-form-item label="公会ID" prop="union_id">
+        <el-form-item :label="$t('login.guildId')" prop="union_id">
           <el-input
             v-model="form.union_id"
             class="input"
-            placeholder="请输入工会ID"
+            :placeholder="$t('login.guildId_placeholder')"
           ></el-input>
         </el-form-item>
-        <el-form-item label="提现账户" prop="tx_card">
+        <el-form-item :label="$t('login.withdraw')" prop="tx_card">
           <el-input
             v-model="form.tx_card"
             class="input"
-            placeholder="请输入提现账户"
+            :placeholder="$t('login.withdraw_placeholder')"
           ></el-input>
         </el-form-item>
       </div>
@@ -63,7 +63,7 @@
       "
     >
       <el-link type="primary" :underline="false" @click="onGetMoreInfo">{{
-        !more_info ? '填写更多信息' : '收起'
+        !more_info ? $t('login.more') : $t('login.receive')
       }}</el-link>
     </div>
     <el-form-item>
@@ -77,13 +77,13 @@
         "
       >
         <el-link type="primary" :underline="false" @click="switchLogin">
-          返回登录
+          {{ $t('login.back') }}
         </el-link>
       </div>
     </el-form-item>
-    <el-button class="register-btn" type="primary" @click="onSubmit()"
-      >注册</el-button
-    >
+    <el-button class="register-btn" type="primary" @click="onSubmit()">{{
+      $t('login.register')
+    }}</el-button>
   </el-form>
 </template>
 

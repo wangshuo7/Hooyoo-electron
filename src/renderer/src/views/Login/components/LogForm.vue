@@ -3,7 +3,7 @@
     <el-form-item prop="username" class="form-item">
       <div class="input-box">
         <p class="label-user" :class="{ active: user_active }">
-          {{ loginType ? '账号' : '手机号' }}
+          {{ loginType ? $t('login.account') : $t('login.phone') }}
         </p>
         <el-input
           v-model="form.username"
@@ -22,7 +22,7 @@
               style="width: 100px; position: relative; bottom: 10px"
               @click="onGetCode"
             >
-              {{ countdown > 0 ? `${countdown}` : '获取验证码' }}
+              {{ countdown > 0 ? `${countdown}` : $t('login.get_code') }}
             </el-button>
           </template>
         </el-input>
@@ -31,7 +31,7 @@
     <el-form-item prop="password" class="form-item" style="margin-bottom: 10px">
       <div class="input-box">
         <p class="label-password" :class="{ active: psd_active }">
-          {{ loginType ? '密码' : '验证码' }}
+          {{ loginType ? $t('login.password') : $t('login.code') }}
         </p>
         <el-input
           v-model="form.password"
@@ -54,10 +54,13 @@
           justify-content: space-between;
         "
       >
-        <el-checkbox v-model="remember" label="记住密码"></el-checkbox>
-        <el-link type="primary" :underline="false" @click="switchRegister"
-          >注册账号</el-link
-        >
+        <el-checkbox
+          v-model="remember"
+          :label="$t('login.remember')"
+        ></el-checkbox>
+        <el-link type="primary" :underline="false" @click="switchRegister">{{
+          $t('login.register_account')
+        }}</el-link>
       </div>
     </el-form-item>
     <el-form-item>
@@ -66,10 +69,10 @@
         color="rgb(40, 138, 232)"
         type="primary"
         @click="onSubmit"
-        >登录</el-button
+        >{{ $t('login.login') }}</el-button
       >
     </el-form-item>
-    <el-divider> 其他操作 </el-divider>
+    <el-divider> {{ $t('login.orther') }} </el-divider>
     <div
       style="display: flex; align-items: center; justify-content: space-around"
     >
@@ -78,14 +81,14 @@
         color="rgb(40, 138, 232)"
         @click="switchLoginType"
       >
-        {{ loginType ? '验证码登录' : '密码登录' }}
+        {{ loginType ? $t('login.codelog') : $t('login.psdlog') }}
       </el-button>
       <el-button
         class="change-btn"
         color="rgb(40, 138, 232)"
         @click="switchForget"
       >
-        忘记密码
+        {{ $t('login.forget') }}
       </el-button>
     </div>
   </el-form>
@@ -358,7 +361,7 @@ function switchForget() {
   color: #bebebe;
 }
 .change-btn {
-  width: 100px;
+  width: 120px;
   border: 0;
   border-radius: 15px;
 }

@@ -6,8 +6,12 @@
     :rules="rules"
     :hide-required-asterisk="true"
   >
-    <el-form-item label="手机号" prop="mobile">
-      <el-input v-model="form.mobile" class="input" placeholder="请输入手机号">
+    <el-form-item :label="$t('login.phone')" prop="mobile">
+      <el-input
+        v-model="form.mobile"
+        class="input"
+        :placeholder="$t('login.phone_placeholder')"
+      >
         <template #suffix>
           <el-button
             color="#303030"
@@ -15,24 +19,24 @@
             :disabled="countdown > 0"
             @click="onGetCode"
           >
-            {{ countdown > 0 ? `${countdown}` : '获取验证码' }}
+            {{ countdown > 0 ? `${countdown}` : $t('login.get_code') }}
           </el-button>
         </template>
       </el-input>
     </el-form-item>
-    <el-form-item label="验证码" prop="telcode">
+    <el-form-item :label="$t('login.code')" prop="telcode">
       <el-input
         v-model="form.telcode"
         class="input"
-        placeholder="请输入验证码"
+        :placeholder="$t('login.code_placeholder')"
       ></el-input>
     </el-form-item>
-    <el-form-item label="密码" prop="password">
+    <el-form-item :label="$t('login.password')" prop="password">
       <el-input
         v-model="form.password"
         class="input"
         :show-password="true"
-        placeholder="请输入密码"
+        :placeholder="$t('login.password_placeholder')"
       ></el-input>
     </el-form-item>
     <el-form-item>
@@ -42,13 +46,13 @@
           type="primary"
           :underline="false"
           @click="switchLogin"
-          >返回登陆</el-link
+          >{{ $t('login.back') }}</el-link
         >
       </div>
     </el-form-item>
-    <el-button class="register-btn" type="primary" @click="onSubmit()"
-      >确定</el-button
-    >
+    <el-button class="register-btn" type="primary" @click="onSubmit()">{{
+      $t('buttons.confirm')
+    }}</el-button>
   </el-form>
 </template>
 

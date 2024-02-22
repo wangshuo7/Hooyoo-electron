@@ -4,36 +4,36 @@
   <!-- <TheSwiperCards></TheSwiperCards> -->
 
   <div class="container">
-    <el-form :form="queryForm" inline label-width="70">
-      <el-form-item label="名称">
+    <el-form :form="queryForm" inline>
+      <el-form-item :label="$t('search.name')">
         <el-input
           v-model="queryForm.title"
           style="width: 200px"
-          placeholder="请输入游戏名称"
+          :placeholder="$t('search.name_placeholder')"
           clearable
         ></el-input>
       </el-form-item>
-      <el-form-item label="排序">
+      <el-form-item :label="$t('search.sort')">
         <el-select
           v-model="queryForm.sort"
           style="width: 200px"
           clearable
-          placeholder="请选择排序方式"
+          :placeholder="$t('search.sort_placeholder')"
         >
-          <el-option value="2" label="创建时间正序" />
-          <el-option value="1" label="创建时间倒序" />
-          <el-option value="4" label="热度正序" />
-          <el-option value="3" label="热度倒序" />
-          <el-option value="6" label="banner正序" />
-          <el-option value="5" label="banner倒序" />
+          <el-option value="2" :label="$t('search.sort_ctime_up')" />
+          <el-option value="1" :label="$t('search.sort_ctime_down')" />
+          <el-option value="4" :label="$t('search.sort_hot_up')" />
+          <el-option value="3" :label="$t('search.sort_hot_down')" />
+          <el-option value="6" :label="$t('search.sort_banner_up')" />
+          <el-option value="5" :label="$t('search.sort_banner_down')" />
         </el-select>
       </el-form-item>
-      <el-form-item label="分类">
+      <el-form-item :label="$t('search.cate')">
         <el-select
           v-model="queryForm.cate"
           style="width: 200px"
           clearable
-          placeholder="请选择游戏分类"
+          :placeholder="$t('search.cate_placeholder')"
         >
           <el-option
             v-for="item in categories"
@@ -44,10 +44,10 @@
         </el-select>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" style="margin-left: 32px" @click="query"
-          >搜索</el-button
-        >
-        <el-button @click="viewAll">显示全部</el-button>
+        <el-button type="primary" @click="query">{{
+          $t('buttons.search')
+        }}</el-button>
+        <el-button @click="viewAll">{{ $t('buttons.all') }}</el-button>
       </el-form-item>
     </el-form>
     <div v-loading="loading" class="list">
@@ -73,8 +73,8 @@
           >{{
             gameStatus[item.game_id] !== 'nopurchased'
               ? gameStatus[item.game_id] === 'expire'
-                ? '已过期'
-                : '已购买'
+                ? $t('detail.expired')
+                : $t('detail.purchased')
               : ''
           }}</el-tag
         >
@@ -90,16 +90,21 @@
         <div class="item-price">
           <div v-if="item.price">
             <span class="price_1">{{ item.price }}</span>
-            <span class="price_2">{{ item.cuxiao_price }}云豆</span>
+            <span class="price_2">{{ item.cuxiao_price }}</span>
           </div>
-          <div v-else>免费</div>
+          <div v-else>{{ $t('detail.free') }}</div>
         </div>
-        <div class="item-percent">抽成比例：{{ item.divide }}%</div>
+        <div class="item-percent">
+          {{ $t('detail.divide') }}：{{ item.divide }}%
+        </div>
       </div>
     </div>
     <div class="pagination">
       <div class="pagination-view">
-        显示{{ totalItems }}个结果中的{{ counts }}
+        <span>{{ $t('system.display') }}</span>
+        <span>&nbsp;{{ totalItems }}&nbsp;</span>
+        <span>{{ $t('system.result') }}&nbsp;</span>
+        <span>{{ counts }}</span>
       </div>
       <el-pagination
         :page-size="pageSize"
@@ -109,7 +114,7 @@
         @current-change="handleCurrentChange"
       />
       <div>
-        <span style="color: #9a9a9a">网格视图：</span>
+        <span style="color: #9a9a9a">{{ $t('system.viwe') }}：</span>
         <el-dropdown
           trigger="click"
           placement="top"
@@ -117,7 +122,9 @@
           @command="selsecSize"
         >
           <div class="dropdown">
-            <span>{{ pageSize == totalItems ? '全部' : pageSize }}</span>
+            <span>{{
+              pageSize == totalItems ? $t('system.all') : pageSize
+            }}</span>
             <el-icon class="el-icon--right" :class="{ active: is_drop }">
               <ArrowDown />
             </el-icon>
@@ -127,7 +134,9 @@
               <el-dropdown-item :command="12">12</el-dropdown-item>
               <el-dropdown-item :command="24">24</el-dropdown-item>
               <el-dropdown-item :command="36">36</el-dropdown-item>
-              <el-dropdown-item :command="totalItems">全部</el-dropdown-item>
+              <el-dropdown-item :command="totalItems">{{
+                $t('system.all')
+              }}</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -166,7 +175,7 @@
               size="large"
               type="success"
               @click="onbuyGame"
-              >购买游戏</el-button
+              >{{ $t('buttons.buy') }}</el-button
             >
             <el-button
               v-else-if="
@@ -182,8 +191,8 @@
               @click="downLoadGame"
               >{{
                 gameStatus[detail.game_id] == 'purchased'
-                  ? '下载游戏'
-                  : '更新游戏'
+                  ? $t('buttons.download')
+                  : $t('buttons.update')
               }}</el-button
             >
             <el-button
@@ -192,7 +201,7 @@
               type="danger"
               :disabled="is_start"
               @click="launchGame"
-              >启动游戏</el-button
+              >{{ $t('buttons.start') }}</el-button
             >
             <el-button
               v-if="gameStatus[detail.game_id] == 'unzipped'"
@@ -200,7 +209,7 @@
               type="success"
               :disabled="is_start_live"
               @click="onDanmuBtn"
-              >连接弹幕</el-button
+              >{{ $t('buttons.connect') }}</el-button
             >
             <div
               v-else-if="gameStatus[detail.game_id] == 'downloading'"
@@ -213,7 +222,7 @@
                 margin: 0 12px 0 0;
               "
             >
-              下载中
+              {{ $t('buttons.downloading') }}
               {{
                 isNaN(progress_test[detail.game_id])
                   ? '0%'
@@ -231,7 +240,8 @@
                 margin: 0 12px 0 0;
               "
             >
-              解压中
+              <!-- 解压中 -->
+              {{ $t('buttons.installing') }}
             </div>
             <el-link
               style="margin-left: 12px"
@@ -239,21 +249,23 @@
               :href="detail.doc_url"
               :underline="false"
             >
-              <el-button size="large" type="primary">使用指南</el-button>
+              <el-button size="large" type="primary">{{
+                $t('buttons.document')
+              }}</el-button>
             </el-link>
             <el-button
               style="margin-left: 12px"
               type="warning"
               size="large"
               :disabled="!detail.kefu"
-              >客服</el-button
+              >{{ $t('buttons.service') }}</el-button
             >
           </div>
         </div>
       </div>
       <!-- 套餐 -->
       <div class="detail-info package">
-        <h3>套餐</h3>
+        <h3>{{ $t('detail.package') }}</h3>
         <div class="package-content">
           <div
             v-for="(item, index) in detail.taocan"
@@ -263,11 +275,11 @@
             <div class="card-left">{{ JSON.parse(item.content).ttitle }}</div>
             <div class="card-right">
               <div>
-                <span>天数：</span
+                <span>{{ $t('detail.days') }}：</span
                 ><span>{{ JSON.parse(item.content).tdays }}</span>
               </div>
               <div>
-                <span>价格：</span
+                <span>{{ $t('detail.price') }}：</span
                 ><span>{{ JSON.parse(item.content).tprice }}</span>
               </div>
             </div>
@@ -276,20 +288,26 @@
       </div>
       <!-- 详细信息 -->
       <div class="detail-info">
-        <h3>详细信息</h3>
+        <h3>{{ $t('detail.info') }}</h3>
         <div class="info-item">
           <div class="the-info-item">
-            <span>开播限制:</span
+            <span>{{ $t('detail.limit') }}:</span
             ><span>{{
-              detail.min_price != '0.00' ? detail.min_price : '无'
+              detail.min_price != '0.00'
+                ? detail.min_price
+                : $t('system.without')
             }}</span>
-            <span v-if="detail.min_price != '0.00'" style="margin-left: 5px"
-              >钻石</span
-            >
+            <span v-if="detail.min_price != '0.00'" style="margin-left: 5px">{{
+              $t('system.diamond')
+            }}</span>
           </div>
           <div class="the-info-item">
-            <span>分成比例:</span>
-            <span>每收到 100 礼物扣除 {{ computedDiamond() }} 钻石 </span>
+            <span>{{ $t('detail.divide') }}:</span>
+            <span
+              >{{ $t('detail.divide_every') }} 100
+              {{ $t('detail.divide_gifts') }} {{ computedDiamond() }}
+              {{ $t('detail.divide_diamonds') }}
+            </span>
             <!-- <span>{{ detail.divide }}</span> -->
             <el-tooltip
               effect="dark"
@@ -298,7 +316,7 @@
               placement="right"
             >
               <template #content>
-                分成比例：
+                {{ $t('detail.divide') }}：
                 <span v-if="detail.jisuan_bl.bl_gonghui !== 0">
                   {{ detail.jisuan_bl.bl_gonghui }}%
                 </span>
@@ -325,10 +343,11 @@
             </el-tooltip>
           </div>
           <div class="the-info-item">
-            <span>更新时间:</span><span>{{ formatTime(detail.uptime) }}</span>
+            <span>{{ $t('detail.utime') }}:</span
+            ><span>{{ formatTime(detail.uptime) }}</span>
           </div>
           <div class="the-info-item">
-            <span>玩法分区:</span>
+            <span>{{ $t('detail.partition') }}:</span>
             <el-tag
               v-for="(item, index) in getCategoriesTitle(detail.game_cate_id)"
               :key="index"
@@ -337,7 +356,7 @@
             >
           </div>
           <div class="the-info-item">
-            <span>支持语言:</span>
+            <span>{{ $t('detail.lang') }}:</span>
             <el-tag
               v-for="(item, index) in getLanguageTitle(detail.game_lang_id)"
               :key="index"
@@ -346,7 +365,7 @@
             >
           </div>
           <div class="the-info-item">
-            <span>支持平台:</span>
+            <span>{{ $t('detail.platform') }}:</span>
             <el-tag
               v-for="(item, index) in getPlatformsTitle(detail.game_pingtai_id)"
               :key="index"
@@ -355,7 +374,7 @@
             >
           </div>
           <div class="the-info-item">
-            <span>电脑配置:</span>
+            <span>{{ $t('detail.config') }}:</span>
             <span>{{ detail.xitong_yaoqiu }}</span>
           </div>
         </div>
@@ -366,23 +385,19 @@
   <el-dialog v-model="buyVisible" width="30%">
     <template #header>
       <div>
-        <span style="margin-right: 20px">购买</span>
+        <span style="margin-right: 20px">{{ $t('detail.buy') }}</span>
         <el-tag size="large">{{ game_name }}</el-tag>
       </div>
     </template>
     <div>
-      <el-form ref="ruleFormRef" :model="form" label-width="100px">
-        <el-form-item label="套餐">
-          <el-select
-            v-model="thePackage"
-            placeholder="请选择套餐"
-            @change="selectPackage"
-          >
+      <el-form ref="ruleFormRef" :model="form" label-width="150px">
+        <el-form-item :label="$t('detail.package')">
+          <el-select v-model="thePackage" @change="selectPackage">
             <!-- <el-option label="自定义" :value="0"></el-option> -->
             <el-option
               v-for="item in packages"
               :key="item.id"
-              :label="`${item.ttitle}(${item.tdays}天，${item.tprice}云豆)`"
+              :label="`${item.ttitle}(${item.tdays}${$t('system.day')}，${item.tprice}${$t('system.price')})`"
               :value="item.id"
             ></el-option>
           </el-select>
@@ -403,46 +418,65 @@
             placeholder="请输入价格"
           ></el-input>
         </el-form-item> -->
-        <el-form-item label="折扣券或免费激活码">
+        <el-form-item :label="$t('detail.code')">
           <el-input
             v-model="form.code"
-            placeholder="请输入折扣券或免费激活码"
+            :placeholder="$t('detail.code_placeholder')"
           ></el-input>
         </el-form-item>
       </el-form>
     </div>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="buyVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmOrder">确定</el-button>
+        <el-button @click="buyVisible = false">{{
+          $t('buttons.cancel')
+        }}</el-button>
+        <el-button type="primary" @click="confirmOrder">{{
+          $t('buttons.confirm')
+        }}</el-button>
       </span>
     </template>
   </el-dialog>
   <!-- 确认购买 -->
-  <el-dialog v-model="secondVisible" title="确认订单" width="30%">
+  <el-dialog v-model="secondVisible" :title="$t('detail.order')" width="30%">
     <div>
-      <span>天数：</span><span>{{ jisuanData?.days }}</span>
+      <span>{{ $t('detail.days') }}：{{ jisuanData?.days }}</span>
     </div>
     <div>
-      <span>价格：</span><span>{{ jisuanData?.price }}</span>
+      <span>{{ $t('detail.price') }}：{{ jisuanData?.price }}</span>
     </div>
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="secondVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirm">购买</el-button>
+        <el-button @click="secondVisible = false">{{
+          $t('buttons.cancel')
+        }}</el-button>
+        <el-button type="primary" @click="confirm">{{
+          $t('detail.buy')
+        }}</el-button>
       </span>
     </template>
   </el-dialog>
   <!-- 连接弹幕 -->
-  <el-dialog v-model="barrageVisible" title="连接弹幕" width="30%">
+  <el-dialog
+    v-model="barrageVisible"
+    :title="$t('buttons.connect')"
+    width="30%"
+  >
     <el-form>
-      <el-form-item label="直播间">
-        <el-input v-model="liveRoom"></el-input>
+      <el-form-item :label="$t('detail.live')">
+        <el-input
+          v-model="liveRoom"
+          :placeholder="$t('detail.live_placeholder')"
+        ></el-input>
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button @click="barrageVisible = false">取消</el-button>
-      <el-button type="primary" @click="connectLive">确定</el-button>
+      <el-button @click="barrageVisible = false">{{
+        $t('buttons.cancel')
+      }}</el-button>
+      <el-button type="primary" @click="connectLive">{{
+        $t('buttons.confirm')
+      }}</el-button>
     </template>
   </el-dialog>
   <!-- <GameDetail
@@ -473,6 +507,8 @@ import {
   startLiving
 } from '../../api/rc4'
 import { useStateStore } from '../../store/state'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 // const gameDetailVisible = ref<boolean>(false)
 // const gameId = ref<any>()
@@ -536,7 +572,7 @@ const getLanguageTitle = (game_lang_id: any) => {
   const ids = game_lang_id.split(',')?.map(Number)
   const titles = ids?.map((id: any) => {
     const language = languages.value.find((item: any) => item.id === id)
-    return language ? language.title : '未知'
+    return language ? language.title : t('detail.unknown')
   })
   return titles
 }
@@ -544,7 +580,7 @@ const getCategoriesTitle = (game_cate_id: any) => {
   const ids = game_cate_id.split(',')?.map(Number)
   const titles = ids?.map((id: any) => {
     const category = categories.value.find((item: any) => item.id === id)
-    return category ? category.title : '未知'
+    return category ? category.title : t('detail.unknown')
   })
   return titles
 }
@@ -552,7 +588,7 @@ const getPlatformsTitle = (game_pingtai_id: any) => {
   const ids = game_pingtai_id.split(',')?.map(Number)
   const titles = ids?.map((id: any) => {
     const platform = platforms.value.find((item: any) => item.id === id)
-    return platform ? platform.title : '未知'
+    return platform ? platform.title : t('detail.unknown')
   })
   return titles
 }
@@ -587,6 +623,7 @@ function selsecSize(value: number) {
 }
 // 显示全部
 function viewAll() {
+  console.log(t('lang'))
   queryForm.value = {}
   query()
 }
@@ -698,7 +735,7 @@ async function confirm() {
     code: form.value.code
   })
   if (res.code === 200) {
-    ElMessage.success('购买成功')
+    ElMessage.success(t('detail.message_success_buy'))
     buyVisible.value = false
     secondVisible.value = false
     detailVisible.value = false
@@ -763,6 +800,7 @@ async function launchGame() {
       console.log('salts', salts)
       window.api.startGame(
         buyID.value,
+        localStorage.getItem('lang'),
         detail.value.v_main,
         detail.value.miyaostr
       )
@@ -807,7 +845,7 @@ async function launchGame() {
 const gift_data = ref<any[]>([])
 window.api.getGift((res) => {
   gift_data.value.push(res)
-  console.log(gift_data.value)
+  // console.log(gift_data.value)
 })
 const deductInterval = ref<any>(null)
 watchEffect(() => {
@@ -833,7 +871,7 @@ watchEffect(() => {
         theEndLiving()
         res.data.is_do == 'no'
         if (res.data.jifen - kouDiamond * 3 <= 0) {
-          window.api.showNotification('提醒', '钻石不足，剩余钻石约可再扣3次')
+          // window.api.showNotification('提醒', '钻石不足，剩余钻石约可再扣3次')
         }
         window.api.rendererCloseGame()
         clearInterval(deductInterval.value)
@@ -849,9 +887,9 @@ window.api.mainCloseGame(() => {
   salts = []
   stateStore.setState({ success: '', message: '' })
 })
-window.api.getAnchorFail(() => {
-  window.api.showNotification('提示', '获取主播信息失败，请重新打开直播间')
-})
+// window.api.getAnchorFail(() => {
+//   window.api.showNotification('提示', '获取主播信息失败，请重新打开直播间')
+// })
 async function sendStartLivingRequest() {
   try {
     const send_data = {
@@ -861,6 +899,7 @@ async function sendStartLivingRequest() {
       game_id: detail.value.game_id
     }
     const res: any = await startLiving(send_data)
+    console.log('send', send_data)
     console.log('开播res', res)
     if (res.code === 200) {
       kaibo.value = true
@@ -892,7 +931,7 @@ async function theEndLiving() {
   const res: any = await endLiving({ zhibo_id: live_id.value })
   if (res.code === 200) {
     clearInterval(pingInterval.value)
-    window.api.showNotification('下播', '下播成功')
+    // window.api.showNotification('下播', '下播成功')
   }
 }
 watch(
@@ -974,7 +1013,6 @@ onMounted(async () => {
   categories.value = globalStore.category
   platforms.value = globalStore.platform
   ratio.value = globalStore.ratio
-  console.log(ratio.value)
 })
 // 格式化时间
 function formatTime(time: any) {
@@ -1206,7 +1244,7 @@ function formatTime(time: any) {
         display: flex;
         align-items: center;
         .el-button {
-          width: 100px;
+          width: 120px;
         }
       }
     }

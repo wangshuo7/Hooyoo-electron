@@ -32,6 +32,9 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, _from, next) => {
+  if (!localStorage.getItem('authtoken')) {
+    localStorage.setItem('authtoken', '')
+  }
   const res: any = await isLogin()
   if (to.path === '/login') {
     if (res.code === 200) {

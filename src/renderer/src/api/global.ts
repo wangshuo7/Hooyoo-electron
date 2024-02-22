@@ -16,3 +16,7 @@ export const getPlatform = (data: any) => {
 export const getConfig = () => {
   return request.post('/commpublic/param/getconf')
 }
+// 贴牌信息
+export const getGuildOem = (data: any) => {
+  return request.post('/commpublic/param/tiepai', data)
+}

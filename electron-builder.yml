@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: 互游云
+productName: 互游盒子
 directories:
   buildResources: build
 electronDownload:

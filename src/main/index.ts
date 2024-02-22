@@ -92,7 +92,7 @@ let liveRoom: any
 let connectKey: string
 let gameId: string
 let rc4Key: string
-let lan: any = 13
+let lan: any
 // let floatWin: any
 // function reverseStr(str: string) {
 //   return str?.split('')?.reverse()?.join('')
@@ -108,8 +108,8 @@ function createWindow(): void {
       symbolColor: '121212',
       height: 60
     },
-    width: is.dev ? 1800 : 1060,
-    height: 1100,
+    width: is.dev ? 1800 : 1600,
+    height: 1000,
     minWidth: 1060,
     minHeight: 580,
     show: false, // 窗口是否在创建时显示
@@ -307,8 +307,9 @@ ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
 })
 let gameProcess: any
 // 启动项目
-ipcMain.on('start-game', (event, id, name, key) => {
+ipcMain.on('start-game', (event, id, lang, name, key) => {
   gameId = id + ''
+  lan = lang == 'zh' ? '11' : lang == 'en' ? '13' : '39'
   connectKey = key
   rc4Key = md5(`PojieSqj521${gameId}${connectKey}`) + authToken
   console.log(123, rc4Key)
@@ -377,13 +378,13 @@ ipcMain.on('get-paths', (event) => {
   if (!store.get('downloadPath')) {
     store.set(
       'downloadPath',
-      path.join(app.getPath('documents'), 'huyouyun_game_download')
+      path.join(__dirname, '../../../..', 'huyouyun_game_download')
     )
   }
   if (!store.get('installPath')) {
     store.set(
       'installPath',
-      path.join(app.getPath('documents'), 'huyouyun_game_install')
+      path.join(__dirname, '../../../..', 'huyouyun_game_install')
     )
   }
   const paths = {
@@ -406,8 +407,8 @@ ipcMain.on('setting-default', (event) => {
   //   installPath: path.join(app.getPath('documents'), 'huyouyun_game_install')
   // })
   const paths = {
-    downloadPath: path.join(app.getPath('documents'), 'huyouyun_game_download'),
-    installPath: path.join(app.getPath('documents'), 'huyouyun_game_install')
+    downloadPath: path.join(__dirname, '../../../..', 'huyouyun_game_download'),
+    installPath: path.join(__dirname, '../../../..', 'huyouyun_game_install')
   }
   event.reply('setting-default-reply', paths)
 })
@@ -481,7 +482,7 @@ ipcMain.on('start-live', async (_event, url: string) => {
     return { action: 'deny' }
   })
   liveRoom.loadURL(url)
-  setInterval(() => {
+  const mouseID = setInterval(() => {
     if (liveRoom) {
       const { width, height } = liveRoom.getBounds()
       const newX = Math.floor(Math.random() * width)
@@ -492,7 +493,7 @@ ipcMain.on('start-live', async (_event, url: string) => {
         y: newY
       })
     } else {
-      console.log('窗口不存在')
+      // console.log('窗口不存在')
       // 以下代码放到直播间窗口console中运行以测试模拟鼠标位置
       // window.addEventListener('mousemove', (event) => {
       //   console.log('Mouse moved:', event.clientX, event.clientY)
@@ -502,6 +503,7 @@ ipcMain.on('start-live', async (_event, url: string) => {
   liveRoom.on('closed', () => {
     liveRoom = null
     mainWindow.webContents.send('main-close-live')
+    clearInterval(mouseID)
     // closeWebsocketClient()
   })
   try {
@@ -542,7 +544,7 @@ ipcMain.on('start-live', async (_event, url: string) => {
           } catch (error) {
             console.error('tiktok error:', error)
             mainWindow.webContents.send('get-anchor-fail')
-            closeLiveRoom()
+            // closeLiveRoom()
           }
         }
         if (
@@ -574,9 +576,6 @@ ipcMain.on('start-live', async (_event, url: string) => {
 })
 ipcMain.on('send-token', (_event, token: string) => {
   authToken = token
-})
-ipcMain.on('send-language', (_event, id: any) => {
-  lan = id
 })
 // 模拟测试
 ipcMain.on('send-beta-ws', (_event, data: any) => {
@@ -671,6 +670,7 @@ function sendWsData(data: any) {
   wsServer?.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
     binary: true
   })
+  // console.log(msgData)
 }
 // 进房
 function initMemberData(obj: any) {
@@ -681,7 +681,7 @@ function initMemberData(obj: any) {
         msg_id: obj.msgId,
         nickname: obj.nickname,
         sec_openid: obj.userId,
-        avatar_url: obj.profilePictureUrl,
+        avatar_url: obj.userDetails.profilePictureUrls[2],
         timestamp: new Date().getTime()
       }
     ]
@@ -697,7 +697,7 @@ function initGiftData(obj: any) {
       {
         msg_id: obj.msgId,
         sec_openid: obj.userId,
-        avatar_url: obj.profilePictureUrl,
+        avatar_url: obj.userDetails.profilePictureUrls[2],
         nickname: obj.nickname,
         timestamp: new Date().getTime(),
         sec_gift_id: obj.giftId,
@@ -719,7 +719,7 @@ function initShareData(obj: any) {
       {
         msg_id: obj.msgId,
         sec_openid: obj.userId,
-        avatar_url: obj.profilePictureUrl,
+        avatar_url: obj.userDetails.profilePictureUrls[2],
         nickname: obj.nickname,
         timestamp: new Date().getTime()
       }
@@ -736,12 +736,13 @@ function initChatData(obj: any) {
         msg_id: obj.msgId,
         sec_openid: obj.userId,
         content: obj.comment,
-        avatar_url: obj.profilePictureUrl,
+        avatar_url: obj.userDetails.profilePictureUrls[2],
         nickname: obj.nickname,
         timestamp: new Date().getTime()
       }
     ]
   }
+  // console.log(obj)
   sendWsData(send_data)
 }
 // 关注
@@ -752,7 +753,7 @@ function initFollowData(obj: any) {
       {
         msg_id: obj.msgId,
         sec_openid: obj.userId,
-        avatar_url: obj.profilePictureUrl,
+        avatar_url: obj.userDetails.profilePictureUrls[2],
         nickname: obj.nickname,
         timestamp: new Date().getTime()
       }
@@ -769,7 +770,7 @@ function initLikeData(obj: any) {
         msg_id: obj.msgId,
         nickname: obj.nickname,
         sec_openid: obj.userId,
-        avatar_url: obj.profilePictureUrl,
+        avatar_url: obj.userDetails.profilePictureUrls[2],
         like_num: obj.likeCount,
         timestamp: new Date().getTime()
       }

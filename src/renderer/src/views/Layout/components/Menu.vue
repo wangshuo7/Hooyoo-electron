@@ -3,7 +3,7 @@
     <div class="logo">
       <el-image
         class="logo-img"
-        src="./system/hooyoo.gif"
+        :src="logo ? logo : './system/hooyoo.gif'"
         @click="onOpenBetaTool"
       ></el-image>
     </div>
@@ -11,12 +11,12 @@
       <el-menu text-color="#757575" default-active="mall" router>
         <el-menu-item index="mall">
           <el-icon><PriceTag /></el-icon>
-          <template #title>商城</template>
+          <template #title>{{ $t('menu.mall') }}</template>
         </el-menu-item>
-        <el-menu-item index="library">
+        <!-- <el-menu-item index="library">
           <el-icon><Menu /></el-icon>
-          <template #title>库</template>
-        </el-menu-item>
+          <template #title>{{ $t('menu.library') }}</template>
+        </el-menu-item> -->
       </el-menu>
       <el-menu
         v-if="res.message"
@@ -39,10 +39,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
-import { PriceTag, Menu } from '@element-plus/icons-vue'
+import { ref, computed, onMounted } from 'vue'
+// import { PriceTag, Menu } from '@element-plus/icons-vue'
+import { PriceTag } from '@element-plus/icons-vue'
 import { useStateStore } from '../../../store/state'
 import BetaTool from '../../Other/betaTool.vue'
+import { getGuildOem } from '../../../api/global'
+import { getPersonalInfo } from '../../../api/wallet'
 // const message = ref<string>()
 const stateStore = useStateStore()
 const res: any = computed(() => {
@@ -51,6 +54,7 @@ const res: any = computed(() => {
 const toolVisible = ref<boolean>(false)
 const clickCount = ref<number>(0)
 const clickTimer = ref<any>(null)
+const logo = ref<any>()
 function onOpenBetaTool() {
   clickCount.value++
   if (clickCount.value === 1) {
@@ -68,6 +72,17 @@ function onOpenBetaTool() {
 function closeBetaTool() {
   toolVisible.value = false
 }
+
+async function viewPersonal() {
+  const res = await getPersonalInfo()
+  // guild.value = res.data.one.gonghui_id
+  const result = await getGuildOem({ id: res.data.one.gonghui_id })
+  console.log(result)
+  logo.value = result.data.list[0].tiepai_icon
+}
+onMounted(() => {
+  viewPersonal()
+})
 </script>
 
 <style lang="less" scoped>

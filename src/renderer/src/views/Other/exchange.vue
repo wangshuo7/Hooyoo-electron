@@ -1,26 +1,20 @@
 <template>
   <el-dialog
     v-model="dialogVisible"
-    title="兑换游戏"
+    :title="$t('exchange.title')"
     width="1000px"
     @close="closeExchangeDialog"
   >
     <div style="height: 400px">
       <el-form inline>
-        <el-form-item label="兑换码">
+        <el-form-item :label="$t('exchange.code')">
           <el-input
             v-model.trim="code"
-            style="width: 220px"
-            placeholder="请输入兑换码"
+            style="width: 240px"
+            :placeholder="$t('exchange.code_placeholder')"
             @input="viewInfo"
           ></el-input>
         </el-form-item>
-        <!-- <el-form-item>
-          <el-button type="primary" @click="onBuyGame">兑换</el-button>
-        </el-form-item> -->
-        <!-- <el-form-item>
-          <el-button @click="clear">取消</el-button>
-        </el-form-item> -->
       </el-form>
       <div v-if="info">
         <el-alert
@@ -32,10 +26,15 @@
           <template #default>
             <div style="font-size: 14px; position: relative; bottom: 2px">
               <span style="margin-right: 20px">
-                {{ info.youhuiquan.is_use == 1 ? '未使用' : '已使用' }}
+                {{
+                  info.youhuiquan.is_use == 1
+                    ? $t('exchange.unused')
+                    : $t('exchange.used')
+                }}
               </span>
               <span v-if="info.youhuiquan.is_use == 1">
-                可用时长{{ info.youhuiquan.days }}天
+                {{ $t('exchange.time') }}{{ info.youhuiquan.days
+                }}{{ $t('exchange.day') }}
               </span>
             </div>
           </template>
@@ -61,25 +60,9 @@
               ￥{{ info?.cuxiao_price ? info?.cuxiao_price : info?.price }}
             </div>
             <div class="btns">
-              <el-button size="large" type="primary" @click="onBuyGame"
-                >兑换</el-button
-              >
-              <!-- <el-link
-                style="margin-left: 12px"
-                target="_bank"
-                :href="info?.doc_url"
-                :underline="false"
-              >
-                <el-button size="large" type="primary">使用指南</el-button>
-              </el-link>
-              <el-button
-                style="margin-left: 12px"
-                type="success"
-                size="large"
-                :disabled="!info.kefu"
-              >
-                客服
-              </el-button> -->
+              <el-button size="large" type="primary" @click="onBuyGame">{{
+                $t('buttons.exchange')
+              }}</el-button>
             </div>
           </div>
         </div>
@@ -92,6 +75,8 @@
 import { ref, watch } from 'vue'
 import { buyGame, exchangeGame } from '../../api/game'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const code = ref<any>()
 const info = ref<any>()
 async function viewInfo() {
@@ -99,10 +84,6 @@ async function viewInfo() {
   info.value = res.data.info
   console.log(info.value)
 }
-// function clear() {
-//   code.value = ''
-//   info.value = null
-// }
 // 兑换游戏
 async function onBuyGame() {
   try {
@@ -121,7 +102,7 @@ async function onBuyGame() {
     }
     const res: any = await buyGame(send_data)
     if (res.code === 200) {
-      ElMessage.success('游戏兑换成功')
+      ElMessage.success(t('exchange.success_message'))
     }
   } catch (error) {
     console.log('catch error', error)

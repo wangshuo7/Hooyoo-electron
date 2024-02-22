@@ -11,7 +11,8 @@
         </el-button>
         <el-dropdown trigger="click" class="info-item" @command="changeLang">
           <el-button style="width: 40px; height: 40px; border-radius: 50%">
-            <i class="iconfont" style="font-size: 24px">&#xe6ed;</i>
+            <!-- <i class="iconfont" style="font-size: 24px">&#xe6ed;</i> -->
+            <span style="font-size: 16px">中</span>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu class="dropdown">
@@ -46,14 +47,19 @@
               <div style="padding: 5px 16px; font-size: 15px">
                 {{ info?.nickname }}
               </div>
+              <el-dropdown-item>
+                <span>{{ $t('system.price') }}:</span>
+                <span>{{ info?.current_price }}</span>
+              </el-dropdown-item>
               <el-dropdown-item
-                >余额：{{ info?.current_price }} 云豆</el-dropdown-item
-              >
-              <el-dropdown-item>积分：{{ info?.jifen }} 积分</el-dropdown-item>
-              <el-dropdown-item @click="onRecharge">充值</el-dropdown-item>
-              <el-dropdown-item divided @click="logOut"
-                >退出登录</el-dropdown-item
-              >
+                >{{ $t('system.diamond') }}：{{ info?.jifen }}
+              </el-dropdown-item>
+              <el-dropdown-item @click="onRecharge">{{
+                $t('system.recharge')
+              }}</el-dropdown-item>
+              <el-dropdown-item divided @click="logOut">{{
+                $t('system.logout')
+              }}</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -100,6 +106,7 @@ function logOut() {
 async function viewPersonal() {
   const res = await getPersonalInfo()
   info.value = res.data.one
+  globalStore.setGuildId(info.value.gonghui_id)
 }
 function getInfo(visible: boolean) {
   visible && viewPersonal()
@@ -124,22 +131,23 @@ function closeRechargeDialog() {
   rechargeVisible.value = false
 }
 function onOpenManage() {
-  window.open(`http://localhost:5174/?auth=${token}`, '_blank')
+  window.open(`http://box.huyouyun.cn/?auth=${token}`, '_blank')
 }
+
 function changeLang(item: any) {
   if (item.id == 13) {
     localStorage.setItem('lang', 'en')
-    i18n.global.locale = 'en'
+    i18n.global.locale.value = 'en'
     window.api.sendLanguage(13)
   }
   if (item.id == 39) {
     localStorage.setItem('lang', 'tw')
-    i18n.global.locale = 'tw'
+    i18n.global.locale.value = 'tw'
     window.api.sendLanguage(39)
   }
   if (item.id == 11) {
     localStorage.setItem('lang', 'zh')
-    i18n.global.locale = 'zh'
+    i18n.global.locale.value = 'zh'
     window.api.sendLanguage(11)
   }
 }
@@ -147,6 +155,10 @@ onMounted(async () => {
   viewPersonal()
   await globalStore.setLanguage()
   lang.value = globalStore.language
+  if (!localStorage.getItem('lang')) {
+    localStorage.setItem('lang', 'zh')
+    window.api.sendLanguage(11)
+  }
 })
 </script>
 

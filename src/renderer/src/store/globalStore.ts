@@ -6,7 +6,8 @@ export const useGlobalStore = defineStore('global', {
     language: null,
     category: null,
     platform: null,
-    ratio: null
+    ratio: null,
+    guildId: ''
   }),
   actions: {
     async setLanguage() {
@@ -24,6 +25,9 @@ export const useGlobalStore = defineStore('global', {
     async getRatio() {
       const res: any = await getConfig()
       this.ratio = res?.data?.one?.jifenbili
+    },
+    setGuildId(id: any) {
+      this.guildId = id
     }
   }
 })

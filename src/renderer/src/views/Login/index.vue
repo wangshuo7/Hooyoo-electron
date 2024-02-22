@@ -4,7 +4,15 @@
       <div class="login-logo">
         <el-image src="./system/hooyoo.gif" class="logo-img"></el-image>
       </div>
-      <div class="login-title">{{ active === 'login' ? '登录' : '注册' }}</div>
+      <div class="login-title">
+        {{
+          active === 'login'
+            ? $t('login.login')
+            : active === 'register'
+              ? $t('login.register')
+              : $t('login.reset')
+        }}
+      </div>
       <LogForm v-if="active === 'login'"></LogForm>
       <RegisterForm v-else-if="active === 'register'"></RegisterForm>
       <ForgetForm v-else></ForgetForm>

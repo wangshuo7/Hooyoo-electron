@@ -16,7 +16,7 @@ declare global {
       launchGame: (callback: (id, path) => void) => void
       updateGameStatus: (callback: (id, status) => void) => void
       checkGame: (id, downloadLink: string) => void
-      startGame: (id, name, key) => void
+      startGame: (id, lang, name, key) => void
       startGameFailReply: (callback: () => void) => void
       mainCloseGame: (callback: () => void) => void
       closeGame: () => void

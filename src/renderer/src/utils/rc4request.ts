@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import md5 from 'md5'
-import { rc4Encrypt, rc4Decrypt } from './rc4'
+import { rc4Encrypt, rc4Decrypt, utf8Encode, utf8Decode } from './rc4'
 
 const baseURL =
   process.env.NODE_ENV === 'production'
@@ -29,7 +29,9 @@ request.interceptors.request.use(
       .join('')
 
     if (config.data) {
-      const encryptedData = rc4Encrypt(rc4Key, JSON.stringify(config.data))
+      const encodedPlaintext = utf8Encode(JSON.stringify(config.data))
+      const encryptedData = rc4Encrypt(rc4Key, encodedPlaintext)
+      // const encryptedData = rc4Encrypt(rc4Key, JSON.stringify(config.data))
       config.data = { ciphertext: encryptedData }
     }
     if (authToken) {
@@ -56,7 +58,8 @@ request.interceptors.response.use(
       .reverse()
       .join('')
 
-    const decryptedData = rc4Decrypt(rc4Key, response.data)
+    const decryptedData = utf8Decode(rc4Decrypt(rc4Key, response.data))
+    // const decryptedData = rc4Decrypt(rc4Key, response.data)
     response.data = JSON.parse(decryptedData)
     return response.data
   },

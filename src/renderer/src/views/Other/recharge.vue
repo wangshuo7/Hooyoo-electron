@@ -1,29 +1,29 @@
 <template>
   <el-dialog
     v-model="dialogVisible"
-    title="充值"
+    :title="$t('recharge.title')"
     width="700px"
     @close="closeRechargeDialog"
   >
     <div>
-      <span style="font-size: 14px; color: #cfd3dc; margin-right: 20px"
-        >充值方式</span
-      >
+      <span style="font-size: 14px; color: #cfd3dc; margin-right: 20px">{{
+        $t('recharge.type')
+      }}</span>
       <el-radio-group v-model="recharge_type" class="recharge-radio">
-        <el-radio label="1" size="large">卡密充值</el-radio>
-        <el-radio label="2" size="large">微信充值</el-radio>
+        <el-radio label="1" size="large">{{ $t('recharge.key') }}</el-radio>
+        <el-radio label="2" size="large">{{ $t('recharge.vx') }}</el-radio>
       </el-radio-group>
     </div>
     <div>
-      <span style="font-size: 14px; color: #cfd3dc; margin-right: 20px"
-        >充值目标</span
-      >
+      <span style="font-size: 14px; color: #cfd3dc; margin-right: 20px">{{
+        $t('recharge.target')
+      }}</span>
       <el-radio-group v-model="target_type" class="recharge-radio">
-        <el-radio label="1" size="large">云豆</el-radio>
+        <el-radio label="1" size="large">{{ $t('system.price') }}</el-radio>
         <el-radio label="2" size="large">
-          积分
+          {{ $t('system.diamond') }}
           <el-text type="info" style="margin-left: 10px">
-            (积分可用于直播收益抽成)
+            ({{ $t('recharge.tip') }})
           </el-text>
         </el-radio>
       </el-radio-group>
@@ -35,25 +35,26 @@
         :model="rechargeForm"
         inline
       >
-        <el-form-item label="充值卡" prop="miyao">
+        <el-form-item :label="$t('recharge.card')" prop="miyao">
           <el-input
             v-model="form.miyao"
             required
-            placeholder="请输入卡密"
+            :placeholder="$t('recharge.card_placeholder')"
           ></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submit">确定</el-button>
-          <el-button @click="cancel">取消</el-button>
+          <el-button type="primary" @click="submit">{{
+            $t('buttons.confirm')
+          }}</el-button>
+          <el-button @click="cancel">{{ $t('buttons.cancel') }}</el-button>
         </el-form-item>
       </el-form>
     </div>
     <div v-else class="recharge-content">
       <el-form label-width="68px">
-        <el-form-item label="充值数额">
+        <el-form-item :label="$t('recharge.amount')">
           <el-input-number
             v-model="vx_price"
-            placeholder="请输入充值数额"
             :min="0"
             controls-position="right"
             style="width: 180px"
@@ -63,9 +64,11 @@
             style="margin-left: 20px"
             @click="onRechargeWeixin"
           >
-            确定
+            {{ $t('buttons.confirm') }}
           </el-button>
-          <el-button @click="onCancelRechargeWeixin">取消</el-button>
+          <el-button @click="onCancelRechargeWeixin">{{
+            $t('buttons.cancel')
+          }}</el-button>
         </el-form-item>
         <el-form-item>
           <el-text v-if="target_type === '2' && vx_price > 0" type="info">
@@ -91,7 +94,8 @@ import {
   rechargeWeixin
 } from '../../api/wallet'
 import { getConfig } from '../../api/global'
-
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const dialogVisible = ref<boolean>(false)
 const vx_price = ref<number>(0)
 const form = ref<any>({
@@ -119,7 +123,7 @@ function closeRechargeDialog() {
 const ruleFormRef = ref<FormInstance>()
 const rechargeForm = ref<any>({ miyao: '' })
 const getJifen = computed(() => {
-  return `${vx_price.value} 元可兑换 ${vx_price.value * ratio.value} 积分`
+  return `${vx_price.value} ${t('recharge.dui')} ${vx_price.value * ratio.value} ${t('detail.divide_diamonds')}`
 })
 // 卡密-确定
 function submit() {
@@ -131,7 +135,7 @@ function submit() {
         type: target_type.value == '1' ? 'yundou' : 'jifen'
       })
       if (res.code === 200) {
-        ElMessage.success('充值成功')
+        ElMessage.success(t('recharge.message_success'))
         // viewBalance()
         return (dialogVisible.value = false)
       }
@@ -152,7 +156,7 @@ const order_id = ref<any>()
 async function checkOrder() {
   const res: any = await checkWeixinOrder({ order_id: order_id.value })
   if (res.data.status === 'yes') {
-    ElMessage.success('微信充值成功')
+    ElMessage.success(t('recharge.message_vx_success'))
     code_url.value = ''
     clearInterval(intervalId.value)
     clearTimeout(timeoutId.value) // 清除超时定时器
@@ -173,13 +177,13 @@ async function onRechargeWeixin() {
     if (res.code === 200) {
       code_url.value = res.data.code_url
       order_id.value = res.data.order_id
-      ElMessage.success('请扫描二维码充值')
+      ElMessage.success(t('message_qrcode'))
       intervalId.value = setInterval(async () => {
         await checkOrder()
       }, 5000)
       timeoutId.value = setTimeout(
         () => {
-          ElMessage.warning('订单超时，请重新输入二维码')
+          ElMessage.warning(t('message_timeout'))
           code_url.value = ''
           clearInterval(intervalId.value)
         },

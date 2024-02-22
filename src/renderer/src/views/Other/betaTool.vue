@@ -57,6 +57,7 @@
           >点赞</el-button
         >
         <el-button type="primary" @click="onSendFollow">关注</el-button>
+        <el-button text bg @click="getGuildOemInfo">贴牌信息</el-button>
       </el-form-item>
     </el-form>
     <div class="main">
@@ -126,6 +127,9 @@ import { Picture } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { ElNotification } from 'element-plus'
 import { v4 as uuidv4 } from 'uuid'
+import { getGuildOem } from '../../api/global'
+import { useGlobalStore } from '../../store/globalStore'
+const globalStore = useGlobalStore()
 const settingVisible = ref<boolean>(false)
 const user = ref<any>([
   { uid: '10001', name: '清水煮岁月', head: '0.jpg' },
@@ -331,6 +335,7 @@ function onSendContent() {
     message: `${findUser(form.value.user).name} 发送弹幕 ${form.value.content}`,
     type: 'success'
   })
+  console.log('弹幕', data)
   return
 }
 // 点赞
@@ -356,6 +361,7 @@ function onSendLike() {
     message: `${findUser(form.value.user).name} 点赞 x ${form.value.count || 1}`,
     type: 'success'
   })
+  console.log('点赞', data)
   return
 }
 // 关注
@@ -380,6 +386,7 @@ function onSendFollow() {
     message: `${findUser(form.value.user).name} 关注了`,
     type: 'success'
   })
+  console.log('关注', data)
   return
 }
 // 礼物
@@ -407,7 +414,15 @@ function onSendGift(item) {
     message: `${findUser(form.value.user).name} 送出礼物 ${item.name} x ${form.value.count || 1}`,
     type: 'success'
   })
+  console.log('礼物', data)
   return
+}
+async function getGuildOemInfo() {
+  const send_data = {
+    id: globalStore.guildId
+  }
+  console.log(send_data)
+  await getGuildOem(send_data)
 }
 const props = defineProps({
   visible: {
