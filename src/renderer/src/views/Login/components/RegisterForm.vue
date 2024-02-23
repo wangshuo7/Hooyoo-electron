@@ -2,7 +2,7 @@
   <el-form
     ref="ruleFormRef"
     :model="form"
-    label-width="78px"
+    label-width="70px"
     :rules="rules"
     :hide-required-asterisk="true"
   >
@@ -21,15 +21,33 @@
         :placeholder="$t('login.password_placeholder')"
       ></el-input>
     </el-form-item>
+    <el-form-item :label="$t('login.phone')" prop="mobile">
+      <el-input
+        v-model="form.mobile"
+        class="input"
+        :placeholder="$t('login.phone_placeholder')"
+      >
+        <template #suffix>
+          <el-button
+            color="#303030"
+            :dark="true"
+            :disabled="countdown > 0"
+            @click="onGetCode"
+          >
+            {{ countdown > 0 ? `${countdown}` : $t('login.get_code') }}
+          </el-button>
+        </template>
+      </el-input>
+    </el-form-item>
+    <el-form-item :label="$t('login.code')" prop="telcode">
+      <el-input
+        v-model="form.telcode"
+        class="input"
+        :placeholder="$t('login.code_placeholder')"
+      ></el-input>
+    </el-form-item>
     <transition name="slide-fade">
       <div v-if="more_info" class="more-info-container">
-        <el-form-item :label="$t('login.phone')" prop="mobile">
-          <el-input
-            v-model="form.mobile"
-            class="input"
-            :placeholder="$t('login.phone_placeholder')"
-          ></el-input>
-        </el-form-item>
         <el-form-item :label="$t('login.nickname')" prop="nickname">
           <el-input
             v-model="form.nickname"
@@ -44,16 +62,8 @@
             :placeholder="$t('login.guildId_placeholder')"
           ></el-input>
         </el-form-item>
-        <el-form-item :label="$t('login.withdraw')" prop="tx_card">
-          <el-input
-            v-model="form.tx_card"
-            class="input"
-            :placeholder="$t('login.withdraw_placeholder')"
-          ></el-input>
-        </el-form-item>
       </div>
     </transition>
-
     <div
       style="
         width: 100%;
@@ -90,10 +100,11 @@
 <script lang="ts" setup>
 import { ref, reactive } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { register } from '../../../api/login'
-// import HUpload from '../../../components/HUpload/index.vue'
+import { register, getPhoneCode } from '../../../api/login'
 import { useAccountStore } from '../../../store/account'
 import { Base64 } from 'js-base64'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const accountStore = useAccountStore()
 const ruleFormRef = ref<FormInstance>()
 const form = reactive<any>({
@@ -102,31 +113,24 @@ const form = reactive<any>({
   mobile: '',
   nickname: '',
   union_id: '',
-  tx_card: ''
+  telcode: '',
+  telkey: ''
 })
 const rules = reactive<FormRules<any>>({
   username: [{ required: true, message: '必填', trigger: 'blur' }],
   password: [
     {
       required: true,
-      message: '必填'
+      message: t('login.required')
     }
   ],
   mobile: [
-    // {
-    //   required: true,
-    //   message: '手机号不能为空'
-    //   // trigger: 'change'
-    // },
     {
       pattern: /^1[3|4|5|6|7|8|9]\d{9}$/,
-      message: '手机号格式不正确',
+      message: t('login.format'),
       trigger: 'blur'
     }
   ]
-  // nickname: [{ required: true, message: '昵称不能为空', trigger: 'blur' }],
-  // union_id: [{ required: true, message: '公会ID不能为空', trigger: 'blur' }],
-  // tx_card: [{ required: true, message: '提现账号不能为空', trigger: 'blur' }]
 })
 function onSubmit() {
   const send_data = {
@@ -135,7 +139,8 @@ function onSubmit() {
     mobile: form.mobile,
     nickname: form.nickname,
     union_id: form.union_id,
-    tx_card: form.tx_card
+    telkey: form.telkey,
+    telcode: form.telcode
   }
   ruleFormRef.value?.validate(async (valid) => {
     if (valid) {
@@ -153,6 +158,27 @@ function onSubmit() {
       // 表单验证未通过
     }
   })
+}
+// 获取手机验证码
+const countdown = ref<number>(0)
+async function onGetCode() {
+  if (!form.mobile) {
+    return ElMessage.error('请填写手机号后获取')
+  }
+  const res: any = await getPhoneCode({ tel: form.mobile })
+  if (res.code === 200) {
+    form.telkey = res.data.telkey
+    if (countdown.value === 0) {
+      countdown.value = 60
+      const timer = setInterval(() => {
+        countdown.value--
+        if (countdown.value === 0) {
+          clearInterval(timer)
+        }
+      }, 1000)
+    }
+  }
+  return
 }
 function switchLogin() {
   accountStore.setActive('login')
@@ -196,7 +222,7 @@ function onGetMoreInfo() {
 }
 .slide-fade-enter-to,
 .slide-fade-leave-from {
-  height: 232px;
+  height: 117px;
 }
 .more-info-container {
   overflow: hidden;

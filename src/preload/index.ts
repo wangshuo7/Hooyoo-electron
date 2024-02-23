@@ -162,7 +162,13 @@ const api = {
   // 测试工具
   sendBetaWs: (data: any) => ipcRenderer.send('send-beta-ws', data),
   // 游戏语言
-  sendLanguage: (id: any) => ipcRenderer.send('send-language', id)
+  sendLanguage: (id: any) => ipcRenderer.send('send-language', id),
+  // 生成日志
+  mainSendLog: (callback: (res: any) => void) => {
+    ipcRenderer.on('main-send-log', (_event, res) => {
+      callback(res)
+    })
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

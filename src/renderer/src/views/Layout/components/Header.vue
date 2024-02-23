@@ -12,7 +12,7 @@
         <el-dropdown trigger="click" class="info-item" @command="changeLang">
           <el-button style="width: 40px; height: 40px; border-radius: 50%">
             <!-- <i class="iconfont" style="font-size: 24px">&#xe6ed;</i> -->
-            <span style="font-size: 16px">中</span>
+            <span style="font-size: 16px">{{ langView }}</span>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu class="dropdown">
@@ -90,6 +90,7 @@ import TheSetting from '../../Other/setting.vue'
 import { getPersonalInfo } from '../../../api/wallet'
 import { useGlobalStore } from '../../../store/globalStore'
 import i18n from '../../../utils/i18n'
+const langView = ref<any>('中')
 const globalStore = useGlobalStore()
 const lang = ref<any>()
 const token = localStorage.getItem('authtoken')
@@ -139,16 +140,19 @@ function changeLang(item: any) {
     localStorage.setItem('lang', 'en')
     i18n.global.locale.value = 'en'
     window.api.sendLanguage(13)
+    langView.value = 'En'
   }
   if (item.id == 39) {
     localStorage.setItem('lang', 'tw')
     i18n.global.locale.value = 'tw'
     window.api.sendLanguage(39)
+    langView.value = '繁'
   }
   if (item.id == 11) {
     localStorage.setItem('lang', 'zh')
     i18n.global.locale.value = 'zh'
     window.api.sendLanguage(11)
+    langView.value = '中'
   }
 }
 onMounted(async () => {

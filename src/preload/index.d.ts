@@ -51,6 +51,7 @@ declare global {
       showNotification: (title: string, body: string) => void
       sendBetaWs: (data: any) => void
       sendLanguage: (id: any) => void
+      mainSendLog: (callback: (res: any) => void) => void
     }
   }
 }

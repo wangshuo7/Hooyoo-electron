@@ -48,7 +48,9 @@ const i18n = createI18n({
         guildId_placeholder: '请输入公会ID',
         withdraw_placeholder: '请输入提现账号',
         more: '填写更多信息',
-        receive: '收起'
+        receive: '收起',
+        required: '必填',
+        format: '手机号码格式不正确'
       },
       menu: {
         mall: '商城',
@@ -187,7 +189,9 @@ const i18n = createI18n({
         guildId_placeholder: 'Please enter a guild ID',
         withdraw_placeholder: 'Please enter a withdraw account',
         more: 'Fill in more information',
-        receive: 'Receive'
+        receive: 'Receive',
+        required: 'Required',
+        format: 'The phone number format is incorrect'
       },
       menu: {
         mall: 'Mall',
@@ -327,7 +331,9 @@ const i18n = createI18n({
         guildId_placeholder: '請輸入公會ID',
         withdraw_placeholder: '請輸入提現賬號',
         more: '填寫更多信息',
-        receive: '收起'
+        receive: '收起',
+        required: '必填',
+        format: '手機號碼格式不正確'
       },
       menu: {
         mall: '商城',

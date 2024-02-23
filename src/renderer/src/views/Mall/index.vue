@@ -1,55 +1,60 @@
 <template>
-  <!-- <TheSwiper></TheSwiper> -->
-  <!-- <br /> -->
-  <!-- <TheSwiperCards></TheSwiperCards> -->
-
   <div class="container">
-    <el-form :form="queryForm" inline>
-      <el-form-item :label="$t('search.name')">
-        <el-input
-          v-model="queryForm.title"
-          style="width: 200px"
-          :placeholder="$t('search.name_placeholder')"
-          clearable
-        ></el-input>
-      </el-form-item>
-      <el-form-item :label="$t('search.sort')">
-        <el-select
-          v-model="queryForm.sort"
-          style="width: 200px"
-          clearable
-          :placeholder="$t('search.sort_placeholder')"
-        >
-          <el-option value="2" :label="$t('search.sort_ctime_up')" />
-          <el-option value="1" :label="$t('search.sort_ctime_down')" />
-          <el-option value="4" :label="$t('search.sort_hot_up')" />
-          <el-option value="3" :label="$t('search.sort_hot_down')" />
-          <el-option value="6" :label="$t('search.sort_banner_up')" />
-          <el-option value="5" :label="$t('search.sort_banner_down')" />
-        </el-select>
-      </el-form-item>
-      <el-form-item :label="$t('search.cate')">
-        <el-select
-          v-model="queryForm.cate"
-          style="width: 200px"
-          clearable
-          :placeholder="$t('search.cate_placeholder')"
-        >
-          <el-option
-            v-for="item in categories"
-            :key="item.id"
-            :label="item.title"
-            :value="item.id"
-          />
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="query">{{
-          $t('buttons.search')
-        }}</el-button>
-        <el-button @click="viewAll">{{ $t('buttons.all') }}</el-button>
-      </el-form-item>
-    </el-form>
+    <div style="display: flex; justify-content: space-between">
+      <el-form :form="queryForm" inline>
+        <el-form-item :label="$t('search.name')">
+          <el-input
+            v-model="queryForm.title"
+            style="width: 200px"
+            :placeholder="$t('search.name_placeholder')"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item :label="$t('search.sort')">
+          <el-select
+            v-model="queryForm.sort"
+            style="width: 200px"
+            clearable
+            :placeholder="$t('search.sort_placeholder')"
+          >
+            <el-option value="2" :label="$t('search.sort_ctime_up')" />
+            <el-option value="1" :label="$t('search.sort_ctime_down')" />
+            <el-option value="4" :label="$t('search.sort_hot_up')" />
+            <el-option value="3" :label="$t('search.sort_hot_down')" />
+            <el-option value="6" :label="$t('search.sort_banner_up')" />
+            <el-option value="5" :label="$t('search.sort_banner_down')" />
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('search.cate')">
+          <el-select
+            v-model="queryForm.cate"
+            style="width: 200px"
+            clearable
+            :placeholder="$t('search.cate_placeholder')"
+          >
+            <el-option
+              v-for="item in categories"
+              :key="item.id"
+              :label="item.title"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="query">{{
+            $t('buttons.search')
+          }}</el-button>
+          <el-button @click="viewAll">{{ $t('buttons.all') }}</el-button>
+        </el-form-item>
+      </el-form>
+      <span class="refresh" @click="onRefresh">
+        <el-icon
+          class="refresh-icon"
+          :style="{ transform: `rotate(${rotation}deg)` }"
+          ><Refresh
+        /></el-icon>
+      </span>
+    </div>
     <div v-loading="loading" class="list">
       <div
         v-for="(item, index) in tableData"
@@ -489,16 +494,16 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
-import { QuestionFilled } from '@element-plus/icons-vue'
-import { useTimestamp } from '@vueuse/core'
+import { QuestionFilled, Refresh, ArrowDown } from '@element-plus/icons-vue'
+import { useDebounceFn, useTimestamp } from '@vueuse/core'
 // import GameDetail from '../Detail/index.vue'
 import Moment from 'moment'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
-import { ArrowDown } from '@element-plus/icons-vue'
 import { buyGame, gameInfo, getGameList } from '../../api/game'
 import { useGlobalStore } from '../../store/globalStore'
 import { ElMessage, FormInstance } from 'element-plus'
+
 import {
   deductDiamond,
   endLiving,
@@ -543,7 +548,15 @@ const barrageVisible = ref<boolean>(false)
 const liveRoom = ref<string>('')
 const ruleFormRef = ref<FormInstance>()
 const ratio = ref<any>()
-
+/**
+ * 刷新icon
+ */
+const rotation = ref<number>(0)
+function debounceOnRefresh() {
+  rotation.value -= 180
+  viewAll()
+}
+const onRefresh = useDebounceFn(debounceOnRefresh, 300)
 function computedDiamond() {
   const res =
     100 *
@@ -606,6 +619,7 @@ const form = ref<{
   tprice: '',
   code: ''
 })
+
 // 计算显示具体条数
 const counts = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value + 1
@@ -623,7 +637,6 @@ function selsecSize(value: number) {
 }
 // 显示全部
 function viewAll() {
-  console.log(t('lang'))
   queryForm.value = {}
   query()
 }
@@ -849,43 +862,57 @@ window.api.getGift((res) => {
 })
 const deductInterval = ref<any>(null)
 watchEffect(() => {
-  if (kaibo.value && gift_data.value.length >= 1) {
+  // if (kaibo.value && gift_data.value.length >= 1) {
+  if (kaibo.value) {
     // const gift_num = gift_data.value.length
-    deductInterval.value = setInterval(async () => {
-      let diamond = 0
-      gift_data.value.forEach((item) => {
-        diamond = item.gift_num * item.gift_value
-      })
-      const send_data = {
-        zhibo_id: live_id.value,
-        jifen:
-          (diamond / 100) *
-          (detail.value.jisuan_bl.bl_gonghui +
-            detail.value.jisuan_bl.bl_pingtai +
-            detail.value.jisuan_bl.bl_youxizuozhe) *
-          ratio.value
-      }
-      const res: any = await deductDiamond(send_data)
-      const kouDiamond = send_data.jifen
-      if (res?.data.is_do !== 'yes') {
-        theEndLiving()
-        res.data.is_do == 'no'
-        if (res.data.jifen - kouDiamond * 3 <= 0) {
-          // window.api.showNotification('提醒', '钻石不足，剩余钻石约可再扣3次')
+    if (!deductInterval.value) {
+      deductInterval.value = setInterval(async () => {
+        let diamond = 0
+        gift_data.value.forEach((item) => {
+          diamond += item.gift_value
+        })
+        const bili =
+          detail.value.jisuan_bl.bl_gonghui +
+          detail.value.jisuan_bl.bl_pingtai +
+          detail.value.jisuan_bl.bl_youxizuozhe
+        const send_data = {
+          zhibo_id: live_id.value,
+          jifen: (diamond / 100) * bili * ratio.value
         }
-        window.api.rendererCloseGame()
-        clearInterval(deductInterval.value)
-      }
-      gift_data.value = []
-    }, 60 * 1000)
+        if (!gift_data.value.length) {
+          // 没有收到礼物就不走扣钻接口
+          return console.log('没有收到礼物就不走扣钻接口')
+        }
+        const res: any = await deductDiamond(send_data)
+        console.log('扣钻res', res)
+        console.log('礼物列表', gift_data.value)
+        const kouDiamond = send_data.jifen
+        // 没有积分或者欠费
+        if (res?.data?.is_do !== 'yes') {
+          theEndLiving() // 下播
+          window.api.rendererCloseGame() // 关游戏
+          clearInterval(deductInterval.value) // 清除扣钻计时器
+        } else {
+          // 扣除成功
+          if (res.data.jifen - kouDiamond * 3 <= 0) {
+            // window.api.showNotification('提醒', '钻石不足，剩余钻石约可再扣3次')
+          }
+        }
+        gift_data.value = []
+      }, 60 * 1000)
+    }
   }
 })
+// 关闭游戏
 window.api.mainCloseGame(() => {
   is_start.value = false
   clearInterval(intervalId.value)
   clearInterval(pingInterval.value)
+  clearInterval(deductInterval.value)
   salts = []
   stateStore.setState({ success: '', message: '' })
+  kaibo.value = false
+  gift_data.value = []
 })
 // window.api.getAnchorFail(() => {
 //   window.api.showNotification('提示', '获取主播信息失败，请重新打开直播间')
@@ -899,14 +926,15 @@ async function sendStartLivingRequest() {
       game_id: detail.value.game_id
     }
     const res: any = await startLiving(send_data)
-    console.log('send', send_data)
     console.log('开播res', res)
     if (res.code === 200) {
       kaibo.value = true
       ElMessage.success('开播')
       live_id.value = res.data.zhibo_id
+      // 开播成功每分钟发一次ping
       pingInterval.value = setInterval(async () => {
         const response: any = await getLivePing({ zhibo_id: live_id.value })
+        console.log('ping-res', response)
         if (response.code !== 200) {
           // 结束游戏
           window.api.rendererCloseGame()
@@ -930,15 +958,21 @@ watchEffect(async () => {
 async function theEndLiving() {
   const res: any = await endLiving({ zhibo_id: live_id.value })
   if (res.code === 200) {
-    clearInterval(pingInterval.value)
+    // clearInterval(pingInterval.value) // 下播关掉ping
     // window.api.showNotification('下播', '下播成功')
+    // kaibo.value = false
+    console.log('下播', res)
   }
 }
 watch(
   () => is_start.value,
-  async (val) => {
+  (val) => {
     if (!val) {
-      theEndLiving()
+      theEndLiving() // 下播
+      clearInterval(pingInterval.value)
+      clearInterval(intervalId.value)
+      clearInterval(deductInterval.value)
+      gift_data.value = []
       lock.value = true
     }
   }
@@ -992,12 +1026,15 @@ async function connectLive() {
     return
   }
 }
+// 关闭直播间
 window.api.mainCloseLive(() => {
   is_start_live.value = false
   is_barrage.value = false
   gift_data.value = []
+  kaibo.value = false
   salts = []
 })
+
 const anchorInfo = ref<any>({})
 window.api.sendAnchorData((res) => {
   anchorInfo.value = res
@@ -1297,10 +1334,32 @@ function formatTime(time: any) {
           display: flex;
           flex-direction: column;
           justify-content: center;
-          // align-items: center;
         }
       }
     }
   }
+}
+// 刷新
+.refresh {
+  display: block;
+  border-radius: 5px;
+  background: #2e2e2e;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // color: #9b9a9a;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s linear;
+  .refresh-icon {
+    transform: rotate(0deg);
+    transition: all 0.5s linear;
+  }
+}
+.refresh:hover {
+  color: #f5f5f5;
+  background: #444444;
 }
 </style>

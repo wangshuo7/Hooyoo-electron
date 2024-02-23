@@ -88,7 +88,8 @@ const store = new Store()
 const gameStatus = {}
 let wsServer: any
 let mainWindow: any
-let liveRoom: any
+let liveRoom: any // 直播间
+let logWin: any // 日志
 let connectKey: string
 let gameId: string
 let rc4Key: string
@@ -121,8 +122,8 @@ function createWindow(): void {
       // 指定 preload 脚本的路径, preload 脚本在渲染进程运行之前执行
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false, // 禁用沙箱环境，默认为true
-      nodeIntegration: false, // 禁用 Node.js 集成，以提高安全性
-      contextIsolation: false // 启用上下文隔离，提高安全性
+      nodeIntegration: false // 禁用 Node.js 集成，以提高安全性
+      // contextIsolation: false // 启用上下文隔离，提高安全性
     }
   })
   const server = new WebSocket.Server({ port: 8080 })
@@ -155,6 +156,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+  console.log(5667, join(__dirname, '../preload/index.js'))
+
   // 最小化
   ipcMain.on('minimize', () => {
     mainWindow.minimize()
@@ -413,9 +416,53 @@ ipcMain.on('setting-default', (event) => {
   event.reply('setting-default-reply', paths)
 })
 ipcMain.on('renderer-close-game', () => {
-  gameProcess.kill()
+  if (gameProcess) {
+    gameProcess.kill()
+  }
   mainWindow.webContents.send('main-close-game')
 })
+function openLogWindow() {
+  logWin = new BrowserWindow({
+    width: 500,
+    height: 700,
+    // webPreferences: {
+    //   preload: join(__dirname, '../preload/index123.js')
+    // }
+    // icon: join(__dirname, '../../public/huyou.ico'),
+    // titleBarStyle: 'hidden',
+    // frame: false,
+    // titleBarOverlay: {
+    //   color: '#121212',
+    //   symbolColor: '121212',
+    //   height: 60
+    // },
+    // width: is.dev ? 1800 : 1600,
+    // height: 1000,
+    // minWidth: 1060,
+    // minHeight: 580,
+    // show: false, // 窗口是否在创建时显示
+    // fullscreen: true, // 窗口是否全屏
+    // hasShadow: false, // 窗口阴影
+    // autoHideMenuBar: true, // 自动隐藏菜单栏
+    ...(process.platform === 'linux' ? { icon } : {}),
+    webPreferences: {
+      // 指定 preload 脚本的路径, preload 脚本在渲染进程运行之前执行
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false, // 禁用沙箱环境，默认为true
+      nodeIntegration: false // 禁用 Node.js 集成，以提高安全性
+      // contextIsolation: false // 启用上下文隔离，提高安全性
+    }
+  })
+  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
+    logWin.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/log.html`)
+  } else {
+    logWin.loadFile(path.join(__dirname, '../renderer/log.html'))
+  }
+  console.log('123', join(__dirname, '../preload/index.js'))
+  logWin.on('closed', () => {
+    logWin = null
+  })
+}
 // 打开浮层
 // ipcMain.on('start-float', (_event, res) => {
 //   console.log(res)
@@ -458,6 +505,9 @@ ipcMain.on('renderer-close-game', () => {
 // }
 function closeLiveRoom() {
   liveRoom.close()
+  if (logWin) {
+    logWin.close()
+  }
   mainWindow.webContents.send('main-close-live')
 }
 // function isWebSocketServiceAvailable() {
@@ -482,6 +532,7 @@ ipcMain.on('start-live', async (_event, url: string) => {
     return { action: 'deny' }
   })
   liveRoom.loadURL(url)
+  openLogWindow()
   const mouseID = setInterval(() => {
     if (liveRoom) {
       const { width, height } = liveRoom.getBounds()
@@ -502,6 +553,9 @@ ipcMain.on('start-live', async (_event, url: string) => {
   }, 10 * 1000)
   liveRoom.on('closed', () => {
     liveRoom = null
+    if (logWin) {
+      logWin.close()
+    }
     mainWindow.webContents.send('main-close-live')
     clearInterval(mouseID)
     // closeWebsocketClient()
@@ -671,6 +725,8 @@ function sendWsData(data: any) {
     binary: true
   })
   // console.log(msgData)
+  // 生成日志
+  logWin.webContents.send('main-send-log', msgData)
 }
 // 进房
 function initMemberData(obj: any) {

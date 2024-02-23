@@ -8,7 +8,14 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, 'src/preload/index.ts')
+        }
+      }
+    }
   },
   renderer: {
     resolve: {
@@ -21,7 +28,7 @@ export default defineConfig({
     server: {
       proxy: {
         '/api': {
-          target: 'http://test-box-server.huyouyun.cn',
+          target: 'http://box-server.huyouyun.cn',
           changeOrigin: true, // 允许跨域
           rewrite: (path) => path.replace(/^\/api/, '')
         }

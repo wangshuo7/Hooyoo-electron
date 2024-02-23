@@ -5,6 +5,14 @@
     top="5vh"
     @close="closeBetaTool"
   >
+    <template #title>
+      <div>
+        <el-radio-group v-model="type" size="large">
+          <el-radio-button label="抖音" />
+          <el-radio-button label="Tiktok" />
+        </el-radio-group>
+      </div>
+    </template>
     <el-form :model="form" label-width="100" inline>
       <el-form-item label="用户">
         <el-select v-model="form.user" placeholder="请选择用户" clearable>
@@ -57,7 +65,6 @@
           >点赞</el-button
         >
         <el-button type="primary" @click="onSendFollow">关注</el-button>
-        <el-button text bg @click="getGuildOemInfo">贴牌信息</el-button>
       </el-form-item>
     </el-form>
     <div class="main">
@@ -102,7 +109,7 @@
       </div>
       <div class="gift">
         <el-card
-          v-for="item in cards"
+          v-for="item in type == '抖音' ? cards : tiktokCards"
           :key="item.id"
           class="card"
           shadow="hover"
@@ -127,9 +134,7 @@ import { Picture } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { ElNotification } from 'element-plus'
 import { v4 as uuidv4 } from 'uuid'
-import { getGuildOem } from '../../api/global'
-import { useGlobalStore } from '../../store/globalStore'
-const globalStore = useGlobalStore()
+const type = ref<any>('抖音') // '抖音' | 'Tiktok'
 const settingVisible = ref<boolean>(false)
 const user = ref<any>([
   { uid: '10001', name: '清水煮岁月', head: '0.jpg' },
@@ -295,6 +300,44 @@ const cards = ref([
     price: 999
   }
 ])
+const tiktokCards = ref([
+  {
+    id: '5655',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
+    name: 'Rose',
+    price: 1
+  },
+  {
+    id: '5487',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/a4c4dc437fd3a6632aba149769491f49.png~tplv-obj.webp',
+    name: 'Finger Heart',
+    price: 5
+  },
+  {
+    id: '8913',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eb77ead5c3abb6da6034d3cf6cfeb438~tplv-obj.webp',
+    name: 'Rosa',
+    price: 10
+  },
+  {
+    id: '5658',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/20b8f61246c7b6032777bb81bf4ee055~tplv-obj.webp',
+    name: 'Perfume',
+    price: 20
+  },
+  {
+    id: '5660',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/6cd022271dc4669d182cad856384870f~tplv-obj.webp',
+    name: 'Hand Hearts',
+    price: 100
+  },
+  {
+    id: '5509',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/08af67ab13a8053269bf539fd27f3873.png~tplv-obj.webp',
+    name: 'Sunglasses',
+    price: 199
+  }
+])
 const form = ref<any>({
   user: null,
   count: null,
@@ -416,13 +459,6 @@ function onSendGift(item) {
   })
   console.log('礼物', data)
   return
-}
-async function getGuildOemInfo() {
-  const send_data = {
-    id: globalStore.guildId
-  }
-  console.log(send_data)
-  await getGuildOem(send_data)
 }
 const props = defineProps({
   visible: {
