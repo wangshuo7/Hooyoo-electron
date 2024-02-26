@@ -5,6 +5,7 @@
     top="5vh"
     @close="closeBetaTool"
   >
+    <!-- :close-on-click-modal="false" -->
     <template #title>
       <div>
         <el-radio-group v-model="type" size="large">
@@ -66,6 +67,10 @@
         >
         <el-button type="primary" @click="onSendFollow">关注</el-button>
       </el-form-item>
+      <el-form-item>
+        <el-input v-model.trim="beta"></el-input>
+        <el-button type="danger" @click="betaBeta">模拟</el-button>
+      </el-form-item>
     </el-form>
     <div class="main">
       <div class="user">
@@ -108,6 +113,10 @@
         </el-scrollbar>
       </div>
       <div class="gift">
+        <!-- <el-scrollbar
+          height="700px"
+          style="flex: 1; display: flex; flex-wrap: wrap"
+        > -->
         <el-card
           v-for="item in type == '抖音' ? cards : tiktokCards"
           :key="item.id"
@@ -121,8 +130,19 @@
               <span class="price">{{ item.price }}钻石</span>
             </div>
           </template>
-          <img :src="item.src" alt="" />
+          <div
+            style="
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <img :src="item.src" alt="" style="height: auto; width: 100px" />
+          </div>
         </el-card>
+        <!-- </el-scrollbar> -->
       </div>
     </div>
   </el-dialog>
@@ -136,6 +156,7 @@ import { ElNotification } from 'element-plus'
 import { v4 as uuidv4 } from 'uuid'
 const type = ref<any>('抖音') // '抖音' | 'Tiktok'
 const settingVisible = ref<boolean>(false)
+const beta = ref<any>()
 const user = ref<any>([
   { uid: '10001', name: '清水煮岁月', head: '0.jpg' },
   { uid: '10002', name: '神爱世人', head: '1.jpg' },
@@ -314,6 +335,12 @@ const tiktokCards = ref([
     price: 5
   },
   {
+    id: '5719',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/f4fdb4b513b21485ab5e3d30a1112263~tplv-obj.webp',
+    name: 'Fire',
+    price: 5
+  },
+  {
     id: '8913',
     src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eb77ead5c3abb6da6034d3cf6cfeb438~tplv-obj.webp',
     name: 'Rosa',
@@ -326,6 +353,12 @@ const tiktokCards = ref([
     price: 20
   },
   {
+    id: '5659',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/0f158a08f7886189cdabf496e8a07c21~tplv-obj.webp',
+    name: 'Paper Crane',
+    price: 99
+  },
+  {
     id: '5660',
     src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/6cd022271dc4669d182cad856384870f~tplv-obj.webp',
     name: 'Hand Hearts',
@@ -336,6 +369,30 @@ const tiktokCards = ref([
     src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/08af67ab13a8053269bf539fd27f3873.png~tplv-obj.webp',
     name: 'Sunglasses',
     price: 199
+  },
+  {
+    id: '6267',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/148eef0884fdb12058d1c6897d1e02b9~tplv-obj.webp',
+    name: 'Corgi',
+    price: 299
+  },
+  {
+    id: '7168',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/e0589e95a2b41970f0f30f6202f5fce6~tplv-obj.webp',
+    name: 'Money Gun',
+    price: 500
+  },
+  {
+    id: '7122',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/dd06007ade737f1001977590b11d3f61~tplv-obj.webp',
+    name: 'Gem Gun',
+    price: 500
+  },
+  {
+    id: '5978',
+    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4227ed71f2c494b554f9cbe2147d4899~tplv-obj.webp',
+    name: 'Train',
+    price: 899
   }
 ])
 const form = ref<any>({
@@ -477,6 +534,9 @@ watch(
   },
   { immediate: true }
 )
+function betaBeta() {
+  window.api.sendBetaObj(beta.value)
+}
 </script>
 
 <style lang="less" scoped>

@@ -1,6 +1,5 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import Log from './Log.vue'
 import router from './router' // 引用 router
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -10,7 +9,5 @@ import i18n from './utils/i18n'
 // 引入 pinia
 import { createPinia } from 'pinia'
 const pinia = createPinia()
-const theLog = createApp(Log)
 
-theLog.use(ElementPlus).mount('#log')
 createApp(App).use(router).use(ElementPlus).use(pinia).use(i18n).mount('#app')

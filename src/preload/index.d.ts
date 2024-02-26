@@ -52,6 +52,7 @@ declare global {
       sendBetaWs: (data: any) => void
       sendLanguage: (id: any) => void
       mainSendLog: (callback: (res: any) => void) => void
+      sendBetaObj: (obj: any) => void
     }
   }
 }

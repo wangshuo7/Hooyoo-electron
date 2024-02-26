@@ -3,10 +3,15 @@
     <el-scrollbar>
       <router-view></router-view>
     </el-scrollbar>
+    <!-- <div class="log">
+      <Log></Log>
+    </div> -->
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+// import Log from '../../../views/Other/Log.vue'
+</script>
 
 <style lang="less" scoped>
 @media screen and (min-width: 2001px) {
@@ -23,7 +28,10 @@
 }
 .box {
   width: 100%;
-  min-height: 100%; // 使用 min-height 可以解决滚轮往下滑是白色的问题
+  min-height: 100vh - 60px; // 使用 min-height 可以解决滚轮往下滑是白色的问题
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   // background: black;
   // padding-top: 40px;
   .header {

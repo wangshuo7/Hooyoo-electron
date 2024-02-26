@@ -4,8 +4,8 @@
       <el-image
         class="logo-img"
         :src="logo ? logo : './system/hooyoo.gif'"
-        @click="onOpenBetaTool"
       ></el-image>
+      <!-- @click="onOpenBetaTool" -->
     </div>
     <div style="height: 85%; display: flex; flex-direction: column">
       <el-menu text-color="#757575" default-active="mall" router>
@@ -35,7 +35,7 @@
       </el-menu>
     </div>
   </div>
-  <BetaTool :visible="toolVisible" @close="closeBetaTool"></BetaTool>
+  <!-- <BetaTool :visible="toolVisible" @close="closeBetaTool"></BetaTool> -->
 </template>
 
 <script lang="ts" setup>
@@ -43,7 +43,7 @@ import { ref, computed, onMounted } from 'vue'
 // import { PriceTag, Menu } from '@element-plus/icons-vue'
 import { PriceTag } from '@element-plus/icons-vue'
 import { useStateStore } from '../../../store/state'
-import BetaTool from '../../Other/betaTool.vue'
+// import BetaTool from '../../Other/betaTool.vue'
 import { getGuildOem } from '../../../api/global'
 import { getPersonalInfo } from '../../../api/wallet'
 // const message = ref<string>()
@@ -51,27 +51,27 @@ const stateStore = useStateStore()
 const res: any = computed(() => {
   return stateStore.state
 })
-const toolVisible = ref<boolean>(false)
-const clickCount = ref<number>(0)
-const clickTimer = ref<any>(null)
+// const toolVisible = ref<boolean>(false)
+// const clickCount = ref<number>(0)
+// const clickTimer = ref<any>(null)
 const logo = ref<any>()
-function onOpenBetaTool() {
-  clickCount.value++
-  if (clickCount.value === 1) {
-    clickTimer.value = setTimeout(() => {
-      if (clickCount.value >= 5) {
-        toolVisible.value = true
-        clickCount.value = 0
-      } else {
-        clickCount.value = 0
-      }
-      clearTimeout(clickTimer.value)
-    }, 2000)
-  }
-}
-function closeBetaTool() {
-  toolVisible.value = false
-}
+// function onOpenBetaTool() {
+//   clickCount.value++
+//   if (clickCount.value === 1) {
+//     clickTimer.value = setTimeout(() => {
+//       if (clickCount.value >= 5) {
+//         toolVisible.value = true
+//         clickCount.value = 0
+//       } else {
+//         clickCount.value = 0
+//       }
+//       clearTimeout(clickTimer.value)
+//     }, 2000)
+//   }
+// }
+// function closeBetaTool() {
+//   toolVisible.value = false
+// }
 
 async function viewPersonal() {
   const res = await getPersonalInfo()

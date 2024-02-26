@@ -3,6 +3,9 @@
     <div class="left"></div>
     <div class="right">
       <div class="right-info">
+        <el-button class="info-item" @click="onOpenBeta">
+          <span style="font-size: 11px">Debug</span>
+        </el-button>
         <el-button class="info-item" @click="onOpenManage">
           <span style="font-size: 16px">后</span>
         </el-button>
@@ -48,7 +51,7 @@
                 {{ info?.nickname }}
               </div>
               <el-dropdown-item>
-                <span>{{ $t('system.price') }}:</span>
+                <span>{{ $t('system.price') }}：</span>
                 <span>{{ info?.current_price }}</span>
               </el-dropdown-item>
               <el-dropdown-item
@@ -57,6 +60,9 @@
               <el-dropdown-item @click="onRecharge">{{
                 $t('system.recharge')
               }}</el-dropdown-item>
+              <el-dropdown-item class="log" style="padding: 0"
+                ><Log></Log
+              ></el-dropdown-item>
               <el-dropdown-item divided @click="logOut">{{
                 $t('system.logout')
               }}</el-dropdown-item>
@@ -78,6 +84,7 @@
     :visible="settingVisible"
     @close="closeSettingDialog"
   ></TheSetting>
+  <BetaTool :visible="toolVisible" @close="closeBetaTool"></BetaTool>
 </template>
 
 <script lang="ts" setup>
@@ -87,9 +94,12 @@ import { useRouter } from 'vue-router'
 import TheExchange from '../../Other/exchange.vue'
 import TheRecharge from '../../Other/recharge.vue'
 import TheSetting from '../../Other/setting.vue'
+import BetaTool from '../../Other/betaTool.vue'
 import { getPersonalInfo } from '../../../api/wallet'
 import { useGlobalStore } from '../../../store/globalStore'
 import i18n from '../../../utils/i18n'
+import Log from '../../Other/Log.vue'
+
 const langView = ref<any>('中')
 const globalStore = useGlobalStore()
 const lang = ref<any>()
@@ -99,6 +109,7 @@ const router = useRouter()
 const settingVisible = ref<boolean>(false)
 const rechargeVisible = ref<boolean>(false)
 const exchangeVisible = ref<boolean>(false)
+const toolVisible = ref<boolean>(false)
 // 退出登录
 function logOut() {
   router.push('/login')
@@ -124,6 +135,12 @@ function onExchange() {
 }
 function closeExchangeDialog() {
   exchangeVisible.value = false
+}
+function onOpenBeta() {
+  toolVisible.value = true
+}
+function closeBetaTool() {
+  toolVisible.value = false
 }
 function onRecharge() {
   rechargeVisible.value = true
@@ -162,6 +179,16 @@ onMounted(async () => {
   if (!localStorage.getItem('lang')) {
     localStorage.setItem('lang', 'zh')
     window.api.sendLanguage(11)
+    langView.value = '中'
+  }
+  if (localStorage.getItem('lang') == 'en') {
+    langView.value = 'En'
+  }
+  if (localStorage.getItem('lang') == 'zh') {
+    langView.value = '中'
+  }
+  if (localStorage.getItem('lang') == 'tw') {
+    langView.value = '繁'
   }
 })
 </script>
@@ -278,5 +305,10 @@ onMounted(async () => {
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 10px;
+}
+:deep(.log) {
+  padding: 0;
+  height: 32px;
+  text-indent: 16px;
 }
 </style>

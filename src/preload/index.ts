@@ -168,7 +168,8 @@ const api = {
     ipcRenderer.on('main-send-log', (_event, res) => {
       callback(res)
     })
-  }
+  },
+  sendBetaObj: (obj: any) => ipcRenderer.send('send-beta-obj', obj)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -18,7 +18,8 @@ const i18n = createI18n({
         viwe: '网格视图',
         display: '显示',
         result: '个结果中的',
-        without: '无'
+        without: '无',
+        log: '日志'
       },
       login: {
         login: '登录',
@@ -159,7 +160,8 @@ const i18n = createI18n({
         viwe: 'Grid View',
         display: 'Display',
         result: "results's",
-        without: 'Without'
+        without: 'Without',
+        log: 'Log'
       },
       login: {
         login: 'Log in',
@@ -301,7 +303,8 @@ const i18n = createI18n({
         viwe: '網格視圖',
         display: '顯示',
         result: '個結果中的',
-        without: '無'
+        without: '無',
+        log: '日誌'
       },
       login: {
         login: '登錄',

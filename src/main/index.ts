@@ -23,6 +23,29 @@ import { promisify } from 'node:util'
 import { unzip as zlibUnzip } from 'node:zlib'
 import md5 from 'md5'
 import { rc4Encrypt2 } from './public/rc4'
+// import log4js from 'log4js'
+// log4js.configure({
+//   appenders: {
+//     file: {
+//       type: 'file',
+//       filename: 'logs/app.log',
+//       maxLogSize: 10485760,
+//       backups: 3,
+//       compress: true
+//     },
+//     console: {
+//       type: 'console'
+//     }
+//   },
+//   categories: {
+//     default: {
+//       appenders: ['file', 'console'],
+//       level: 'debug'
+//     }
+//   }
+// })
+// const logger = log4js.getLogger()
+
 /**
  * electron自动更新
  */
@@ -89,7 +112,6 @@ const gameStatus = {}
 let wsServer: any
 let mainWindow: any
 let liveRoom: any // 直播间
-let logWin: any // 日志
 let connectKey: string
 let gameId: string
 let rc4Key: string
@@ -156,7 +178,6 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-  console.log(5667, join(__dirname, '../preload/index.js'))
 
   // 最小化
   ipcMain.on('minimize', () => {
@@ -421,93 +442,9 @@ ipcMain.on('renderer-close-game', () => {
   }
   mainWindow.webContents.send('main-close-game')
 })
-function openLogWindow() {
-  logWin = new BrowserWindow({
-    width: 500,
-    height: 700,
-    // webPreferences: {
-    //   preload: join(__dirname, '../preload/index123.js')
-    // }
-    // icon: join(__dirname, '../../public/huyou.ico'),
-    // titleBarStyle: 'hidden',
-    // frame: false,
-    // titleBarOverlay: {
-    //   color: '#121212',
-    //   symbolColor: '121212',
-    //   height: 60
-    // },
-    // width: is.dev ? 1800 : 1600,
-    // height: 1000,
-    // minWidth: 1060,
-    // minHeight: 580,
-    // show: false, // 窗口是否在创建时显示
-    // fullscreen: true, // 窗口是否全屏
-    // hasShadow: false, // 窗口阴影
-    // autoHideMenuBar: true, // 自动隐藏菜单栏
-    ...(process.platform === 'linux' ? { icon } : {}),
-    webPreferences: {
-      // 指定 preload 脚本的路径, preload 脚本在渲染进程运行之前执行
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false, // 禁用沙箱环境，默认为true
-      nodeIntegration: false // 禁用 Node.js 集成，以提高安全性
-      // contextIsolation: false // 启用上下文隔离，提高安全性
-    }
-  })
-  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
-    logWin.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/log.html`)
-  } else {
-    logWin.loadFile(path.join(__dirname, '../renderer/log.html'))
-  }
-  console.log('123', join(__dirname, '../preload/index.js'))
-  logWin.on('closed', () => {
-    logWin = null
-  })
-}
-// 打开浮层
-// ipcMain.on('start-float', (_event, res) => {
-//   console.log(res)
-//   floatWin = new BrowserWindow({
-//     width: 200,
-//     height: 50,
-//     frame: false,
-//     resizable: false,
-//     transparent: true,
-//     alwaysOnTop: true,
-//     hasShadow: false,
-//     skipTaskbar: true,
-//     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-//     webPreferences: {
-//       nodeIntegration: true
-//       // devTools: false
-//     }
-//   })
-//   floatWin.webContents.on('did-finish-load', () => {
-//     floatWin.webContents.send('upload-content', res)
-//   })
-//   floatWin.loadFile(join(__dirname, '..', 'renderer', 'float', 'index.html'))
-//   floatWin.on('closed', () => {
-//     floatWin = null
-//   })
-//   floatWin.setAlwaysOnTop(true)
-//   const mainScreen = screen.getPrimaryDisplay()
-//   const { width } = mainScreen.workAreaSize
-//   const windowWidth = floatWin.getSize()[0]
-//   floatWin.setPosition(Math.floor((width - windowWidth) / 2), 0)
-// })
-// ipcMain.on('send-msg-float', (_event, message: string) => {
-//   if (floatWin) {
-//     floatWin.webContents.send('update-content', message)
-//   }
-// })
-// 关闭ws
-// function closeWebsocketClient() {
-//   wsClient = null
-// }
+
 function closeLiveRoom() {
   liveRoom.close()
-  if (logWin) {
-    logWin.close()
-  }
   mainWindow.webContents.send('main-close-live')
 }
 // function isWebSocketServiceAvailable() {
@@ -532,7 +469,24 @@ ipcMain.on('start-live', async (_event, url: string) => {
     return { action: 'deny' }
   })
   liveRoom.loadURL(url)
-  openLogWindow()
+  liveRoom.webContents.on('dom-ready', () => {
+    liveRoom.webContents
+      .executeJavaScript(
+        `
+            const user = JSON.parse(document.getElementById("SIGI_STATE").innerText).LiveRoom.liveRoomUserInfo.user;
+            user;
+        `
+      )
+      .then((user) => {
+        console.log('sgfhsdg', user) // 在这里你可以将 user 发送回渲染进程
+        const info = user
+        info['from'] = 'tiktok'
+        mainWindow.webContents.send('send-anchor-data', info)
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+  })
   const mouseID = setInterval(() => {
     if (liveRoom) {
       const { width, height } = liveRoom.getBounds()
@@ -553,9 +507,6 @@ ipcMain.on('start-live', async (_event, url: string) => {
   }, 10 * 1000)
   liveRoom.on('closed', () => {
     liveRoom = null
-    if (logWin) {
-      logWin.close()
-    }
     mainWindow.webContents.send('main-close-live')
     clearInterval(mouseID)
     // closeWebsocketClient()
@@ -580,50 +531,50 @@ ipcMain.on('start-live', async (_event, url: string) => {
         const buff = Buffer.from(payloadData, 'base64')
         deserializeWebsocketMessage(buff)
       }
-      if (method === 'Network.responseReceived') {
-        if (
-          params.response.url.includes('tiktok.com/webcast/room/enter/?aid=')
-        ) {
-          try {
-            const response = await liveRoom.webContents.debugger.sendCommand(
-              'Network.getResponseBody',
-              {
-                requestId: params.requestId
-              }
-            )
-            const info = JSON.parse(response.body).data.user
-            info['from'] = 'tiktok'
-            mainWindow.webContents.send('send-anchor-data', info)
-            // console.log('tiktok', info)
-          } catch (error) {
-            console.error('tiktok error:', error)
-            mainWindow.webContents.send('get-anchor-fail')
-            // closeLiveRoom()
-          }
-        }
-        if (
-          params.response.url.includes(
-            'douyin.com/webcast/room/web/enter/?aid='
-          )
-        ) {
-          try {
-            const response = await liveRoom.webContents.debugger.sendCommand(
-              'Network.getResponseBody',
-              {
-                requestId: params.requestId
-              }
-            )
-            const info = JSON.parse(response.body).data.user
-            info['from'] = 'douyin'
-            mainWindow.webContents.send('send-anchor-data', info)
-            // console.log('douyin', info)
-          } catch (error) {
-            console.error('douyin error:', error)
-            // mainWindow.webContents.send('get-anchor-fail')
-            // closeLiveRoom()
-          }
-        }
-      }
+      // if (method === 'Network.responseReceived') {
+      //   if (
+      //     params.response.url.includes('tiktok.com/webcast/room/enter/?aid=')
+      //   ) {
+      //     try {
+      //       const response = await liveRoom.webContents.debugger.sendCommand(
+      //         'Network.getResponseBody',
+      //         {
+      //           requestId: params.requestId
+      //         }
+      //       )
+      //       const info = JSON.parse(response.body).data.user
+      //       info['from'] = 'tiktok'
+      //       mainWindow.webContents.send('send-anchor-data', info)
+      //       // console.log('tiktok', info)
+      //     } catch (error) {
+      //       console.error('tiktok error:', error)
+      //       mainWindow.webContents.send('get-anchor-fail')
+      //       // closeLiveRoom()
+      //     }
+      //   }
+      //   if (
+      //     params.response.url.includes(
+      //       'douyin.com/webcast/room/web/enter/?aid='
+      //     )
+      //   ) {
+      //     try {
+      //       const response = await liveRoom.webContents.debugger.sendCommand(
+      //         'Network.getResponseBody',
+      //         {
+      //           requestId: params.requestId
+      //         }
+      //       )
+      //       const info = JSON.parse(response.body).data.user
+      //       info['from'] = 'douyin'
+      //       mainWindow.webContents.send('send-anchor-data', info)
+      //       // console.log('douyin', info)
+      //     } catch (error) {
+      //       console.error('douyin error:', error)
+      //       // mainWindow.webContents.send('get-anchor-fail')
+      //       // closeLiveRoom()
+      //     }
+      //   }
+      // }
     }
   )
   liveRoom.webContents.debugger.sendCommand('Network.enable')
@@ -715,6 +666,10 @@ function deserializeMessage(protoName, binaryMessage) {
   }
   return webcastData
 }
+// 磁盘日志
+// function writeToLog(message) {
+//   logger.info(message)
+// }
 // 发给客户端
 function sendWsData(data: any) {
   const msgData = JSON.stringify(data)
@@ -724,10 +679,13 @@ function sendWsData(data: any) {
   wsServer?.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
     binary: true
   })
-  // console.log(msgData)
   // 生成日志
-  logWin.webContents.send('main-send-log', msgData)
+  mainWindow.webContents.send('main-send-log', msgData)
 }
+ipcMain.on('send-beta-obj', (_event, obj: any) => {
+  console.log(JSON.parse(obj))
+  initGiftData(JSON.parse(obj))
+})
 // 进房
 function initMemberData(obj: any) {
   const send_data = {
@@ -766,6 +724,9 @@ function initGiftData(obj: any) {
     sendWsData(send_data)
     mainWindow.webContents.send('get-gift', send_data.data[0])
   }
+  // writeToLog(JSON.stringify(obj).toString())
+  // writeToLog(JSON.stringify(send_data).toString())
+  // writeToLog('==================================')
 }
 // 分享
 function initShareData(obj: any) {
@@ -841,24 +802,29 @@ function computedGiftNum(data: any) {
   const tempId = `${data.userId}_${data.giftId}_${data.groupId}`
 
   // 第一种情况--高价礼物单点
-  if (!data.groupId) {
+  if (data.groupId == '0') {
     return data.repeatCount
   }
+  console.log(2)
   if (filterGift[tempId]) {
     // 之前记录的比这次大，返回0
     if (data.repeatCount <= filterGift[tempId]) {
       filterGift[tempId] = data.repeatCount
+      console.log(4)
       return 0
     }
     // 之前记录过，求差
     const count = data.repeatCount - filterGift[tempId]
     filterGift[tempId] = data.repeatCount
+    console.log(5)
     return count
   }
   // 之前没记录过，取值
+  console.log(3)
   filterGift[tempId] = data.repeatCount
   return data.repeatCount
 }
+
 function pb2json(this: any, pbData: any) {
   try {
     const webcastResponse = deserializeMessage('WebcastResponse', pbData)
