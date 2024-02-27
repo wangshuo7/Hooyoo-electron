@@ -330,14 +330,15 @@ ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
   }
 })
 let gameProcess: any
+let jiami: any
 // 启动项目
-ipcMain.on('start-game', (event, id, lang, name, key) => {
+ipcMain.on('start-game', (event, id, lang, name, key, jm) => {
   gameId = id + ''
   lan = lang == 'zh' ? '11' : lang == 'en' ? '13' : '39'
   connectKey = key
   rc4Key = md5(`PojieSqj521${gameId}${connectKey}`) + authToken
-  console.log(123, rc4Key)
-
+  jiami = jm
+  console.log('jm', jiami)
   // const gameFolderPath = `D:\\hooyoo\\game${id}`
   const gameFolderPath = path.join(
     store.get('installPath') + '',
@@ -478,7 +479,6 @@ ipcMain.on('start-live', async (_event, url: string) => {
         `
       )
       .then((user) => {
-        console.log('sgfhsdg', user) // 在这里你可以将 user 发送回渲染进程
         const info = user
         info['from'] = 'tiktok'
         mainWindow.webContents.send('send-anchor-data', info)
@@ -676,9 +676,15 @@ function sendWsData(data: any) {
   const encoder = new TextEncoder()
   const utf8Encoded = encoder.encode(msgData)
   const utf8Buffer = Buffer.from(utf8Encoded)
-  wsServer?.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
-    binary: true
-  })
+  if (jiami == 1) {
+    // 加密
+    wsServer?.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
+      binary: true
+    })
+  } else {
+    // 不加密
+    wsServer?.send(msgData)
+  }
   // 生成日志
   mainWindow.webContents.send('main-send-log', msgData)
 }

@@ -16,3 +16,7 @@ export const buyGame = (data: any) => {
 export const exchangeGame = (data: any) => {
   return request.post('/zhuboduan/game/info_youhui', data)
 }
+// 礼物贴纸
+export const getGiftIcon = (data: any) => {
+  return request.post('/commpublic/param/lan_tietu', data)
+}

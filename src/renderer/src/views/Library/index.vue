@@ -527,7 +527,8 @@ async function launchGame() {
         buyID.value,
         localStorage.getItem('lang'),
         detail.value.v_main,
-        detail.value.miyaostr
+        detail.value.miyaostr,
+        detail.value.is_jiami
       )
       is_start.value = true
       start_id.value = buyID.value

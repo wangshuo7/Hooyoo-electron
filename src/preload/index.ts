@@ -43,8 +43,8 @@ const api = {
     })
   },
   // 启动游戏
-  startGame: (id: any, lang: string, name: string, key: string) =>
-    ipcRenderer.send('start-game', id, lang, name, key),
+  startGame: (id: any, lang: string, name: string, key: string, jm: number) =>
+    ipcRenderer.send('start-game', id, lang, name, key, jm),
   startGameFailReply: (callback: () => void) => {
     ipcRenderer.on('start-game-fail-reply', () => {
       callback()

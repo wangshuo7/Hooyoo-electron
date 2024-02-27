@@ -55,7 +55,9 @@ const i18n = createI18n({
       },
       menu: {
         mall: '商城',
-        library: '库'
+        library: '库',
+        home: '主页',
+        developer: '开发者中心'
       },
       search: {
         name: '名称',
@@ -92,7 +94,8 @@ const i18n = createI18n({
         installing: '解压中',
         connect: '连接弹幕',
         document: '使用指南',
-        service: '客服'
+        service: '客服',
+        gift_icon: '礼物贴纸'
       },
       detail: {
         package: '套餐',
@@ -197,7 +200,9 @@ const i18n = createI18n({
       },
       menu: {
         mall: 'Mall',
-        library: 'Library'
+        library: 'Library',
+        home: 'Home',
+        developer: 'Developer Center'
       },
       search: {
         name: 'Name',
@@ -234,7 +239,8 @@ const i18n = createI18n({
         installing: 'Unzipping',
         connect: 'Connect barrage',
         document: 'Operating Guide',
-        service: 'Customer Service'
+        service: 'Customer Service',
+        gift_icon: 'Gift stickers'
       },
       detail: {
         package: 'Package',
@@ -340,7 +346,9 @@ const i18n = createI18n({
       },
       menu: {
         mall: '商城',
-        library: '庫'
+        library: '庫',
+        home: '主頁',
+        developer: '開發者中心'
       },
       search: {
         name: '名稱',
@@ -377,7 +385,8 @@ const i18n = createI18n({
         installing: '解壓中',
         connect: '連接彈幕',
         document: '使用指南',
-        service: '客服'
+        service: '客服',
+        gift_icon: '禮物貼紙'
       },
       detail: {
         package: '套餐',

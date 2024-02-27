@@ -33,19 +33,12 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { code, msg, data } = response.data
+    const { code, msg } = response.data
     if (code === 205) {
       // 未登录
       ElMessage.error(msg)
       router.push('/login')
     } else if (code === 200) {
-      //请求成功
-      if (data.t) {
-        // 只有登录接口有data.t ，所以只有登录接口生效
-        localStorage.setItem('authtoken', data.t)
-        router.push('/mall')
-        window.api.sendToken(data.t)
-      }
       return response.data
     } else if (code === 0) {
       // 请求失败

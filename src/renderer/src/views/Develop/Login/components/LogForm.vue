@@ -97,13 +97,10 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { login, getPhoneCode } from '../../../api/login'
+import { developerLogin, getPhoneCode } from '../../../../api/developer'
 import { Base64 } from 'js-base64'
-import { useAccountStore } from '../../../store/account'
-import { useRouter } from 'vue-router'
-const router = useRouter()
-
-const accountStore = useAccountStore()
+import { useDeveloperStore } from '../../../../store/developer'
+const developerStore = useDeveloperStore()
 
 const loginType = ref<boolean>(true) // true为密码登录 | false为验证码登录
 
@@ -146,27 +143,26 @@ async function onSubmit() {
   }
   ruleFormRef.value?.validate(async (valid) => {
     if (valid) {
-      const res: any = await login(send_data)
+      const res: any = await developerLogin(send_data)
       if (res?.code === 200) {
         if (!loginType.value) {
-          localStorage.setItem('authtoken', res.data.t)
-          router.push('/mall')
-          window.api.sendToken(res.data.t)
-          return ElMessage.success('登录成功')
+          // 验证码登录
+          developerStore.setLogin(true)
+          localStorage.setItem('author_authtoken', res.data.t)
+          return ElMessage.success('开发者登录成功')
         }
-        localStorage.setItem('hoo_anchor_remember', remember.value + '')
+        localStorage.setItem('hoo_author_remember', remember.value + '')
         const basePassword = Base64.encode(form.password) // 加密
         if (remember.value) {
-          localStorage.setItem('hoo_anchor_username', form.username)
-          localStorage.setItem('hoo_anchor_password', basePassword)
+          localStorage.setItem('hoo_author_username', form.username)
+          localStorage.setItem('hoo_author_password', basePassword)
         } else {
-          localStorage.removeItem('hoo_anchor_username')
-          localStorage.removeItem('hoo_anchor_password')
+          localStorage.removeItem('hoo_author_username')
+          localStorage.removeItem('hoo_author_password')
         }
-        localStorage.setItem('authtoken', res.data.t)
-        router.push('/mall')
-        window.api.sendToken(res.data.t)
-        return ElMessage.success('登录成功')
+        developerStore.setLogin(true)
+        localStorage.setItem('author_authtoken', res.data.t)
+        return ElMessage.success('开发者登录成功')
       }
     } else {
       return console.log('表单验证未通过')
@@ -227,14 +223,14 @@ const psd_border = ref<boolean>(false)
 // 记住密码
 const remember = ref<boolean>(false)
 onMounted(() => {
-  const is_remember = localStorage.getItem('hoo_anchor_remember')
+  const is_remember = localStorage.getItem('hoo_author_remember')
   if (is_remember === 'true') {
     remember.value = true
   } else {
     remember.value = false
   }
-  const username = localStorage.getItem('hoo_anchor_username')
-  const password = localStorage.getItem('hoo_anchor_password')
+  const username = localStorage.getItem('hoo_author_username')
+  const password = localStorage.getItem('hoo_author_password')
   if (username) form.username = username
   if (password) form.password = Base64.decode(password) // 解密
 
@@ -251,7 +247,7 @@ onMounted(() => {
 })
 // 切换注册
 function switchRegister() {
-  accountStore.setActive('register')
+  window.open(`http://open.huyouyun.cn/login/?register=1`, '_blank')
 }
 function decode(value: any) {
   if (!value) {
@@ -280,7 +276,7 @@ function switchLoginType() {
 }
 // 切换忘记密码
 function switchForget() {
-  accountStore.setActive('forget')
+  developerStore.setActive('forget')
 }
 </script>
 

@@ -6,12 +6,22 @@ const routes = [
     path: '/',
     name: 'Layout',
     component: Layout,
-    redirect: '/login',
+    redirect: '/mall',
     children: [
       {
         path: '/mall',
         name: 'Mall',
         component: () => import('../views/Mall/index.vue')
+      },
+      {
+        path: '/home',
+        name: 'Home',
+        component: () => import('../views/Home/index.vue')
+      },
+      {
+        path: '/develop',
+        name: 'Develop',
+        component: () => import('../views/Develop/index.vue')
       },
       {
         path: '/library',
@@ -32,22 +42,21 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, _from, next) => {
-  if (!localStorage.getItem('authtoken')) {
-    localStorage.setItem('authtoken', '')
-  }
-  const res: any = await isLogin()
   if (to.path === '/login') {
+    next()
+    return
+  }
+
+  try {
+    const res: any = await isLogin()
     if (res.code === 200) {
-      next('/mall')
-    } else {
       next()
-    }
-  } else {
-    if (res.code !== 200) {
+    } else {
       next('/login')
-    } else {
-      next()
     }
+  } catch (error) {
+    console.error('Error:', error)
+    next('/login')
   }
 })
 

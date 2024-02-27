@@ -5,20 +5,27 @@
         class="logo-img"
         :src="logo ? logo : './system/hooyoo.gif'"
       ></el-image>
-      <!-- @click="onOpenBetaTool" -->
     </div>
     <div style="height: 85%; display: flex; flex-direction: column">
       <el-menu text-color="#757575" default-active="mall" router>
+        <!-- <el-menu-item index="home">
+          <el-icon><HomeFilled /></el-icon>
+          <template #title>{{ $t('menu.home') }}</template>
+        </el-menu-item> -->
         <el-menu-item index="mall">
-          <el-icon><PriceTag /></el-icon>
+          <el-icon><Shop /></el-icon>
           <template #title>{{ $t('menu.mall') }}</template>
         </el-menu-item>
+        <!-- <el-menu-item index="develop">
+          <el-icon><Avatar /></el-icon>
+          <template #title>{{ $t('menu.developer') }}</template>
+        </el-menu-item> -->
         <!-- <el-menu-item index="library">
           <el-icon><Menu /></el-icon>
           <template #title>{{ $t('menu.library') }}</template>
         </el-menu-item> -->
       </el-menu>
-      <el-menu
+      <!-- <el-menu
         v-if="res.message"
         class="down"
         style="margin-top: auto"
@@ -32,46 +39,27 @@
             >
           </template>
         </el-menu-item>
-      </el-menu>
+      </el-menu> -->
     </div>
   </div>
-  <!-- <BetaTool :visible="toolVisible" @close="closeBetaTool"></BetaTool> -->
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
-// import { PriceTag, Menu } from '@element-plus/icons-vue'
-import { PriceTag } from '@element-plus/icons-vue'
-import { useStateStore } from '../../../store/state'
-// import BetaTool from '../../Other/betaTool.vue'
+import { ref, onMounted } from 'vue'
+import {
+  // Avatar,
+  //  HomeFilled,
+  Shop
+} from '@element-plus/icons-vue'
+// import { useStateStore } from '../../../store/state'
 import { getGuildOem } from '../../../api/global'
 import { getPersonalInfo } from '../../../api/wallet'
-// const message = ref<string>()
-const stateStore = useStateStore()
-const res: any = computed(() => {
-  return stateStore.state
-})
-// const toolVisible = ref<boolean>(false)
-// const clickCount = ref<number>(0)
-// const clickTimer = ref<any>(null)
+// const stateStore = useStateStore()
+// const res: any = computed(() => {
+//   return stateStore.state
+// })
+
 const logo = ref<any>()
-// function onOpenBetaTool() {
-//   clickCount.value++
-//   if (clickCount.value === 1) {
-//     clickTimer.value = setTimeout(() => {
-//       if (clickCount.value >= 5) {
-//         toolVisible.value = true
-//         clickCount.value = 0
-//       } else {
-//         clickCount.value = 0
-//       }
-//       clearTimeout(clickTimer.value)
-//     }, 2000)
-//   }
-// }
-// function closeBetaTool() {
-//   toolVisible.value = false
-// }
 
 async function viewPersonal() {
   const res = await getPersonalInfo()

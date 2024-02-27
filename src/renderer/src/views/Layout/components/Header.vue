@@ -3,9 +3,9 @@
     <div class="left"></div>
     <div class="right">
       <div class="right-info">
-        <el-button class="info-item" @click="onOpenBeta">
+        <!-- <el-button class="info-item" @click="onOpenBeta">
           <span style="font-size: 11px">Debug</span>
-        </el-button>
+        </el-button> -->
         <el-button class="info-item" @click="onOpenManage">
           <span style="font-size: 16px">后</span>
         </el-button>
@@ -84,7 +84,7 @@
     :visible="settingVisible"
     @close="closeSettingDialog"
   ></TheSetting>
-  <BetaTool :visible="toolVisible" @close="closeBetaTool"></BetaTool>
+  <!-- <BetaTool :visible="toolVisible" @close="closeBetaTool"></BetaTool> -->
 </template>
 
 <script lang="ts" setup>
@@ -94,11 +94,11 @@ import { useRouter } from 'vue-router'
 import TheExchange from '../../Other/exchange.vue'
 import TheRecharge from '../../Other/recharge.vue'
 import TheSetting from '../../Other/setting.vue'
-import BetaTool from '../../Other/betaTool.vue'
+// import BetaTool from '../../Other/betaTool.vue'
 import { getPersonalInfo } from '../../../api/wallet'
 import { useGlobalStore } from '../../../store/globalStore'
 import i18n from '../../../utils/i18n'
-import Log from '../../Other/Log.vue'
+import Log from '../../Other/log.vue'
 
 const langView = ref<any>('中')
 const globalStore = useGlobalStore()
@@ -109,7 +109,7 @@ const router = useRouter()
 const settingVisible = ref<boolean>(false)
 const rechargeVisible = ref<boolean>(false)
 const exchangeVisible = ref<boolean>(false)
-const toolVisible = ref<boolean>(false)
+// const toolVisible = ref<boolean>(false)
 // 退出登录
 function logOut() {
   router.push('/login')
@@ -136,12 +136,12 @@ function onExchange() {
 function closeExchangeDialog() {
   exchangeVisible.value = false
 }
-function onOpenBeta() {
-  toolVisible.value = true
-}
-function closeBetaTool() {
-  toolVisible.value = false
-}
+// function onOpenBeta() {
+//   toolVisible.value = true
+// }
+// function closeBetaTool() {
+//   toolVisible.value = false
+// }
 function onRecharge() {
   rechargeVisible.value = true
 }

@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import md5 from 'md5'
 import { rc4Encrypt, rc4Decrypt, utf8Encode, utf8Decode } from './rc4'
+import { ElMessage } from 'element-plus'
 
 const baseURL =
   process.env.NODE_ENV === 'production'
@@ -13,7 +14,8 @@ const request = axios.create({
     authtoken: '',
     authtoken2: '1',
     authtokentype: 'tstr',
-    'Content-Type': 'application/x-www-form-urlencoded'
+    'Content-Type': 'application/x-www-form-urlencoded',
+    jmid: localStorage.getItem('game_id')
   }
 })
 
@@ -61,6 +63,9 @@ request.interceptors.response.use(
     const decryptedData = utf8Decode(rc4Decrypt(rc4Key, response.data))
     // const decryptedData = rc4Decrypt(rc4Key, response.data)
     response.data = JSON.parse(decryptedData)
+    if (response.data?.code !== 200) {
+      ElMessage.error(response.data?.msg)
+    }
     return response.data
   },
   (error) => {
