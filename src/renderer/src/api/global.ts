@@ -20,3 +20,7 @@ export const getConfig = () => {
 export const getGuildOem = (data: any) => {
   return request.post('/commpublic/param/tiepai', data)
 }
+// 礼物贴纸
+export const getGiftIcon = (data: any) => {
+  return request.post('/commpublic/param/game_conf_tt', data)
+}

@@ -7,19 +7,19 @@
       ></el-image>
     </div>
     <div style="height: 85%; display: flex; flex-direction: column">
-      <el-menu text-color="#757575" default-active="mall" router>
-        <!-- <el-menu-item index="home">
+      <el-menu text-color="#757575" :default-active="menu_active" router>
+        <el-menu-item index="/home">
           <el-icon><HomeFilled /></el-icon>
           <template #title>{{ $t('menu.home') }}</template>
-        </el-menu-item> -->
-        <el-menu-item index="mall">
+        </el-menu-item>
+        <el-menu-item index="/mall">
           <el-icon><Shop /></el-icon>
           <template #title>{{ $t('menu.mall') }}</template>
         </el-menu-item>
-        <!-- <el-menu-item index="develop">
+        <el-menu-item index="/develop">
           <el-icon><Avatar /></el-icon>
           <template #title>{{ $t('menu.developer') }}</template>
-        </el-menu-item> -->
+        </el-menu-item>
         <!-- <el-menu-item index="library">
           <el-icon><Menu /></el-icon>
           <template #title>{{ $t('menu.library') }}</template>
@@ -45,29 +45,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
-import {
-  // Avatar,
-  //  HomeFilled,
-  Shop
-} from '@element-plus/icons-vue'
-// import { useStateStore } from '../../../store/state'
+import { ref, onMounted, watchEffect } from 'vue'
+import { Avatar, HomeFilled, Shop } from '@element-plus/icons-vue'
 import { getGuildOem } from '../../../api/global'
 import { getPersonalInfo } from '../../../api/wallet'
-// const stateStore = useStateStore()
-// const res: any = computed(() => {
-//   return stateStore.state
-// })
-
+import { useRoute } from 'vue-router'
+const route = useRoute()
+const menu_active = ref<any>('/home')
 const logo = ref<any>()
 
 async function viewPersonal() {
   const res = await getPersonalInfo()
-  // guild.value = res.data.one.gonghui_id
   const result = await getGuildOem({ id: res.data.one.gonghui_id })
-  console.log(result)
   logo.value = result.data.list[0].tiepai_icon
 }
+
+watchEffect(() => {
+  menu_active.value = route.path
+})
 onMounted(() => {
   viewPersonal()
 })

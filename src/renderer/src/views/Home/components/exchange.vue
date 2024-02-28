@@ -73,7 +73,7 @@
 
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
-import { buyGame, exchangeGame } from '../../api/game'
+import { buyGame, exchangeGame } from '../../../api/game'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()

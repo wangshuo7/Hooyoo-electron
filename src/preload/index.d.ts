@@ -4,8 +4,11 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
+      saveImage: (url: string) => void
+      saveImageResult: (callback: (type) => void) => void
       uploadContent: (res: any) => void
       sendMessage: (message: string) => void
+      refreshWindow: () => void
       minimize: () => void
       quit: () => void
       maximize: () => void

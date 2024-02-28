@@ -91,7 +91,7 @@
 import { ref, onMounted } from 'vue'
 import { Setting } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
-import TheExchange from '../../Other/exchange.vue'
+import TheExchange from '../../Home/components/exchange.vue'
 import TheRecharge from '../../Other/recharge.vue'
 import TheSetting from '../../Other/setting.vue'
 // import BetaTool from '../../Other/betaTool.vue'

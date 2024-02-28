@@ -21,6 +21,12 @@ const i18n = createI18n({
         without: '无',
         log: '日志'
       },
+      home: {
+        redeem: '兑换游戏',
+        manage: '管理后台',
+        livelog: '直播记录',
+        recent: '最近上新'
+      },
       login: {
         login: '登录',
         register: '注册',
@@ -165,6 +171,12 @@ const i18n = createI18n({
         result: "results's",
         without: 'Without',
         log: 'Log'
+      },
+      home: {
+        redeem: 'Redeem game',
+        manage: 'Manage backend',
+        livelog: 'Live recording',
+        recent: 'Recently updated'
       },
       login: {
         login: 'Log in',
@@ -311,6 +323,12 @@ const i18n = createI18n({
         result: '個結果中的',
         without: '無',
         log: '日誌'
+      },
+      home: {
+        redeem: '兌換遊戲',
+        manage: '管理後台',
+        livelog: '直播記錄',
+        recent: '最近上新'
       },
       login: {
         login: '登錄',

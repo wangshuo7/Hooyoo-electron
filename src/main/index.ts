@@ -4,7 +4,8 @@ import {
   BrowserWindow,
   ipcMain,
   dialog,
-  Notification
+  Notification,
+  globalShortcut
 } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { join } from 'path'
@@ -178,7 +179,10 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
-
+  // 刷新
+  ipcMain.on('refresh', () => {
+    mainWindow.reload()
+  })
   // 最小化
   ipcMain.on('minimize', () => {
     mainWindow.minimize()
@@ -215,6 +219,9 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
+  globalShortcut.register('F5', () => {
+    mainWindow.reload()
+  })
 })
 
 app.on('window-all-closed', () => {
@@ -222,6 +229,40 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+// 保存图片
+ipcMain.on('send-image', (_event, url: string) => {
+  saveImage(url)
+})
+function saveImage(url) {
+  dialog
+    .showSaveDialog({
+      defaultPath: url
+    })
+    .then((result: any) => {
+      if (!result.canceled) {
+        const fileName = path.basename(result.filePath)
+        const file = fs.createWriteStream(result.filePath)
+        http
+          .get(url, (response) => {
+            response.pipe(file)
+            file.on('finish', () => {
+              file.close(() => {
+                console.log(`Image ${fileName} saved successfully`)
+                mainWindow.webContents.send('save-image-result', 'success')
+              })
+            })
+          })
+          .on('error', (err) => {
+            fs.unlink(result.filePath, () => {}) // 删除失败的文件
+            console.error('Failed to download the image:', err)
+            mainWindow.webContents.send('save-image-result', 'error')
+          })
+      }
+    })
+    .catch((err) => {
+      console.error('Failed to show save dialog:', err)
+    })
+}
 // 显示通知
 ipcMain.on('show-notification', function (_event, head, message) {
   const notification = new Notification({
@@ -238,6 +279,7 @@ ipcMain.on('message', (_event, message) => {
 // 关闭
 ipcMain.on('quit', () => {
   app.quit()
+  globalShortcut.unregisterAll()
 })
 // 解压
 function performPostDownloadOperations(id, filePath, extractTo) {

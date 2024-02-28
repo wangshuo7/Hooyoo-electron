@@ -3,8 +3,15 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
+  saveImage: (url: string) => ipcRenderer.send('send-image', url),
+  saveImageResult: (callback: (type: string) => void) => {
+    ipcRenderer.on('save-image-result', (_event, type) => {
+      callback(type)
+    })
+  },
   uploadContent: (res: any) => ipcRenderer.send('upload-content', res),
   sendMessage: (message: string) => ipcRenderer.send('message', message),
+  refreshWindow: () => ipcRenderer.send('refresh'), // 刷新
   minimize: () => ipcRenderer.send('minimize'), // 最小
   quit: () => ipcRenderer.send('quit'), // 关闭
   maximize: () => ipcRenderer.send('maximize'), // 最大

@@ -2,6 +2,10 @@
   <div class="header-drag">
     <div class="empty"></div>
     <div class="tool">
+      <span class="item refresh" @click="controlRefresh">
+        <!-- <el-icon><RefreshRight /></el-icon> -->
+        <el-icon><Refresh /></el-icon>
+      </span>
       <span class="item min" @click="controlMin">
         <span></span>
       </span>
@@ -26,12 +30,17 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { Refresh } from '@element-plus/icons-vue'
+
 const changeSize = ref<boolean>(true)
 
 // 监听主进程窗口状态 => 主要针对于双击可拖拽区域时全屏修改图标问题
 window.api.updateWinStatus((status) => {
   changeSize.value = !status
 })
+function controlRefresh() {
+  window.api.refreshWindow()
+}
 function controlMin() {
   window.api.minimize()
 }
@@ -116,6 +125,12 @@ function controlReduction() {
     }
     .max:hover .box1 {
       background: #54b2de;
+    }
+    .refresh {
+      font-size: 16px;
+    }
+    .refresh:hover {
+      background: rgb(1, 173, 1);
     }
   }
 }

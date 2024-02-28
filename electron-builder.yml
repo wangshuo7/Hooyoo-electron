@@ -17,6 +17,7 @@ win:
   icon: /public/huyou.png
   target: nsis
   executableName: hooyoo-electron
+  requestedExecutionLevel: highestAvailable
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}

@@ -6,7 +6,7 @@ const routes = [
     path: '/',
     name: 'Layout',
     component: Layout,
-    redirect: '/mall',
+    redirect: '/home',
     children: [
       {
         path: '/mall',
@@ -46,7 +46,6 @@ router.beforeEach(async (to, _from, next) => {
     next()
     return
   }
-
   try {
     const res: any = await isLogin()
     if (res.code === 200) {

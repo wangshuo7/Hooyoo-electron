@@ -83,6 +83,13 @@
               : ''
           }}</el-tag
         >
+        <el-tag
+          v-if="item.game_id == pre_id || item.game_id == start_id"
+          class="pre-tag"
+          effect="dark"
+        >
+          上次打开
+        </el-tag>
         <div class="img-box">
           <el-image
             class="img"
@@ -100,7 +107,11 @@
           <div v-else>{{ $t('detail.free') }}</div>
         </div>
         <div class="item-percent">
-          {{ $t('detail.divide') }}：{{ item.divide }}%
+          {{ $t('detail.divide') }}：{{
+            item.jisuan_bl.bl_gonghui +
+            item.jisuan_bl.bl_pingtai +
+            item.jisuan_bl.bl_youxizuozhe
+          }}%
         </div>
       </div>
     </div>
@@ -262,7 +273,7 @@
               style="margin-left: 12px"
               type="warning"
               size="large"
-              :disabled="true"
+              :disabled="false"
               @click="onOpenGiftIcon"
               >{{ $t('buttons.gift_icon') }}</el-button
             >
@@ -491,7 +502,12 @@
     :visible="gameDetailVisible"
     @close="closeDetailDialog"
   ></GameDetail> -->
-  <GiftIcon :visible="giftVisible" @close="closeGiftDialog"></GiftIcon>
+  <GiftIcon
+    :id="buyID"
+    :lang="languages"
+    :visible="giftVisible"
+    @close="closeGiftDialog"
+  ></GiftIcon>
 </template>
 
 <script lang="ts" setup>
@@ -514,9 +530,11 @@ import {
   // getLivePing,
   // startLiving
 } from '../../api/rc4'
-import { getGiftIcon } from '../../api/game'
+// import { getGiftIcon } from '../../api/global'
 import { useStateStore } from '../../store/state'
 import { useI18n } from 'vue-i18n'
+import { useRoute } from 'vue-router'
+const route = useRoute()
 const { t } = useI18n()
 
 // const gameDetailVisible = ref<boolean>(false)
@@ -574,9 +592,8 @@ function computedDiamond() {
   return res
 }
 // 打开礼物贴纸
-function onOpenGiftIcon() {
+async function onOpenGiftIcon() {
   giftVisible.value = true
-  getGiftIcon
 }
 function closeGiftDialog() {
   giftVisible.value = false
@@ -816,6 +833,7 @@ const intervalId = ref<any>()
 const is_start = ref<boolean>(false) // 是否启动游戏
 const is_start_live = ref<boolean>(false) // 是否启动直播间
 const start_id = ref<any>() // 启动游戏id
+const pre_id = ref<any>(localStorage.getItem('start-pre'))
 const pingInterval = ref<any>(null)
 // const live_id = ref<any>()
 const kaibo = ref<boolean>(false) // 是否开播
@@ -843,6 +861,7 @@ async function launchGame() {
       stateStore.setState({ success: 'success', message: '游戏状态正常' })
       is_start.value = true
       start_id.value = buyID.value
+      localStorage.setItem('start-pre', start_id.value)
       window.api.startGameFailReply(() => {
         is_start.value = false
         start_id.value = ''
@@ -1110,6 +1129,12 @@ window.api.sendAnchorData((res) => {
   anchorInfo.value = res
   console.log(anchorInfo.value)
 })
+function autoOpenDetail() {
+  if (!route.query.title) {
+    return
+  }
+  openDetail({ game_id: Number(route.query.game_id), title: route.query.title })
+}
 onMounted(async () => {
   query()
   await globalStore.setLanguage()
@@ -1120,7 +1145,9 @@ onMounted(async () => {
   categories.value = globalStore.category
   platforms.value = globalStore.platform
   ratio.value = globalStore.ratio
+  autoOpenDetail()
 })
+
 // 格式化时间
 function formatTime(time: any) {
   return time ? Moment(time * 1000).format('YYYY-MM-DD HH:mm:ss') : '-'
@@ -1185,6 +1212,12 @@ function formatTime(time: any) {
       position: absolute;
       top: 10px;
       right: 10px;
+      z-index: 999;
+    }
+    .pre-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
       z-index: 999;
     }
     .img-box {
