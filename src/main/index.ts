@@ -134,7 +134,7 @@ function createWindow(): void {
     },
     width: is.dev ? 1800 : 1600,
     height: 1000,
-    minWidth: 1060,
+    minWidth: 1200,
     minHeight: 580,
     show: false, // 窗口是否在创建时显示
     // fullscreen: true, // 窗口是否全屏
@@ -526,7 +526,7 @@ ipcMain.on('start-live', async (_event, url: string) => {
         mainWindow.webContents.send('send-anchor-data', info)
       })
       .catch((error) => {
-        console.error(error)
+        console.error('catch error123', error)
       })
   })
   const mouseID = setInterval(() => {
@@ -573,50 +573,50 @@ ipcMain.on('start-live', async (_event, url: string) => {
         const buff = Buffer.from(payloadData, 'base64')
         deserializeWebsocketMessage(buff)
       }
-      // if (method === 'Network.responseReceived') {
-      //   if (
-      //     params.response.url.includes('tiktok.com/webcast/room/enter/?aid=')
-      //   ) {
-      //     try {
-      //       const response = await liveRoom.webContents.debugger.sendCommand(
-      //         'Network.getResponseBody',
-      //         {
-      //           requestId: params.requestId
-      //         }
-      //       )
-      //       const info = JSON.parse(response.body).data.user
-      //       info['from'] = 'tiktok'
-      //       mainWindow.webContents.send('send-anchor-data', info)
-      //       // console.log('tiktok', info)
-      //     } catch (error) {
-      //       console.error('tiktok error:', error)
-      //       mainWindow.webContents.send('get-anchor-fail')
-      //       // closeLiveRoom()
-      //     }
-      //   }
-      //   if (
-      //     params.response.url.includes(
-      //       'douyin.com/webcast/room/web/enter/?aid='
-      //     )
-      //   ) {
-      //     try {
-      //       const response = await liveRoom.webContents.debugger.sendCommand(
-      //         'Network.getResponseBody',
-      //         {
-      //           requestId: params.requestId
-      //         }
-      //       )
-      //       const info = JSON.parse(response.body).data.user
-      //       info['from'] = 'douyin'
-      //       mainWindow.webContents.send('send-anchor-data', info)
-      //       // console.log('douyin', info)
-      //     } catch (error) {
-      //       console.error('douyin error:', error)
-      //       // mainWindow.webContents.send('get-anchor-fail')
-      //       // closeLiveRoom()
-      //     }
-      //   }
-      // }
+      if (method === 'Network.responseReceived') {
+        //   if (
+        //     params.response.url.includes('tiktok.com/webcast/room/enter/?aid=')
+        //   ) {
+        //     try {
+        //       const response = await liveRoom.webContents.debugger.sendCommand(
+        //         'Network.getResponseBody',
+        //         {
+        //           requestId: params.requestId
+        //         }
+        //       )
+        //       const info = JSON.parse(response.body).data.user
+        //       info['from'] = 'tiktok'
+        //       mainWindow.webContents.send('send-anchor-data', info)
+        //       // console.log('tiktok', info)
+        //     } catch (error) {
+        //       console.error('tiktok error:', error)
+        //       mainWindow.webContents.send('get-anchor-fail')
+        //       // closeLiveRoom()
+        //     }
+        //   }
+        if (
+          params.response.url.includes(
+            'douyin.com/webcast/room/web/enter/?aid='
+          )
+        ) {
+          try {
+            const response = await liveRoom.webContents.debugger.sendCommand(
+              'Network.getResponseBody',
+              {
+                requestId: params.requestId
+              }
+            )
+            const info = JSON.parse(response.body).data.user
+            info['from'] = 'douyin'
+            mainWindow.webContents.send('send-anchor-data', info)
+            // console.log('douyin', info)
+          } catch (error) {
+            console.error('douyin error:', error)
+            // mainWindow.webContents.send('get-anchor-fail')
+            // closeLiveRoom()
+          }
+        }
+      }
     }
   )
   liveRoom.webContents.debugger.sendCommand('Network.enable')

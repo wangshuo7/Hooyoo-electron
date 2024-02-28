@@ -88,7 +88,7 @@
           class="pre-tag"
           effect="dark"
         >
-          上次打开
+          {{ $t('system.last_open') }}
         </el-tag>
         <div class="img-box">
           <el-image
@@ -160,7 +160,13 @@
     </div>
   </div>
   <!-- 详情 -->
-  <el-dialog v-model="detailVisible" :title="game_name" width="945" top="10vh">
+  <el-dialog
+    v-model="detailVisible"
+    :title="game_name"
+    width="945"
+    top="10vh"
+    @close="detailDialogClose"
+  >
     <div class="detail">
       <div
         class="detail-head"
@@ -511,7 +517,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
+import { computed, h, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import { QuestionFilled, Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { useDebounceFn, useTimestamp } from '@vueuse/core'
 // import GameDetail from '../Detail/index.vue'
@@ -521,7 +527,7 @@ import Moment from 'moment'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
 import { buyGame, gameInfo, getGameList } from '../../api/game'
 import { useGlobalStore } from '../../store/globalStore'
-import { ElMessage, FormInstance } from 'element-plus'
+import { ElMessage, ElNotification, FormInstance } from 'element-plus'
 
 import {
   // deductDiamond,
@@ -805,6 +811,7 @@ window.api.updateGameStatus((id, status) => {
   gameStatus.value[id] = status
 })
 
+let notification
 // 下载游戏
 function downLoadGame() {
   if (is_start.value && gameStatus.value[buyID.value] == 'update') {
@@ -813,8 +820,27 @@ function downLoadGame() {
   }
   if (detail.value.xiazai_url && detail.value.xiazai_url.indexOf('zip') >= 0) {
     window.api.download(detail.value.game_id, detail.value.xiazai_url)
+
+    if (detail.value.v_content) {
+      notification = ElNotification({
+        title: '版本内容',
+        offset: 80,
+        type: 'success',
+        duration: 0,
+        message: h(
+          'div',
+          { style: 'color: #909399; font-size:16px' },
+          detail.value.v_content
+        )
+      })
+    }
   } else {
     ElMessage.error('暂无游戏地址')
+  }
+}
+function detailDialogClose() {
+  if (notification) {
+    notification.close()
   }
 }
 const gamePath = ref<any>({})
@@ -962,9 +988,9 @@ window.api.mainCloseGame(() => {
 // async function sendStartLivingRequest() {
 //   try {
 //     const send_data = {
-//       header_img: anchorInfo.value?.avatar_thumb.url_list[0],
-//       zhubo_name: anchorInfo.value?.nickname,
-//       zhubo_uid: anchorInfo.value?.sec_uid,
+//       header_img: anchorInfo.value?.avatar,
+//       zhubo_name: anchorInfo.value?.name,
+//       zhubo_uid: anchorInfo.value?.anchor_id,
 //       game_id: detail.value.game_id
 //     }
 //     const res: any = await startLiving(send_data)
@@ -1043,6 +1069,21 @@ function onDanmuBtn() {
   }
 }
 // 检查字符串没有@也没有http
+function processCanshu(canshu) {
+  if (canshu.includes('douyin')) {
+    return canshu
+  } else {
+    if (canshu.includes('@') && canshu.includes('http')) {
+      return canshu
+    } else if (canshu.includes('@') && !canshu.includes('http')) {
+      return `https://www.tiktok.com/${canshu}/live`
+    } else if (!canshu.includes('@') && !canshu.includes('http')) {
+      return `https://www.tiktok.com/@${canshu}/live`
+    } else {
+      canshu
+    }
+  }
+}
 // 连接弹幕
 async function connectLive() {
   if (is_barrage.value) {
@@ -1057,59 +1098,61 @@ async function connectLive() {
     if (start_id.value != buyID.value) {
       return ElMessage.error('请连接已打开游戏的直播间弹幕')
     }
-    if (liveRoom.value.includes('@') && liveRoom.value.includes('http')) {
-      window.api.startLive(liveRoom.value)
-      localStorage.setItem('liveUrl', liveRoom.value)
-    }
-    if (liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-      window.api.startLive(`https://www.tiktok.com/${liveRoom.value}/live`)
-      localStorage.setItem(
-        'liveUrl',
-        `https://www.tiktok.com/${liveRoom.value}/live`
-      )
-    }
-    if (!liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-      window.api.startLive(`https://www.tiktok.com/@${liveRoom.value}/live`)
-      localStorage.setItem(
-        'liveUrl',
-        `https://www.tiktok.com/@${liveRoom.value}/live`
-      )
-    }
-    if (!liveRoom.value.includes('@') && liveRoom.value.includes('douyin')) {
-      window.api.startLive(liveRoom.value)
-      localStorage.setItem('liveUrl', liveRoom.value)
-    }
+    // if (liveRoom.value.includes('@') && liveRoom.value.includes('http')) {
+    //   window.api.startLive(liveRoom.value)
+    //   localStorage.setItem('liveUrl', liveRoom.value)
+    // }
+    // if (liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
+    //   window.api.startLive(`https://www.tiktok.com/${liveRoom.value}/live`)
+    //   localStorage.setItem(
+    //     'liveUrl',
+    //     `https://www.tiktok.com/${liveRoom.value}/live`
+    //   )
+    // }
+    // if (!liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
+    //   window.api.startLive(`https://www.tiktok.com/@${liveRoom.value}/live`)
+    //   localStorage.setItem(
+    //     'liveUrl',
+    //     `https://www.tiktok.com/@${liveRoom.value}/live`
+    //   )
+    // }
+    // if (!liveRoom.value.includes('@') && liveRoom.value.includes('douyin')) {
+    //   window.api.startLive(liveRoom.value)
+    //   localStorage.setItem('liveUrl', liveRoom.value)
+    // }
+    window.api.startLive(processCanshu(liveRoom.value))
+    localStorage.setItem('liveUrl', processCanshu(liveRoom.value))
     is_barrage.value = true
     is_start_live.value = true
     barrageVisible.value = false
     return
   } else {
     is_barrage.value = true
-    if (liveRoom.value.includes('@') && liveRoom.value.includes('http')) {
-      window.api.startLive(liveRoom.value)
-      localStorage.setItem('liveUrl', liveRoom.value)
-    }
-    if (liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-      window.api.startLive(`https://www.tiktok.com/${liveRoom.value}/live`)
-      localStorage.setItem(
-        'liveUrl',
-        `https://www.tiktok.com/${liveRoom.value}/live`
-      )
-    }
-    if (!liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-      window.api.startLive(`https://www.tiktok.com/@${liveRoom.value}/live`)
-      localStorage.setItem(
-        'liveUrl',
-        `https://www.tiktok.com/@${liveRoom.value}/live`
-      )
-    }
+    // if (liveRoom.value.includes('@') && liveRoom.value.includes('http')) {
+    //   window.api.startLive(liveRoom.value)
+    //   localStorage.setItem('liveUrl', liveRoom.value)
+    // }
+    // if (liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
+    //   window.api.startLive(`https://www.tiktok.com/${liveRoom.value}/live`)
+    //   localStorage.setItem(
+    //     'liveUrl',
+    //     `https://www.tiktok.com/${liveRoom.value}/live`
+    //   )
+    // }
+    // if (!liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
+    //   window.api.startLive(`https://www.tiktok.com/@${liveRoom.value}/live`)
+    //   localStorage.setItem(
+    //     'liveUrl',
+    //     `https://www.tiktok.com/@${liveRoom.value}/live`
+    //   )
+    // }
 
-    if (!liveRoom.value.includes('@') && liveRoom.value.includes('douyin')) {
-      window.api.startLive(liveRoom.value)
-      localStorage.setItem('liveUrl', liveRoom.value)
-    }
-    // window.api.startLive(liveRoom.value)
-    // localStorage.setItem('liveUrl', liveRoom.value)
+    // if (!liveRoom.value.includes('@') && liveRoom.value.includes('douyin')) {
+    //   window.api.startLive(liveRoom.value)
+    //   localStorage.setItem('liveUrl', liveRoom.value)
+    // }
+    window.api.startLive(processCanshu(liveRoom.value))
+    localStorage.setItem('liveUrl', processCanshu(liveRoom.value))
     is_start_live.value = true
     barrageVisible.value = false
     return
@@ -1126,7 +1169,19 @@ window.api.mainCloseLive(() => {
 
 const anchorInfo = ref<any>({})
 window.api.sendAnchorData((res) => {
-  anchorInfo.value = res
+  if (res.from == 'tiktok') {
+    anchorInfo.value = {
+      anchor_id: res.secUid,
+      name: res.nickname,
+      avatar: res.avatarThumb
+    }
+  } else {
+    anchorInfo.value = {
+      anchor_id: res.sec_uid,
+      name: res.nickname,
+      avatar: res.avatar_thumb.url_list[0]
+    }
+  }
   console.log(anchorInfo.value)
 })
 function autoOpenDetail() {
@@ -1403,6 +1458,7 @@ function formatTime(time: any) {
       justify-content: space-between;
       .the-info-item {
         margin-bottom: 15px;
+        display: flex;
       }
       span:first-child {
         margin-right: 20px;

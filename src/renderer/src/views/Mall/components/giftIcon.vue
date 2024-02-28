@@ -1,15 +1,25 @@
 <template>
-  <el-dialog v-model="giftVisible" title="礼物贴纸" @close="closeGiftDialog">
+  <el-dialog
+    v-model="giftVisible"
+    :title="$t('buttons.gift_icon')"
+    @close="closeGiftDialog"
+  >
     <div v-if="giftInfo.length">
       <div v-for="(item, index) in giftInfo" :key="index" class="gift">
         <div class="gift-lan">{{ getLangTitle(item.lan) }}：</div>
         <div v-for="(tu, ind) in item.tietu" :key="ind" class="gift-tu">
           <!-- <img :src="tu" alt="" style="width: 150px" /> -->
-          <HImage :src="tu" style="width: 120px"></HImage>
+          <HImage :src="tu" style="width: 110px"></HImage>
         </div>
       </div>
     </div>
-    <div v-else>暂无礼物贴纸</div>
+    <div v-else>
+      <el-empty>
+        <template #description>
+          <div>{{ $t('detail.not_gift') }}</div>
+        </template>
+      </el-empty>
+    </div>
   </el-dialog>
 </template>
 
@@ -76,8 +86,12 @@ watch(
 }
 .gift {
   display: flex;
+  margin-bottom: 10px;
   .gift-lan {
     width: 50px;
+  }
+  .gift-tu {
+    margin-right: 10px;
   }
 }
 </style>

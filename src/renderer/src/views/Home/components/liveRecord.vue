@@ -5,7 +5,11 @@
     width="1000px"
     @close="closeLiveRecordDialog"
   >
-    <div>功能开发中，暂未开放</div>
+    <el-empty>
+      <template #description>
+        <div>{{ $t('system.incomplete') }}</div>
+      </template>
+    </el-empty>
   </el-dialog>
 </template>
 

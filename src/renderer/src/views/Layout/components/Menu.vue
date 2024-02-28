@@ -25,18 +25,31 @@
           <template #title>{{ $t('menu.library') }}</template>
         </el-menu-item> -->
       </el-menu>
-      <!-- <el-menu
-        v-if="res.message"
-        class="down"
-        style="margin-top: auto"
-        default-active="1"
-      >
-        <el-menu-item index="1">
+      <!-- <el-menu class="down" style="margin-top: auto" default-active="1">
+        <el-menu-item index="1" class="live-info" style="height: 80px">
           <template #title>
-            <span
-              :style="{ color: res.success === 'success' ? 'green' : 'red' }"
-              >{{ res.message }}</span
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+              "
             >
+              <span
+                style="
+                  display: block;
+                  line-height: 1;
+                  margin-right: 10px;
+                  color: rgb(2, 206, 2);
+                  margin-bottom: 2px;
+                "
+                >开播中</span
+              >
+              <span style="display: flex; line-height: 1; align-items: center">
+                <span style="margin-right: 5px">钻石：{{ diamond }}</span
+                ><el-button type="primary">刷新</el-button>
+              </span>
+            </div>
           </template>
         </el-menu-item>
       </el-menu> -->
@@ -53,11 +66,12 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const menu_active = ref<any>('/home')
 const logo = ref<any>()
-
+const diamond = ref<any>()
 async function viewPersonal() {
   const res = await getPersonalInfo()
   const result = await getGuildOem({ id: res.data.one.gonghui_id })
   logo.value = result.data.list[0].tiepai_icon
+  diamond.value = res.data.one.jifen
 }
 
 watchEffect(() => {
@@ -69,7 +83,13 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
+.live-info {
+  font-size: 16px;
+}
 @media screen and (max-width: 1280px) {
+  .live-info {
+    font-size: 14px;
+  }
   .logo {
     height: 40px;
     .logo-img {
@@ -109,6 +129,7 @@ onMounted(() => {
     }
   }
 }
+
 .menu-box {
   display: flex;
   flex-direction: column;
@@ -116,17 +137,7 @@ onMounted(() => {
   // border: 1px solid #ccc;
   position: relative;
 }
-// .download {
-//   background-color: #202020;
-//   position: absolute;
-//   bottom: 50px;
-//   left: 50px;
-//   margin: 0 auto;
-//   width: 90%;
-//   height: 60px;
-//   border-radius: 6px;
-//   margin-bottom: 3px;
-// }
+
 .logo {
   display: flex;
   // height: 40px;

@@ -6,12 +6,12 @@
         <!-- <el-button class="info-item" @click="onOpenBeta">
           <span style="font-size: 11px">Debug</span>
         </el-button> -->
-        <el-button class="info-item" @click="onOpenManage">
+        <!-- <el-button class="info-item" @click="onOpenManage">
           <span style="font-size: 16px">后</span>
         </el-button>
         <el-button class="info-item" @click="onExchange">
           <span style="font-size: 16px">兑</span>
-        </el-button>
+        </el-button> -->
         <el-dropdown trigger="click" class="info-item" @command="changeLang">
           <el-button style="width: 40px; height: 40px; border-radius: 50%">
             <!-- <i class="iconfont" style="font-size: 24px">&#xe6ed;</i> -->
@@ -103,7 +103,7 @@ import Log from '../../Other/log.vue'
 const langView = ref<any>('中')
 const globalStore = useGlobalStore()
 const lang = ref<any>()
-const token = localStorage.getItem('authtoken')
+// const token = localStorage.getItem('authtoken')
 const info = ref<any>()
 const router = useRouter()
 const settingVisible = ref<boolean>(false)
@@ -130,9 +130,9 @@ function onSetting() {
 function closeSettingDialog() {
   settingVisible.value = false
 }
-function onExchange() {
-  exchangeVisible.value = true
-}
+// function onExchange() {
+//   exchangeVisible.value = true
+// }
 function closeExchangeDialog() {
   exchangeVisible.value = false
 }
@@ -148,9 +148,9 @@ function onRecharge() {
 function closeRechargeDialog() {
   rechargeVisible.value = false
 }
-function onOpenManage() {
-  window.open(`http://box.huyouyun.cn/?auth=${token}`, '_blank')
-}
+// function onOpenManage() {
+//   window.open(`http://box.huyouyun.cn/?auth=${token}`, '_blank')
+// }
 
 function changeLang(item: any) {
   if (item.id == 13) {

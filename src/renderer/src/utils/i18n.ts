@@ -19,7 +19,9 @@ const i18n = createI18n({
         display: '显示',
         result: '个结果中的',
         without: '无',
-        log: '日志'
+        log: '日志',
+        last_open: '上次打开',
+        incomplete: '功能开发中，暂未开放'
       },
       home: {
         redeem: '兑换游戏',
@@ -29,6 +31,7 @@ const i18n = createI18n({
       },
       login: {
         login: '登录',
+        dev_login: '开发者登录',
         register: '注册',
         reset: '重置密码',
         account: '账号',
@@ -128,7 +131,8 @@ const i18n = createI18n({
         purchased: '已购买',
         free: '免费',
         unknown: '未知',
-        message_success_buy: '购买成功'
+        message_success_buy: '购买成功',
+        not_gift: '暂无礼物贴纸'
       },
       recharge: {
         title: '充值',
@@ -170,7 +174,9 @@ const i18n = createI18n({
         display: 'Display',
         result: "results's",
         without: 'Without',
-        log: 'Log'
+        log: 'Log',
+        last_open: 'Last Open',
+        incomplete: 'Under development of functions, not yet open'
       },
       home: {
         redeem: 'Redeem game',
@@ -179,7 +185,8 @@ const i18n = createI18n({
         recent: 'Recently updated'
       },
       login: {
-        login: 'Log in',
+        login: 'Login',
+        dev_login: 'Developer login',
         register: 'Register',
         reset: 'Reset password',
         account: 'Account',
@@ -280,7 +287,8 @@ const i18n = createI18n({
         purchased: 'Purchased',
         free: 'Free',
         unknown: 'Unknown',
-        message_success_buy: 'Purchase successful'
+        message_success_buy: 'Purchase successful',
+        not_gift: 'There are currently no gift stickers available'
       },
       recharge: {
         title: 'Recharge',
@@ -322,7 +330,9 @@ const i18n = createI18n({
         display: '顯示',
         result: '個結果中的',
         without: '無',
-        log: '日誌'
+        log: '日誌',
+        last_open: '上次打開',
+        incomplete: '功能開發中，暫未開放'
       },
       home: {
         redeem: '兌換遊戲',
@@ -332,6 +342,7 @@ const i18n = createI18n({
       },
       login: {
         login: '登錄',
+        dev_login: '開發者登錄',
         register: '註冊',
         reset: '重置密碼',
         account: '賬號',
@@ -431,7 +442,8 @@ const i18n = createI18n({
         purchased: '已購買',
         free: '免費',
         unknown: '未知',
-        message_success_buy: '購買成功'
+        message_success_buy: '購買成功',
+        not_gift: '暫無禮物貼紙'
       },
       recharge: {
         title: '充值',

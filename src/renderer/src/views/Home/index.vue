@@ -61,7 +61,7 @@
     <div class="bottom">
       <div class="bottom-title">
         <div class="title">
-          <el-icon class="icon"><Guide /></el-icon>
+          <el-icon class="icon" style="margin-right: 10px"><Guide /></el-icon>
           <span>{{ $t('home.recent') }}</span>
         </div>
         <div class="refresh" @click="onRefresh">
@@ -104,7 +104,7 @@
               class="pre-tag"
               effect="dark"
             >
-              上次打开
+              {{ $t('system.last_open') }}
             </el-tag>
             <div class="img-box">
               <el-image

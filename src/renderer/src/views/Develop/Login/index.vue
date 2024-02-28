@@ -4,7 +4,7 @@
       <div class="login-logo">
         <el-image src="./system/hooyoo.gif" class="logo-img"></el-image>
       </div>
-      <div class="login-title">开发者登录</div>
+      <div class="login-title">{{ $t('login.dev_login') }}</div>
       <LogForm v-if="active === 'login'"></LogForm>
       <ForgetForm v-else></ForgetForm>
     </div>
