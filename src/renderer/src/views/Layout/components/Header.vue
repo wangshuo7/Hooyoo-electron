@@ -97,11 +97,13 @@ import TheSetting from '../../Other/setting.vue'
 // import BetaTool from '../../Other/betaTool.vue'
 import { getPersonalInfo } from '../../../api/wallet'
 import { useGlobalStore } from '../../../store/globalStore'
+import { useLanguageStore } from '../../../store/languageStore'
 import i18n from '../../../utils/i18n'
 import Log from '../../Other/log.vue'
 
 const langView = ref<any>('中')
 const globalStore = useGlobalStore()
+const languageStore = useLanguageStore()
 const lang = ref<any>()
 // const token = localStorage.getItem('authtoken')
 const info = ref<any>()
@@ -158,18 +160,21 @@ function changeLang(item: any) {
     i18n.global.locale.value = 'en'
     window.api.sendLanguage(13)
     langView.value = 'En'
+    languageStore.setLocale('en')
   }
   if (item.id == 39) {
     localStorage.setItem('lang', 'tw')
     i18n.global.locale.value = 'tw'
     window.api.sendLanguage(39)
     langView.value = '繁'
+    languageStore.setLocale('tw')
   }
   if (item.id == 11) {
     localStorage.setItem('lang', 'zh')
     i18n.global.locale.value = 'zh'
     window.api.sendLanguage(11)
     langView.value = '中'
+    languageStore.setLocale('zh')
   }
 }
 onMounted(async () => {

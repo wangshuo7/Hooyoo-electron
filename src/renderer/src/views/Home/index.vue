@@ -2,16 +2,6 @@
   <div class="container">
     <div class="top">
       <div class="banner">
-        <!-- <el-carousel class="carousel" height="500px" :interval="5000">
-          <el-carousel-item
-            v-for="item in 1"
-            :key="item"
-            class="carousel-item"
-            style="height: 100%"
-          >
-            <img src="/ce.jpg" alt="" />
-          </el-carousel-item>
-        </el-carousel> -->
         <swiper
           class="carousel"
           :loop="true"
@@ -38,6 +28,12 @@
         </swiper>
       </div>
       <div class="side">
+        <div class="side-item" @click="onOpenLiveRecord">
+          <span class="icon">
+            <el-icon><VideoCamera /></el-icon>
+          </span>
+          <div class="side-item-title">{{ $t('home.livelog') }}</div>
+        </div>
         <div class="side-item" @click="onExchange">
           <span class="icon">
             <el-icon><SwitchFilled /></el-icon>
@@ -49,12 +45,6 @@
             <el-icon><Compass /></el-icon>
           </span>
           <div class="side-item-title">{{ $t('home.manage') }}</div>
-        </div>
-        <div class="side-item" @click="onOpenLiveRecord">
-          <span class="icon">
-            <el-icon><VideoCamera /></el-icon>
-          </span>
-          <div class="side-item-title">{{ $t('home.livelog') }}</div>
         </div>
       </div>
     </div>
@@ -236,7 +226,10 @@ async function query() {
 }
 const gameId = ref<any>()
 function onGoDetail(item) {
-  const obj = { game_id: item.game_id, title: item.title }
+  const obj = {
+    game_id: item.game_id,
+    title: item.title
+  }
   gameId.value = item.game_id
   router.push({
     path: '/mall',

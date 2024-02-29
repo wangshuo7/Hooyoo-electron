@@ -25,55 +25,58 @@
           <template #title>{{ $t('menu.library') }}</template>
         </el-menu-item> -->
       </el-menu>
-      <!-- <el-menu class="down" style="margin-top: auto" default-active="1">
+      <el-menu class="down" style="margin-top: auto" default-active="1">
         <el-menu-item index="1" class="live-info" style="height: 80px">
           <template #title>
-            <div
-              style="
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-              "
-            >
-              <span
-                style="
-                  display: block;
-                  line-height: 1;
-                  margin-right: 10px;
-                  color: rgb(2, 206, 2);
-                  margin-bottom: 2px;
-                "
-                >开播中</span
-              >
+            <div class="state-content">
+              <span class="state-title">{{ live_state }}</span>
               <span style="display: flex; line-height: 1; align-items: center">
                 <span style="margin-right: 5px">钻石：{{ diamond }}</span
-                ><el-button type="primary">刷新</el-button>
+                ><el-button type="primary" @click="onRefresh">刷新</el-button>
               </span>
             </div>
           </template>
         </el-menu-item>
-      </el-menu> -->
+      </el-menu>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watchEffect } from 'vue'
+import { ref, onMounted, watchEffect, computed } from 'vue'
 import { Avatar, HomeFilled, Shop } from '@element-plus/icons-vue'
 import { getGuildOem } from '../../../api/global'
 import { getPersonalInfo } from '../../../api/wallet'
 import { useRoute } from 'vue-router'
+import { useLiveStore } from '../../../store/live'
+import { useLanguageStore } from '../../../store/languageStore'
+const languageStore = useLanguageStore()
+const liveStore = useLiveStore()
+const live_state = computed(() => {
+  if (languageStore.locale == 'zh') {
+    return liveStore.state == 'no_live' ? '未开播' : '已开播'
+  } else if (languageStore.locale == 'tw') {
+    return liveStore.state == 'no_live' ? '未開播' : '已開播'
+  }
+  return liveStore.state == 'no_live'
+    ? 'Not broadcasted'
+    : 'Started broadcasting'
+})
+const diamond = computed(() => {
+  return liveStore.diamond
+})
 const route = useRoute()
 const menu_active = ref<any>('/home')
 const logo = ref<any>()
-const diamond = ref<any>()
 async function viewPersonal() {
-  const res = await getPersonalInfo()
-  const result = await getGuildOem({ id: res.data.one.gonghui_id })
+  const res: any = await getPersonalInfo()
+  const result: any = await getGuildOem({ id: res.data.one.gonghui_id })
   logo.value = result.data.list[0].tiepai_icon
-  diamond.value = res.data.one.jifen
+  liveStore.setDiamond(res.data.one.jifen)
 }
-
+function onRefresh() {
+  viewPersonal()
+}
 watchEffect(() => {
   menu_active.value = route.path
 })
@@ -83,6 +86,18 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
+.state-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.state-title {
+  display: block;
+  line-height: 1;
+  margin-right: 10px;
+  color: rgb(2, 206, 2);
+  margin-bottom: 2px;
+}
 .live-info {
   font-size: 16px;
 }

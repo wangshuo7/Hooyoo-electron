@@ -24,3 +24,7 @@ export const getGuildOem = (data: any) => {
 export const getGiftIcon = (data: any) => {
   return request.post('/commpublic/param/game_conf_tt', data)
 }
+// 金额计算
+export const computedPrice = (data: any) => {
+  return request.post('/commpublic/param/money_jisuan', data)
+}

@@ -4,8 +4,7 @@ import {
   BrowserWindow,
   ipcMain,
   dialog,
-  Notification,
-  globalShortcut
+  Notification
 } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { join } from 'path'
@@ -117,6 +116,14 @@ let connectKey: string
 let gameId: string
 let rc4Key: string
 let lan: any
+const default_download_path = path.join(
+  app.getPath('documents'),
+  'huyouyun_game_download'
+)
+const default_install_path = path.join(
+  app.getPath('documents'),
+  'huyouyun_game_install'
+)
 // let floatWin: any
 // function reverseStr(str: string) {
 //   return str?.split('')?.reverse()?.join('')
@@ -219,9 +226,6 @@ app.whenReady().then(() => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
-  globalShortcut.register('F5', () => {
-    mainWindow.reload()
-  })
 })
 
 app.on('window-all-closed', () => {
@@ -279,7 +283,6 @@ ipcMain.on('message', (_event, message) => {
 // 关闭
 ipcMain.on('quit', () => {
   app.quit()
-  globalShortcut.unregisterAll()
 })
 // 解压
 function performPostDownloadOperations(id, filePath, extractTo) {
@@ -443,16 +446,10 @@ ipcMain.on('open-dialog', (event, type, options) => {
 })
 ipcMain.on('get-paths', (event) => {
   if (!store.get('downloadPath')) {
-    store.set(
-      'downloadPath',
-      path.join(__dirname, '../../../..', 'huyouyun_game_download')
-    )
+    store.set('downloadPath', default_download_path)
   }
   if (!store.get('installPath')) {
-    store.set(
-      'installPath',
-      path.join(__dirname, '../../../..', 'huyouyun_game_install')
-    )
+    store.set('installPath', default_install_path)
   }
   const paths = {
     downloadPath: store.get('downloadPath'),
@@ -474,8 +471,8 @@ ipcMain.on('setting-default', (event) => {
   //   installPath: path.join(app.getPath('documents'), 'huyouyun_game_install')
   // })
   const paths = {
-    downloadPath: path.join(__dirname, '../../../..', 'huyouyun_game_download'),
-    installPath: path.join(__dirname, '../../../..', 'huyouyun_game_install')
+    downloadPath: default_download_path,
+    installPath: default_install_path
   }
   event.reply('setting-default-reply', paths)
 })

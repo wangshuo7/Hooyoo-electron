@@ -21,7 +21,9 @@ const i18n = createI18n({
         without: '无',
         log: '日志',
         last_open: '上次打开',
-        incomplete: '功能开发中，暂未开放'
+        incomplete: '功能开发中，暂未开放',
+        no_live: '未开播',
+        yes_live: '已开播'
       },
       home: {
         redeem: '兑换游戏',
@@ -104,7 +106,10 @@ const i18n = createI18n({
         connect: '连接弹幕',
         document: '使用指南',
         service: '客服',
-        gift_icon: '礼物贴纸'
+        gift_icon: '礼物贴纸',
+        start_zh: '运行中文游戏',
+        start_tw: '运行繁体游戏',
+        start_en: '运行英文游戏'
       },
       detail: {
         package: '套餐',
@@ -159,6 +164,29 @@ const i18n = createI18n({
         time: '可用时长',
         day: '天',
         success_message: '游戏兑换成功'
+      },
+      liveLog: {
+        live_log: '直播记录',
+        anchor: '主播',
+        avatar: '头像',
+        game: '游戏',
+        live_start: '直播开始',
+        live_end: '直播结束',
+        live_time: '直播时长',
+        gift_income: '礼物收益',
+        kou_diamond: '扣除钻石',
+        operation: '操作',
+        kou_diamond_log: '扣钻记录',
+        kou_time: '扣除时间',
+        computed: '计算中...',
+        view_button: '查看'
+      },
+      developer: {
+        moni: '模拟弹幕',
+        anchor_key: '主播密钥',
+        dev_document: '开发文档',
+        dev_manage: '管理后台',
+        switch_account: '切换账号'
       }
     },
     en: {
@@ -176,7 +204,9 @@ const i18n = createI18n({
         without: 'Without',
         log: 'Log',
         last_open: 'Last Open',
-        incomplete: 'Under development of functions, not yet open'
+        incomplete: 'Under development of functions, not yet open',
+        no_live: 'Not broadcasted',
+        yes_live: 'Started broadcasting'
       },
       home: {
         redeem: 'Redeem game',
@@ -259,7 +289,10 @@ const i18n = createI18n({
         connect: 'Connect barrage',
         document: 'Operating Guide',
         service: 'Customer Service',
-        gift_icon: 'Gift stickers'
+        gift_icon: 'Gift stickers',
+        start_zh: 'Start in ZH',
+        start_tw: 'Start in ZH-TW',
+        start_en: 'Start in EN'
       },
       detail: {
         package: 'Package',
@@ -315,6 +348,29 @@ const i18n = createI18n({
         time: 'Available for',
         day: 'day',
         success_message: 'Exchange successful'
+      },
+      liveLog: {
+        live_log: 'Live recording',
+        anchor: 'Anchor',
+        avatar: 'Avatar',
+        game: 'Game',
+        live_start: 'Live start time',
+        live_end: 'Live end time',
+        live_time: 'Live broadcast duration',
+        gift_income: 'Gift income',
+        kou_diamond: 'Deducting diamonds',
+        operation: 'operation',
+        kou_diamond_log: 'Diamond buckle record',
+        kou_time: 'Deduction time',
+        computed: 'Calculating...',
+        view_button: 'View'
+      },
+      developer: {
+        moni: 'Simulated barrage',
+        anchor_key: 'Anchor Key',
+        dev_document: 'Develop document',
+        dev_manage: 'Manage backend',
+        switch_account: 'Switch accounts'
       }
     },
     tw: {
@@ -332,7 +388,9 @@ const i18n = createI18n({
         without: '無',
         log: '日誌',
         last_open: '上次打開',
-        incomplete: '功能開發中，暫未開放'
+        incomplete: '功能開發中，暫未開放',
+        no_live: '未開播',
+        yes_live: '已開播'
       },
       home: {
         redeem: '兌換遊戲',
@@ -415,7 +473,10 @@ const i18n = createI18n({
         connect: '連接彈幕',
         document: '使用指南',
         service: '客服',
-        gift_icon: '禮物貼紙'
+        gift_icon: '禮物貼紙',
+        start_zh: '運行中文遊戲',
+        start_tw: '運行繁體遊戲',
+        start_en: '運行英文遊戲'
       },
       detail: {
         package: '套餐',
@@ -470,6 +531,29 @@ const i18n = createI18n({
         time: '可用時長',
         day: '天',
         success_message: '遊戲兌換成功'
+      },
+      liveLog: {
+        live_log: '直播記錄',
+        anchor: '主播',
+        avatar: '頭像',
+        game: '遊戲',
+        live_start: '直播開始',
+        live_end: '直播結束',
+        live_time: '直播時長',
+        gift_income: '禮物收益',
+        kou_diamond: '扣除鑽石',
+        operation: '操作',
+        kou_diamond_log: '扣鑽記錄',
+        kou_time: '扣除時間',
+        computed: '計算中...',
+        view_button: '查看'
+      },
+      developer: {
+        moni: '模擬彈幕',
+        anchor_key: '主播密鑰',
+        dev_document: '開發文檔',
+        dev_manage: '管理後台',
+        switch_account: '切換賬號'
       }
     }
   }
