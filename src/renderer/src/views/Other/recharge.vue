@@ -58,6 +58,7 @@
             :min="0"
             controls-position="right"
             style="width: 180px"
+            @input="changePrice"
           ></el-input-number>
           <el-button
             type="primary"
@@ -93,6 +94,7 @@ import {
   rechargeCard,
   rechargeWeixin
 } from '../../api/wallet'
+import { computedPrice } from '../../api/global'
 import { getConfig } from '../../api/global'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
@@ -119,11 +121,16 @@ const emits = defineEmits(['close'])
 function closeRechargeDialog() {
   emits('close', false)
 }
+const diamonds = ref<any>(0)
+async function changePrice(num) {
+  const res: any = await computedPrice({ cny: num })
+  diamonds.value = res.data.jifen
+}
 // 充值
 const ruleFormRef = ref<FormInstance>()
 const rechargeForm = ref<any>({ miyao: '' })
 const getJifen = computed(() => {
-  return `${vx_price.value} ${t('recharge.dui')} ${vx_price.value * ratio.value} ${t('detail.divide_diamonds')}`
+  return `${vx_price.value} ${t('recharge.dui')} ${diamonds.value} ${t('detail.divide_diamonds')}`
 })
 // 卡密-确定
 function submit() {
