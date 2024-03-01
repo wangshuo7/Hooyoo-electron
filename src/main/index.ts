@@ -49,6 +49,8 @@ import { rc4Encrypt2 } from './public/rc4'
 /**
  * electron自动更新
  */
+const appVersion = app.getVersion()
+
 autoUpdater.setFeedURL('http://61.160.236.29:886/box/upload/dist')
 autoUpdater.autoDownload = false
 // 1. 渲染进程App.vue触发获取更新，开始进行更新流程
@@ -173,6 +175,7 @@ function createWindow(): void {
   // 加载首页后再创建窗口, 与mainWindow的show:false属性配合使用
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    mainWindow.webContents.send('main-send-version', appVersion)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

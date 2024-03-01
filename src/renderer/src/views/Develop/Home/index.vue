@@ -45,6 +45,7 @@
           class="m-2"
           placeholder="请选择游戏"
           style="width: 240px"
+          @change="onSelect"
         >
           <el-option
             v-for="item in gameList"
@@ -69,17 +70,17 @@
       <div class="token-item">
         <span class="token-item-title">Token：</span>
         <el-input v-model="token"></el-input>
-        <el-button type="info" @click="copyToken">复制</el-button>
+        <el-button type="info" @click="copyToken(token)">复制</el-button>
       </div>
       <div class="token-item">
         <span class="token-item-title">游戏ID：</span>
         <el-input v-model="game"></el-input>
-        <el-button type="info" @click="copyToken">复制</el-button>
+        <el-button type="info" @click="copyToken(game)">复制</el-button>
       </div>
       <div class="token-item">
         <span class="token-item-title">PWD：</span>
-        <el-input v-model="gamePwd.miyaostr"></el-input>
-        <el-button type="info" @click="copyToken">复制</el-button>
+        <el-input v-model="gameKey"></el-input>
+        <el-button type="info" @click="copyToken(gameKey)">复制</el-button>
       </div>
     </div>
     <div v-else>
@@ -97,7 +98,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   ChatLineRound,
@@ -109,18 +110,24 @@ import {
 import BetaTool from './components/betaTool.vue'
 import { useDeveloperStore } from '../../../store/developer'
 import { getDevloperGames } from '../../../api/developer'
+import { getGameInfo } from '../../../api/rc4'
 const developerStore = useDeveloperStore()
 const authToken = localStorage.getItem('author_authtoken')
 const tokenVisible = ref<boolean>(false)
 const debugVisible = ref<boolean>(false)
 const token = ref<any>()
+const gameKey = ref<any>()
 function onOpenToken() {
   tokenVisible.value = true
   token.value = localStorage.getItem('authtoken')
 }
-function copyToken() {
+async function onSelect(id) {
+  const res: any = await getGameInfo({ game_id: id })
+  gameKey.value = res.data.info.miyaostr
+}
+function copyToken(value: any) {
   navigator.clipboard
-    .writeText(token.value)
+    .writeText(value)
     .then(() => {
       ElMessage.success('复制成功')
     })
@@ -153,9 +160,9 @@ async function openTokenDialog() {
   const res: any = await getDevloperGames({})
   gameList.value = res.data.list
 }
-const gamePwd = computed(() => {
-  return gameList.value.find((item) => game.value == item.game_id)
-})
+// const gamePwd = computed(() => {
+//   return gameList.value.find((item) => game.value == item.game_id)
+// })
 </script>
 
 <style lang="less" scoped>

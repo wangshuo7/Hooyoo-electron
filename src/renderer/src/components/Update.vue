@@ -37,8 +37,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+// import { getTBoxVersion } from '../api/rc4'
+// import { ElMessage } from 'element-plus'
 const update_content = ref<any>([{ content: '' }])
+const appVersion = ref<any>()
+const is_update = ref<boolean>(false)
+
+window.api.mainSendVersion((version) => {
+  appVersion.value = version
+})
 interface progressObj {
   bytesPerSecond: number
   delta: number
@@ -83,6 +91,7 @@ window.api.printUpdaterMessage((res) => {
 // 5. 收到主进程可更新的消息
 window.api.updateAvailable((info) => {
   console.log('info->', info)
+  is_update.value = true
   updateVisible.value = true
   downloadExe()
 })
@@ -104,6 +113,18 @@ window.api.edownloadProgress((data: progressObj) => {
 // 更新出错时
 window.api.updateError((err) => {
   console.log('err->', err)
+})
+// async function checkVersion() {
+//   const res: any = await getTBoxVersion()
+//   if (appVersion.value != res.data.info.version && !is_update.value) {
+//     ElMessage.error('版本无法使用')
+//     setTimeout(() => {
+//       window.api.quit()
+//     }, 3000)
+//   }
+// }
+onMounted(async () => {
+  // checkVersion()
 })
 </script>
 

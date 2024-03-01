@@ -6,17 +6,24 @@
         :src="logo ? logo : './system/hooyoo.gif'"
       ></el-image>
     </div>
-    <div style="height: 85%; display: flex; flex-direction: column">
+    <div
+      style="
+        height: 85%;
+        display: flex;
+        flex-direction: column;
+        padding-bottom: 20px;
+      "
+    >
       <el-menu text-color="#757575" :default-active="menu_active" router>
-        <el-menu-item index="/home">
+        <el-menu-item index="/home" class="menu-item">
           <el-icon><HomeFilled /></el-icon>
           <template #title>{{ $t('menu.home') }}</template>
         </el-menu-item>
-        <el-menu-item index="/mall">
+        <el-menu-item index="/mall" class="menu-item">
           <el-icon><Shop /></el-icon>
           <template #title>{{ $t('menu.mall') }}</template>
         </el-menu-item>
-        <el-menu-item index="/develop">
+        <el-menu-item index="/develop" class="menu-item">
           <el-icon><Avatar /></el-icon>
           <template #title>{{ $t('menu.developer') }}</template>
         </el-menu-item>
@@ -26,15 +33,19 @@
         </el-menu-item> -->
       </el-menu>
       <el-menu class="down" style="margin-top: auto" default-active="1">
-        <el-menu-item index="1" class="live-info" style="height: 80px">
+        <el-menu-item index="1" class="live-info" style="cursor: default">
           <template #title>
-            <div class="state-content">
-              <span class="state-title">{{ live_state }}</span>
-              <span style="display: flex; line-height: 1; align-items: center">
-                <span style="margin-right: 5px">钻石：{{ diamond }}</span
-                ><el-button type="primary" @click="onRefresh">刷新</el-button>
-              </span>
-            </div>
+            <span
+              class="state-title"
+              :style="{
+                color: live_state_before === 'yes_live' ? '#67C23A' : '#F56C6C'
+              }"
+              >{{ live_state }}</span
+            >
+            <span>{{ $t('system.diamond') }}：{{ diamond }}</span>
+            <span class="refresh" @click="onRefresh">
+              <el-icon class="refresh-icon"><Refresh /></el-icon>
+            </span>
           </template>
         </el-menu-item>
       </el-menu>
@@ -45,6 +56,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watchEffect, computed } from 'vue'
 import { Avatar, HomeFilled, Shop } from '@element-plus/icons-vue'
+import { Refresh } from '@element-plus/icons-vue'
 import { getGuildOem } from '../../../api/global'
 import { getPersonalInfo } from '../../../api/wallet'
 import { useRoute } from 'vue-router'
@@ -52,6 +64,9 @@ import { useLiveStore } from '../../../store/live'
 import { useLanguageStore } from '../../../store/languageStore'
 const languageStore = useLanguageStore()
 const liveStore = useLiveStore()
+const live_state_before = computed(() => {
+  return liveStore.state
+})
 const live_state = computed(() => {
   if (languageStore.locale == 'zh') {
     return liveStore.state == 'no_live' ? '未开播' : '已开播'
@@ -70,32 +85,50 @@ const menu_active = ref<any>('/home')
 const logo = ref<any>()
 async function viewPersonal() {
   const res: any = await getPersonalInfo()
+  liveStore.setDiamond(res.data.one.jifen)
   const result: any = await getGuildOem({ id: res.data.one.gonghui_id })
   logo.value = result.data.list[0].tiepai_icon
+}
+async function viewPrice() {
+  const res: any = await getPersonalInfo()
   liveStore.setDiamond(res.data.one.jifen)
 }
 function onRefresh() {
-  viewPersonal()
+  viewPrice()
 }
 watchEffect(() => {
   menu_active.value = route.path
 })
 onMounted(() => {
   viewPersonal()
+  liveStore.setState('no_live')
 })
 </script>
 
 <style lang="less" scoped>
-.state-content {
+.refresh {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px;
+  .refresh-icon {
+    position: relative;
+    left: 2px;
+    transition: color 0.1s linear;
+  }
 }
+.refresh .refresh-icon:hover {
+  color: #e6a23c;
+}
+
 .state-title {
   display: block;
   line-height: 1;
   margin-right: 10px;
-  color: rgb(2, 206, 2);
   margin-bottom: 2px;
 }
 .live-info {
@@ -175,14 +208,14 @@ onMounted(() => {
     border-radius: 6px;
     margin-bottom: 3px;
   }
-  .el-menu-item:hover {
+  .menu-item:hover {
     background-color: var(--text-menu-background-hover);
   }
   .el-menu-item.is-active {
     color: var(--text-menu-color-active);
     background: var(--text-menu-background-active);
   }
-  .el-menu-item.is-active:hover {
+  .menu-item.is-active:hover {
     background-color: var(--text-menu-background-active-hover);
   }
 }

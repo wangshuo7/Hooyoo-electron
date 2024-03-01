@@ -3,6 +3,11 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
+  mainSendVersion: (callback: (version: any) => void) => {
+    ipcRenderer.on('main-send-version', (_event, version) => {
+      callback(version)
+    })
+  },
   saveImage: (url: string) => ipcRenderer.send('send-image', url),
   saveImageResult: (callback: (type: string) => void) => {
     ipcRenderer.on('save-image-result', (_event, type) => {

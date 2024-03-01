@@ -35,6 +35,7 @@ import Header from './components/Header.vue'
   color: var(--el-text-color-primary);
 }
 .aside {
+  min-width: 240px;
   width: 17%; // 196 0.1670929241
 }
 .main {

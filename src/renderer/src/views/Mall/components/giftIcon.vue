@@ -53,21 +53,25 @@ const props = defineProps({
     type: Object
   }
 })
-watch(
-  () => props.id,
-  async (val) => {
-    const res: any = await getGiftIcon({ game_id: val })
-    giftInfo.value = res.data.tietu
-  }
-)
+// watch(
+//   () => props.id,
+//   async (val) => {
+//     const res: any = await getGiftIcon({ game_id: val })
+//     giftInfo.value = res.data.tietu
+//   }
+// )
 const emits = defineEmits(['close'])
 function closeGiftDialog() {
   emits('close', false)
 }
 watch(
   () => props.visible,
-  (val) => {
+  async (val) => {
     giftVisible.value = val
+    if (val) {
+      const res: any = await getGiftIcon({ game_id: props.id })
+      giftInfo.value = res.data.tietu
+    }
   },
   { immediate: true }
 )

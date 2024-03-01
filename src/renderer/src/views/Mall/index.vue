@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div style="display: flex; justify-content: space-between">
-      <el-form :form="queryForm" inline>
+      <el-form :form="queryForm" inline style="flex: 1">
         <el-form-item :label="$t('search.name')">
           <el-input
             v-model="queryForm.title"
@@ -217,14 +217,39 @@
                   : $t('buttons.update')
               }}</el-button
             >
-            <el-button
+            <el-dropdown
+              v-else-if="gameStatus[detail.game_id] == 'unzipped'"
+              trigger="click"
+              style="margin-right: 12px"
+              :disabled="is_start"
+              split-button
+              size="large"
+              type="danger"
+              @click="launchGame('default')"
+            >
+              {{ $t('buttons.start') }}
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="launchGame('zh')">{{
+                    $t('buttons.start_zh')
+                  }}</el-dropdown-item>
+                  <el-dropdown-item @click="launchGame('tw')">{{
+                    $t('buttons.start_tw')
+                  }}</el-dropdown-item>
+                  <el-dropdown-item @click="launchGame('en')">{{
+                    $t('buttons.start_en')
+                  }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <!-- <el-button
               v-else-if="gameStatus[detail.game_id] == 'unzipped'"
               size="large"
               type="danger"
               :disabled="is_start"
               @click="launchGame"
               >{{ $t('buttons.start') }}</el-button
-            >
+            > -->
             <el-button
               v-if="gameStatus[detail.game_id] == 'unzipped'"
               size="large"
@@ -402,6 +427,33 @@
           </div>
         </div>
       </div>
+      <!-- 专属礼物 -->
+      <!-- <div class="detail-info" style="margin-top: 10px">
+        <h3>
+          专属礼物
+          <el-tooltip
+            effect="dark"
+            :show-arrow="true"
+            placement="right"
+            :offset="10"
+          >
+            <template #content>
+              <div>收到分成礼物将扣除分成钻石</div>
+            </template>
+            <span style="margin-left: 10px; position: relative; top: 3px"
+              ><el-icon><QuestionFilled /></el-icon
+            ></span>
+          </el-tooltip>
+        </h3>
+        <el-table
+          :data="JSON.parse(detail.liwu_select)"
+          style="width: 100%; height: 200px"
+        >
+          <el-table-column label="ID" width="60">
+            <template #default="{ row }">{{ row.zhibo_log_id }}</template>
+          </el-table-column>
+        </el-table>
+      </div> -->
     </div>
   </el-dialog>
   <!-- 购买 -->
@@ -514,6 +566,10 @@
     :visible="giftVisible"
     @close="closeGiftDialog"
   ></GiftIcon>
+  <TheRecharge
+    :visible="rechargeVisible"
+    @close="closeRechargeDialog"
+  ></TheRecharge>
 </template>
 
 <script lang="ts" setup>
@@ -525,24 +581,39 @@ import GiftIcon from './components/giftIcon.vue'
 import Moment from 'moment'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
-import { buyGame, gameInfo, getGameList } from '../../api/game'
+import { buyGame, getGameList } from '../../api/game'
+import { getGameInfo } from '../../api/rc4'
 import { useGlobalStore } from '../../store/globalStore'
-import { ElMessage, ElNotification, FormInstance } from 'element-plus'
+import {
+  ElMessage,
+  ElMessageBox,
+  ElNotification,
+  FormInstance
+} from 'element-plus'
 
 import {
-  // deductDiamond,
-  // endLiving,
-  getGameUse
-  // getLivePing,
-  // startLiving
+  deductDiamond,
+  endLiving,
+  getGameUse,
+  getLivePing,
+  startLiving
 } from '../../api/rc4'
 // import { getGiftIcon } from '../../api/global'
 import { useStateStore } from '../../store/state'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
+import { useLiveStore } from '../../store/live'
+import TheRecharge from '../Other/recharge.vue'
+const rechargeVisible = ref<boolean>(false)
+const closeRechargeDialog = () => {
+  rechargeVisible.value = false
+}
+const liveStore = useLiveStore()
 const route = useRoute()
 const { t } = useI18n()
-
+const current_diamond = computed(() => {
+  return liveStore.diamond
+})
 // const gameDetailVisible = ref<boolean>(false)
 // const gameId = ref<any>()
 // function openGameDetail(item: any) {
@@ -588,13 +659,9 @@ function debounceOnRefresh() {
 const onRefresh = useDebounceFn(debounceOnRefresh, 300)
 function computedDiamond() {
   const res =
-    100 *
-    0.1 *
-    ratio.value *
-    ((detail.value.jisuan_bl.bl_gonghui +
-      detail.value.jisuan_bl.bl_pingtai +
-      detail.value.jisuan_bl.bl_youxizuozhe) /
-      100)
+    detail.value.jisuan_bl.bl_gonghui +
+    detail.value.jisuan_bl.bl_pingtai +
+    detail.value.jisuan_bl.bl_youxizuozhe
   return res
 }
 // 打开礼物贴纸
@@ -725,11 +792,17 @@ function iconChange(e: boolean) {
 //   const res = await getMyGameList({})
 //   my_game.value = res.data.list.map((item: any) => item.mg_game_id)
 // }
+const divide_total = ref<number>(0)
 // 打开详情
 async function openDetail(item: any) {
-  const res: any = await gameInfo({ id: item.game_id })
+  const res: any = await getGameInfo({ game_id: item.game_id })
   localStorage.setItem('game_id', item.game_id)
   detail.value = res?.data?.info
+  divide_total.value =
+    (detail.value.jisuan_bl.bl_gonghui +
+      detail.value.jisuan_bl.bl_pingtai +
+      detail.value.jisuan_bl.bl_youxizuozhe) /
+    100
   detailVisible.value = true
   buyID.value = item.game_id
   game_name.value = item.title
@@ -815,7 +888,7 @@ let notification
 // 下载游戏
 function downLoadGame() {
   if (is_start.value && gameStatus.value[buyID.value] == 'update') {
-    ElMessage.warning('请关闭游戏后进行更新')
+    ElMessage.warning(t('detail.message_warning_update'))
     return
   }
   if (detail.value.xiazai_url && detail.value.xiazai_url.indexOf('zip') >= 0) {
@@ -823,7 +896,7 @@ function downLoadGame() {
 
     if (detail.value.v_content) {
       notification = ElNotification({
-        title: '版本内容',
+        title: t('detail.version_content'),
         offset: 80,
         type: 'success',
         duration: 0,
@@ -835,7 +908,7 @@ function downLoadGame() {
       })
     }
   } else {
-    ElMessage.error('暂无游戏地址')
+    ElMessage.error(t('detail.message_error_noturl'))
   }
 }
 function detailDialogClose() {
@@ -848,25 +921,38 @@ const gamePath = ref<any>({})
 window.api.launchGame((id, path) => {
   gamePath.value[id] = path
 })
-function areLastThreeEqual(strArray: string[]) {
-  if (strArray.length < 3) {
-    return false
-  }
-  const lastThree = strArray.slice(-3)
-  return new Set(lastThree).size === 1
-}
-const intervalId = ref<any>()
+// function areLastThreeEqual(strArray: string[]) {
+//   if (strArray.length < 3) {
+//     return false
+//   }
+//   const lastThree = strArray.slice(-3)
+//   return new Set(lastThree).size === 1
+// }
+// const intervalId = ref<any>()
 const is_start = ref<boolean>(false) // 是否启动游戏
 const is_start_live = ref<boolean>(false) // 是否启动直播间
 const start_id = ref<any>() // 启动游戏id
 const pre_id = ref<any>(localStorage.getItem('start-pre'))
 const pingInterval = ref<any>(null)
-// const live_id = ref<any>()
+const live_id = ref<any>() // 直播id
 const kaibo = ref<boolean>(false) // 是否开播
 let salts = reactive<string[]>([])
 // 启动游戏
-async function launchGame() {
+async function launchGame(type: string) {
   if (!is_start.value) {
+    if (+liveStore.diamond < +detail.value.min_price) {
+      ElMessageBox.confirm(
+        `${t('detail.start_tip')}${+detail.value.min_price}`,
+        t('system.tip'),
+        {
+          confirmButtonText: t('system.recharge'),
+          cancelButtonText: t('buttons.cancel'),
+          type: 'error'
+        }
+      ).then(() => {
+        rechargeVisible.value = true
+      })
+    }
     window.api.removeAllListeners()
     const res: any = await getGameUse({ game_id: buyID.value })
     console.log('res', res)
@@ -875,49 +961,25 @@ async function launchGame() {
       //   window.api.startLive(liveRoom.value)
       // }
       salts.push(res.salt)
-      console.log('salts', salts)
       window.api.startGame(
         buyID.value,
-        localStorage.getItem('lang'),
+        type == 'default' ? localStorage.getItem('lang') : type,
         detail.value.v_main,
         detail.value.miyaostr,
         detail.value.is_jiami
       )
-      // window.api.startFloat(res)
-      stateStore.setState({ success: 'success', message: '游戏状态正常' })
       is_start.value = true
       start_id.value = buyID.value
       localStorage.setItem('start-pre', start_id.value)
       window.api.startGameFailReply(() => {
         is_start.value = false
         start_id.value = ''
+        // 未找到游戏入口文件main.exe 启动失败
         return ElMessage.error(
-          `未找到游戏入口文件${detail.value.v_main} 启动失败`
+          `${t('detail.message_error_notfindmain')}${detail.value.v_main} ${t('detail.message_error_startfail')}`
         )
       })
     }
-    intervalId.value = setInterval(
-      async () => {
-        const res: any = await getGameUse({ game_id: buyID.value })
-        if (res.code !== 200) {
-          // 弹幕礼物失效
-          return console.log('code !== 200')
-        }
-        if (res.data.status === 'no') {
-          return console.log('status == no')
-        }
-        salts.push(res.salt)
-        const result = areLastThreeEqual(salts) // 3次一样为true
-        if (!result) {
-          stateStore.setState({ success: 'error', message: '游戏状态正常' })
-        } else {
-          stateStore.setState({ success: 'error', message: '游戏状态异常' })
-        }
-        console.log(salts)
-      },
-      2 * 60 * 1000
-      // 5000
-    )
   } else {
     ElMessage.error('请先关闭已打开的游戏')
   }
@@ -925,58 +987,73 @@ async function launchGame() {
 const gift_data = ref<any[]>([])
 window.api.getGift((res) => {
   gift_data.value.push(res)
-  // console.log(gift_data.value)
 })
 const deductInterval = ref<any>(null)
-// watchEffect(() => {
-//   // if (kaibo.value && gift_data.value.length >= 1) {
-//   if (kaibo.value) {
-//     // const gift_num = gift_data.value.length
-//     if (!deductInterval.value) {
-//       deductInterval.value = setInterval(async () => {
-//         let diamond = 0
-//         gift_data.value.forEach((item) => {
-//           diamond += item.gift_value
-//         })
-//         // const bili =
-//         //   detail.value.jisuan_bl.bl_gonghui +
-//         //   detail.value.jisuan_bl.bl_pingtai +
-//         //   detail.value.jisuan_bl.bl_youxizuozhe
-//         const send_data = {
-//           zhibo_id: live_id.value,
-//           // jifen: (diamond / 100) * bili * ratio.value
-//           jifen: diamond
-//         }
-//         if (!gift_data.value.length) {
-//           // 没有收到礼物就不走扣钻接口
-//           return console.log('没有收到礼物')
-//         }
-//         const res: any = await deductDiamond(send_data)
-//         console.log('扣钻res', res)
-//         console.log('礼物列表', gift_data.value)
-//         const kouDiamond = send_data.jifen
-//         // 没有积分或者欠费
-//         if (res?.data?.is_do !== 'yes') {
-//           theEndLiving() // 下播
-//           // window.api.rendererCloseGame() // 关游戏
-//           clearInterval(deductInterval.value) // 清除扣钻计时器
-//         } else {
-//           // 扣除成功
-//           if (res.data.jifen - kouDiamond * 3 <= 0) {
-//             // window.api.showNotification('提醒', '钻石不足，剩余钻石约可再扣3次')
-//           }
-//         }
-//         gift_data.value = []
-//       }, 60 * 1000)
-//     }
-//   }
-// })
+const diamond_not_num = ref<number>(0) // 钻石不足次数
+watchEffect(() => {
+  // if (kaibo.value && gift_data.value.length >= 1) {
+  if (kaibo.value) {
+    // const gift_num = gift_data.value.length
+    if (!deductInterval.value) {
+      deductInterval.value = setInterval(async () => {
+        let diamond = 0
+        gift_data.value.forEach((item) => {
+          diamond += item.gift_value
+        })
+        const send_data = {
+          zhibo_id: live_id.value,
+          // jifen: (diamond / 100) * bili * ratio.value
+          jifen: diamond
+        }
+        if (!gift_data.value.length) {
+          // 没有收到礼物就不走扣钻接口
+          return console.log('没有收到礼物')
+        }
+        // 当本分钟累计但还没有扣除的钻石数x分成比例>剩余钻石余额时，提示：钻石即将耗尽，为避免影响正常开播，请在3分钟内完成钻石充值
+        if (
+          diamond * divide_total.value > +current_diamond.value &&
+          diamond_not_num.value !== 3
+        ) {
+          diamond_not_num.value++
+
+          ElMessage.warning(t('detail.message_warn_notdiamond'))
+          return
+        }
+        const res: any = await deductDiamond(send_data)
+        if (
+          res.data.jifen * divide_total.value < +detail.value.min_price &&
+          diamond_not_num.value !== 3
+        ) {
+          console.log('扣钻数量', send_data)
+          ElMessage.error(t('detail.message_error_rechargetip'))
+        }
+        liveStore.setDiamond(res.data.jifen)
+        console.log('扣钻res', res)
+        console.log('礼物列表', gift_data.value)
+        const kouDiamond = send_data.jifen
+        // 没有积分或者欠费
+        if (res?.data?.is_do !== 'yes') {
+          theEndLiving() // 下播
+          // window.api.rendererCloseGame() // 关游戏
+          clearInterval(deductInterval.value) // 清除扣钻计时器
+        } else {
+          // 扣除成功
+          if (res.data.jifen - kouDiamond * 3 <= 0) {
+            // window.api.showNotification('提醒', '钻石不足，剩余钻石约可再扣3次')
+          }
+        }
+        gift_data.value = []
+      }, 60 * 1000)
+    }
+  }
+})
 // 关闭游戏
 window.api.mainCloseGame(() => {
   is_start.value = false
-  clearInterval(intervalId.value)
+  // clearInterval(intervalId.value)
   clearInterval(pingInterval.value)
   clearInterval(deductInterval.value)
+  theEndLiving()
   salts = []
   stateStore.setState({ success: '', message: '' })
   kaibo.value = false
@@ -985,63 +1062,70 @@ window.api.mainCloseGame(() => {
 // window.api.getAnchorFail(() => {
 //   window.api.showNotification('提示', '获取主播信息失败，请重新打开直播间')
 // })
-// async function sendStartLivingRequest() {
-//   try {
-//     const send_data = {
-//       header_img: anchorInfo.value?.avatar,
-//       zhubo_name: anchorInfo.value?.name,
-//       zhubo_uid: anchorInfo.value?.anchor_id,
-//       game_id: detail.value.game_id
-//     }
-//     const res: any = await startLiving(send_data)
-//     console.log('开播res', res)
-//     if (res.code === 200) {
-//       kaibo.value = true
-//       ElMessage.success('开播')
-//       live_id.value = res.data.zhibo_id
-//       // 开播成功每分钟发一次ping
-//       pingInterval.value = setInterval(async () => {
-//         const response: any = await getLivePing({ zhibo_id: live_id.value })
-//         console.log('ping-res', response)
-//         if (response.code !== 200) {
-//           // 结束游戏
-//           window.api.rendererCloseGame()
-//         }
-//       }, 60 * 1000)
-//     }
-//   } catch (error) {
-//     console.error('发送开播请求时出错：', error)
-//   }
-// }
-const lock = ref<boolean>(true)
+// 开播
+async function sendStartLivingRequest() {
+  try {
+    const send_data = {
+      header_img: anchorInfo.value?.avatar,
+      zhubo_name: anchorInfo.value?.name,
+      zhubo_uid: anchorInfo.value?.anchor_id,
+      game_id: detail.value.game_id
+    }
+    const res: any = await startLiving(send_data)
+    console.log('开播res', res)
+    if (res.code === 200) {
+      kaibo.value = true
+      ElMessage.success(t('detail.message_success_kaibo'))
+      live_id.value = res.data.zhibo_id
+      liveStore.setDiamond(res.data.jifen)
+      liveStore.setState('yes_live')
+      // 开播成功每分钟发一次ping
+      pingInterval.value = setInterval(async () => {
+        const response: any = await getLivePing({ zhibo_id: live_id.value })
+        console.log('ping-res', response)
+        if (response.code !== 200) {
+          // 结束游戏
+          window.api.rendererCloseGame()
+        }
+      }, 60 * 1000)
+    }
+  } catch (error) {
+    console.error('发送开播请求时出错：', error)
+  }
+}
+const lock = ref<boolean>(true) // 避免重复执行sendStartLivingRequest()
 watchEffect(async () => {
   if (lock.value) {
     if (is_start.value && gift_data.value.length >= 1) {
       lock.value = false
-      // sendStartLivingRequest()
+      sendStartLivingRequest()
     }
   }
 })
 // 下播
-// async function theEndLiving() {
-//   if (!kaibo.value) {
-//     return
-//   }
-//   const res: any = await endLiving({ zhibo_id: live_id.value })
-//   if (res.code === 200) {
-//     clearInterval(pingInterval.value) // 下播关掉ping
-//     // window.api.showNotification('下播', '下播成功')
-//     kaibo.value = false
-//     console.log('下播', res)
-//   }
-// }
+async function theEndLiving() {
+  if (!kaibo.value) {
+    return
+  }
+  const res: any = await endLiving({ zhibo_id: live_id.value })
+  if (res.code === 200) {
+    clearInterval(pingInterval.value) // 下播关掉ping
+    clearInterval(deductInterval.value) // 下播关掉 扣钻
+    // window.api.showNotification('下播', '下播成功')
+    liveStore.setState('no_live')
+    kaibo.value = false
+    lock.value = true
+    ElMessage.success(t('detail.message_success_xiabo'))
+  }
+}
 watch(
   () => is_start.value,
   (val) => {
     if (!val) {
-      // theEndLiving() // 下播
+      theEndLiving() // 下播
+      liveStore.setState('no_live')
       clearInterval(pingInterval.value)
-      clearInterval(intervalId.value)
+      // clearInterval(intervalId.value)
       clearInterval(deductInterval.value)
       gift_data.value = []
       lock.value = true
@@ -1051,8 +1135,6 @@ watch(
 watch(
   () => buyVisible.value,
   () => {
-    // thePackage.value = undefined
-    // thePackage.value = packages.value[0]?.id
     taocanID.value = packages.value[0]?.taocan_id
     form.value = {
       tdays: packages.value[0]?.tdays,
@@ -1093,33 +1175,13 @@ async function connectLive() {
   // 如果已打开游戏
   if (is_start.value) {
     if (!liveRoom.value) {
-      return ElMessage.error('请填写直播间地址')
+      // 请填写直播间地址
+      return ElMessage.error(t('detail.message_error_noroom'))
     }
     if (start_id.value != buyID.value) {
-      return ElMessage.error('请连接已打开游戏的直播间弹幕')
+      // 请连接已打开游戏的直播间的弹幕
+      return ElMessage.error(t('detail.message_error_nogameroom'))
     }
-    // if (liveRoom.value.includes('@') && liveRoom.value.includes('http')) {
-    //   window.api.startLive(liveRoom.value)
-    //   localStorage.setItem('liveUrl', liveRoom.value)
-    // }
-    // if (liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-    //   window.api.startLive(`https://www.tiktok.com/${liveRoom.value}/live`)
-    //   localStorage.setItem(
-    //     'liveUrl',
-    //     `https://www.tiktok.com/${liveRoom.value}/live`
-    //   )
-    // }
-    // if (!liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-    //   window.api.startLive(`https://www.tiktok.com/@${liveRoom.value}/live`)
-    //   localStorage.setItem(
-    //     'liveUrl',
-    //     `https://www.tiktok.com/@${liveRoom.value}/live`
-    //   )
-    // }
-    // if (!liveRoom.value.includes('@') && liveRoom.value.includes('douyin')) {
-    //   window.api.startLive(liveRoom.value)
-    //   localStorage.setItem('liveUrl', liveRoom.value)
-    // }
     window.api.startLive(processCanshu(liveRoom.value))
     localStorage.setItem('liveUrl', processCanshu(liveRoom.value))
     is_barrage.value = true
@@ -1128,29 +1190,6 @@ async function connectLive() {
     return
   } else {
     is_barrage.value = true
-    // if (liveRoom.value.includes('@') && liveRoom.value.includes('http')) {
-    //   window.api.startLive(liveRoom.value)
-    //   localStorage.setItem('liveUrl', liveRoom.value)
-    // }
-    // if (liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-    //   window.api.startLive(`https://www.tiktok.com/${liveRoom.value}/live`)
-    //   localStorage.setItem(
-    //     'liveUrl',
-    //     `https://www.tiktok.com/${liveRoom.value}/live`
-    //   )
-    // }
-    // if (!liveRoom.value.includes('@') && !liveRoom.value.includes('http')) {
-    //   window.api.startLive(`https://www.tiktok.com/@${liveRoom.value}/live`)
-    //   localStorage.setItem(
-    //     'liveUrl',
-    //     `https://www.tiktok.com/@${liveRoom.value}/live`
-    //   )
-    // }
-
-    // if (!liveRoom.value.includes('@') && liveRoom.value.includes('douyin')) {
-    //   window.api.startLive(liveRoom.value)
-    //   localStorage.setItem('liveUrl', liveRoom.value)
-    // }
     window.api.startLive(processCanshu(liveRoom.value))
     localStorage.setItem('liveUrl', processCanshu(liveRoom.value))
     is_start_live.value = true
@@ -1160,6 +1199,7 @@ async function connectLive() {
 }
 // 关闭直播间
 window.api.mainCloseLive(() => {
+  theEndLiving()
   is_start_live.value = false
   is_barrage.value = false
   gift_data.value = []
@@ -1503,8 +1543,8 @@ function formatTime(time: any) {
   display: block;
   border-radius: 5px;
   background: #2e2e2e;
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;

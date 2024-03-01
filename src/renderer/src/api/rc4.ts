@@ -9,6 +9,15 @@ export const isLogin = () => {
   return request.post('/zhuboduan/gameser/is_login')
 }
 
+// 获取TBox最新版本信息
+export const getTBoxVersion = () => {
+  return request.post('/zhuboduan/gameser/get_box_new_version')
+}
+
+// 获取游戏信息
+export const getGameInfo = (data: any) => {
+  return request.post('/zhuboduan/gameser/get_game_info', data)
+}
 // 开播
 export const startLiving = (data: any) => {
   return request.post('/zhuboduan/gameser/kb', data)

@@ -23,7 +23,8 @@ const i18n = createI18n({
         last_open: '上次打开',
         incomplete: '功能开发中，暂未开放',
         no_live: '未开播',
-        yes_live: '已开播'
+        yes_live: '已开播',
+        tip: '提示'
       },
       home: {
         redeem: '兑换游戏',
@@ -137,7 +138,20 @@ const i18n = createI18n({
         free: '免费',
         unknown: '未知',
         message_success_buy: '购买成功',
-        not_gift: '暂无礼物贴纸'
+        not_gift: '暂无礼物贴纸',
+        start_tip: '启动本游戏需钻石≥',
+        version_content: '版本内容',
+        message_warning_update: '请关闭游戏后进行更新',
+        message_error_noturl: '暂无游戏地址',
+        message_error_notfindmain: '未找到游戏入口文件',
+        message_error_startfail: '启动失败',
+        message_warn_notdiamond:
+          '钻石即将耗尽，为避免影响正常开播，请在3分钟内完成钻石充值',
+        message_error_rechargetip: '剩余钻石不足，为避免影响开播，请及时充值',
+        message_success_kaibo: '开播',
+        message_success_xiabo: '下播',
+        message_error_noroom: '请填写直播间地址',
+        message_error_nogameroom: '请连接已打开游戏的直播间的弹幕'
       },
       recharge: {
         title: '充值',
@@ -206,7 +220,8 @@ const i18n = createI18n({
         last_open: 'Last Open',
         incomplete: 'Under development of functions, not yet open',
         no_live: 'Not broadcasted',
-        yes_live: 'Started broadcasting'
+        yes_live: 'Started broadcasting',
+        tip: 'Tip'
       },
       home: {
         redeem: 'Redeem game',
@@ -321,7 +336,23 @@ const i18n = createI18n({
         free: 'Free',
         unknown: 'Unknown',
         message_success_buy: 'Purchase successful',
-        not_gift: 'There are currently no gift stickers available'
+        not_gift: 'There are currently no gift stickers available',
+        start_tip: 'Starting this game requires diamonds≥',
+        version_content: 'Version content',
+        message_warning_update: 'Please update after closing the game',
+        message_error_noturl: 'There is currently no game address available',
+        message_error_notfindmain: 'Game entry file not found',
+        message_error_startfail: 'Start failed',
+        message_warn_notdiamond:
+          'The diamond is about to run out. To avoid affecting normal broadcasting, please complete the diamond recharge within 3 minutes',
+        message_error_rechargetip:
+          'Insufficient remaining diamonds. To avoid affecting the broadcast, please recharge in a timely manner',
+        message_success_kaibo: 'Start live streaming',
+        message_success_xiabo: 'End live broadcast',
+        message_error_noroom:
+          'Please fill in the address of the live broadcast room',
+        message_error_nogameroom:
+          'Please connect the barrage in the live broadcast room of the opened game'
       },
       recharge: {
         title: 'Recharge',
@@ -390,7 +421,8 @@ const i18n = createI18n({
         last_open: '上次打開',
         incomplete: '功能開發中，暫未開放',
         no_live: '未開播',
-        yes_live: '已開播'
+        yes_live: '已開播',
+        tip: '提示'
       },
       home: {
         redeem: '兌換遊戲',
@@ -504,7 +536,20 @@ const i18n = createI18n({
         free: '免費',
         unknown: '未知',
         message_success_buy: '購買成功',
-        not_gift: '暫無禮物貼紙'
+        not_gift: '暫無禮物貼紙',
+        start_tip: '啓動本游戲需鑽石≥',
+        version_content: '版本内容',
+        message_warning_update: '請關閉游戲後進行更新',
+        message_error_noturl: '暫無游戲地址',
+        message_error_notfindmain: '未找到游戲入口文件',
+        message_error_startfail: '啓動失敗',
+        message_warn_notdiamond:
+          '鑽石即將耗盡，為避免影響正常開播，請在3分鐘内完成鑽石充值',
+        message_error_rechargetip: '剩餘鑽石不足，爲避免影響開播，請及時充值',
+        message_success_kaibo: '開播',
+        message_success_xiabo: '下播',
+        message_error_noroom: '請填寫直播間地址',
+        message_error_nogameroom: '請連接已打開游戲的直播間的彈幕'
       },
       recharge: {
         title: '充值',
