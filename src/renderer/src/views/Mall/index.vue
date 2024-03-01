@@ -665,7 +665,7 @@ function computedDiamond() {
   return res
 }
 // 打开礼物贴纸
-async function onOpenGiftIcon() {
+function onOpenGiftIcon() {
   giftVisible.value = true
 }
 function closeGiftDialog() {
@@ -1015,8 +1015,11 @@ watchEffect(() => {
           diamond_not_num.value !== 3
         ) {
           diamond_not_num.value++
-
           ElMessage.warning(t('detail.message_warn_notdiamond'))
+          window.api.showNotification(
+            '钻石不足',
+            t('detail.message_warn_notdiamond')
+          )
           return
         }
         const res: any = await deductDiamond(send_data)
@@ -1024,9 +1027,13 @@ watchEffect(() => {
           res.data.jifen * divide_total.value < +detail.value.min_price &&
           diamond_not_num.value !== 3
         ) {
-          console.log('扣钻数量', send_data)
           ElMessage.error(t('detail.message_error_rechargetip'))
+          window.api.showNotification(
+            '钻石不足',
+            t('detail.message_error_rechargetip')
+          )
         }
+        console.log('扣钻数量', send_data)
         liveStore.setDiamond(res.data.jifen)
         console.log('扣钻res', res)
         console.log('礼物列表', gift_data.value)
@@ -1111,7 +1118,7 @@ async function theEndLiving() {
   if (res.code === 200) {
     clearInterval(pingInterval.value) // 下播关掉ping
     clearInterval(deductInterval.value) // 下播关掉 扣钻
-    // window.api.showNotification('下播', '下播成功')
+    window.api.showNotification('下播', '下播成功')
     liveStore.setState('no_live')
     kaibo.value = false
     lock.value = true
