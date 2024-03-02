@@ -1397,8 +1397,9 @@ function formatTime(time: any) {
   width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   .pagination-view {
-    width: 180px;
+    width: 200px;
   }
   :deep(.el-pagination) {
     button {
