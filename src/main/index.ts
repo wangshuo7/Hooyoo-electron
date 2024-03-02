@@ -144,7 +144,7 @@ function createWindow(): void {
     width: is.dev ? 1800 : 1600,
     height: 1000,
     minWidth: 1200,
-    minHeight: 580,
+    minHeight: 800,
     show: false, // 窗口是否在创建时显示
     // fullscreen: true, // 窗口是否全屏
     // hasShadow: false, // 窗口阴影

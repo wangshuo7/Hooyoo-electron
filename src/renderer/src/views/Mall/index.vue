@@ -1,117 +1,119 @@
 <template>
   <div class="container">
-    <div style="display: flex; justify-content: space-between">
-      <el-form :form="queryForm" inline style="flex: 1">
-        <el-form-item :label="$t('search.name')">
-          <el-input
-            v-model="queryForm.title"
-            style="width: 200px"
-            :placeholder="$t('search.name_placeholder')"
-            clearable
-          ></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('search.sort')">
-          <el-select
-            v-model="queryForm.sort"
-            style="width: 200px"
-            clearable
-            :placeholder="$t('search.sort_placeholder')"
-          >
-            <el-option value="2" :label="$t('search.sort_ctime_up')" />
-            <el-option value="1" :label="$t('search.sort_ctime_down')" />
-            <el-option value="4" :label="$t('search.sort_hot_up')" />
-            <el-option value="3" :label="$t('search.sort_hot_down')" />
-            <el-option value="6" :label="$t('search.sort_banner_up')" />
-            <el-option value="5" :label="$t('search.sort_banner_down')" />
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('search.cate')">
-          <el-select
-            v-model="queryForm.cate"
-            style="width: 200px"
-            clearable
-            :placeholder="$t('search.cate_placeholder')"
-          >
-            <el-option
-              v-for="item in categories"
-              :key="item.id"
-              :label="item.title"
-              :value="item.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="query">{{
-            $t('buttons.search')
-          }}</el-button>
-          <el-button @click="viewAll">{{ $t('buttons.all') }}</el-button>
-        </el-form-item>
-      </el-form>
-      <span class="refresh" @click="onRefresh">
-        <el-icon
-          class="refresh-icon"
-          :style="{ transform: `rotate(${rotation}deg)` }"
-          ><Refresh
-        /></el-icon>
-      </span>
-    </div>
-    <div v-loading="loading" class="list">
-      <div
-        v-for="(item, index) in tableData"
-        :key="index"
-        class="list-item"
-        @click="openDetail(item)"
-      >
-        <!-- @click="openDetail(item)" -->
-        <!-- v-if="hasPurchasedGame(item.game_id)" -->
-        <el-tag
-          v-if="gameStatus[item.game_id] !== 'nopurchased'"
-          class="tag"
-          effect="dark"
-          :type="
-            gameStatus[item.game_id] !== 'nopurchased'
-              ? gameStatus[item.game_id] === 'expire'
-                ? 'danger'
-                : 'success'
-              : ''
-          "
-          >{{
-            gameStatus[item.game_id] !== 'nopurchased'
-              ? gameStatus[item.game_id] === 'expire'
-                ? $t('detail.expired')
-                : $t('detail.purchased')
-              : ''
-          }}</el-tag
+    <div>
+      <div style="display: flex; justify-content: space-between">
+        <el-form :form="queryForm" inline style="flex: 1">
+          <el-form-item :label="$t('search.name')">
+            <el-input
+              v-model="queryForm.title"
+              style="width: 200px"
+              :placeholder="$t('search.name_placeholder')"
+              clearable
+            ></el-input>
+          </el-form-item>
+          <el-form-item :label="$t('search.sort')">
+            <el-select
+              v-model="queryForm.sort"
+              style="width: 200px"
+              clearable
+              :placeholder="$t('search.sort_placeholder')"
+            >
+              <el-option value="2" :label="$t('search.sort_ctime_up')" />
+              <el-option value="1" :label="$t('search.sort_ctime_down')" />
+              <el-option value="4" :label="$t('search.sort_hot_up')" />
+              <el-option value="3" :label="$t('search.sort_hot_down')" />
+              <el-option value="6" :label="$t('search.sort_banner_up')" />
+              <el-option value="5" :label="$t('search.sort_banner_down')" />
+            </el-select>
+          </el-form-item>
+          <el-form-item :label="$t('search.cate')">
+            <el-select
+              v-model="queryForm.cate"
+              style="width: 200px"
+              clearable
+              :placeholder="$t('search.cate_placeholder')"
+            >
+              <el-option
+                v-for="item in categories"
+                :key="item.id"
+                :label="item.title"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="query">{{
+              $t('buttons.search')
+            }}</el-button>
+            <el-button @click="viewAll">{{ $t('buttons.all') }}</el-button>
+          </el-form-item>
+        </el-form>
+        <span class="refresh" @click="onRefresh">
+          <el-icon
+            class="refresh-icon"
+            :style="{ transform: `rotate(${rotation}deg)` }"
+            ><Refresh
+          /></el-icon>
+        </span>
+      </div>
+      <div v-loading="loading" class="list">
+        <div
+          v-for="(item, index) in tableData"
+          :key="index"
+          class="list-item"
+          @click="openDetail(item)"
         >
-        <el-tag
-          v-if="item.game_id == pre_id || item.game_id == start_id"
-          class="pre-tag"
-          effect="dark"
-        >
-          {{ $t('system.last_open') }}
-        </el-tag>
-        <div class="img-box">
-          <el-image
-            class="img"
-            :src="item.icon?.includes('http') ? item.icon : 'danzhu.jpg'"
-          ></el-image>
-        </div>
-        <div class="item-title">
-          <span>{{ item.title }}</span>
-        </div>
-        <div class="item-price">
-          <div v-if="item.price">
-            <span class="price_1">{{ item.price }}</span>
-            <span class="price_2">{{ item.cuxiao_price }}</span>
+          <!-- @click="openDetail(item)" -->
+          <!-- v-if="hasPurchasedGame(item.game_id)" -->
+          <el-tag
+            v-if="gameStatus[item.game_id] !== 'nopurchased'"
+            class="tag"
+            effect="dark"
+            :type="
+              gameStatus[item.game_id] !== 'nopurchased'
+                ? gameStatus[item.game_id] === 'expire'
+                  ? 'danger'
+                  : 'success'
+                : ''
+            "
+            >{{
+              gameStatus[item.game_id] !== 'nopurchased'
+                ? gameStatus[item.game_id] === 'expire'
+                  ? $t('detail.expired')
+                  : $t('detail.purchased')
+                : ''
+            }}</el-tag
+          >
+          <el-tag
+            v-if="item.game_id == pre_id || item.game_id == start_id"
+            class="pre-tag"
+            effect="dark"
+          >
+            {{ $t('system.last_open') }}
+          </el-tag>
+          <div class="img-box">
+            <el-image
+              class="img"
+              :src="item.icon?.includes('http') ? item.icon : 'danzhu.jpg'"
+            ></el-image>
           </div>
-          <div v-else>{{ $t('detail.free') }}</div>
-        </div>
-        <div class="item-percent">
-          {{ $t('detail.divide') }}：{{
-            item.jisuan_bl.bl_gonghui +
-            item.jisuan_bl.bl_pingtai +
-            item.jisuan_bl.bl_youxizuozhe
-          }}%
+          <div class="item-title">
+            <span>{{ item.title }}</span>
+          </div>
+          <div class="item-price">
+            <div v-if="item.price">
+              <span class="price_1">{{ item.price }}</span>
+              <span class="price_2">{{ item.cuxiao_price }}</span>
+            </div>
+            <div v-else>{{ $t('detail.free') }}</div>
+          </div>
+          <div class="item-percent">
+            {{ $t('detail.divide') }}：{{
+              item.jisuan_bl.bl_gonghui +
+              item.jisuan_bl.bl_pingtai +
+              item.jisuan_bl.bl_youxizuozhe
+            }}%
+          </div>
         </div>
       </div>
     </div>
@@ -1257,6 +1259,12 @@ function formatTime(time: any) {
 </script>
 
 <style lang="less" scoped>
+.container {
+  height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 @media screen and (max-width: 1280px) {
   .container {
     width: 100%;
@@ -1393,7 +1401,6 @@ function formatTime(time: any) {
 }
 
 .pagination {
-  margin-top: 20px;
   width: 100%;
   display: flex;
   justify-content: space-between;

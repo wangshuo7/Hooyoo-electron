@@ -1,17 +1,10 @@
 <template>
   <div class="box">
-    <el-scrollbar>
-      <router-view></router-view>
-    </el-scrollbar>
-    <!-- <div class="log">
-      <Log></Log>
-    </div> -->
+    <router-view></router-view>
   </div>
 </template>
 
-<script lang="ts" setup>
-// import Log from '../../../views/Other/Log.vue'
-</script>
+<script lang="ts" setup></script>
 
 <style lang="less" scoped>
 @media screen and (min-width: 2001px) {
