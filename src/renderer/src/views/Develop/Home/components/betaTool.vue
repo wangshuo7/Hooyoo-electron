@@ -6,14 +6,14 @@
     @close="closeBetaTool"
   >
     <!-- :close-on-click-modal="false" -->
-    <template #title>
-      <div>
+    <!-- <template #title> -->
+    <!-- <div>
         <el-radio-group v-model="type" size="large">
           <el-radio-button label="抖音" />
           <el-radio-button label="Tiktok" />
         </el-radio-group>
-      </div>
-    </template>
+      </div> -->
+    <!-- </template> -->
     <el-form :model="form" label-width="100" inline>
       <el-form-item label="用户">
         <el-select v-model="form.user" placeholder="请选择用户" clearable>
@@ -118,7 +118,7 @@
           style="flex: 1; display: flex; flex-wrap: wrap"
         > -->
         <el-card
-          v-for="item in type == '抖音' ? cards : tiktokCards"
+          v-for="item in cards"
           :key="item.id"
           class="card"
           shadow="hover"
@@ -126,8 +126,8 @@
         >
           <template #header>
             <div class="card-head">
-              <span>{{ item.name }}</span>
-              <span class="price">{{ item.price }}钻石</span>
+              <span>{{ item.lw_name }}</span>
+              <span class="price">{{ item.lw_price }}钻石</span>
             </div>
           </template>
           <div
@@ -139,7 +139,11 @@
               justify-content: center;
             "
           >
-            <img :src="item.src" alt="" style="height: auto; width: 100px" />
+            <img
+              :src="item.lw_icon"
+              alt=""
+              style="height: auto; width: 100px"
+            />
           </div>
         </el-card>
         <!-- </el-scrollbar> -->
@@ -149,12 +153,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { Picture } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { ElNotification } from 'element-plus'
 import { v4 as uuidv4 } from 'uuid'
-const type = ref<any>('抖音') // '抖音' | 'Tiktok'
+import { getGifts } from '../../../../api/global'
 const settingVisible = ref<boolean>(false)
 const beta = ref<any>()
 const user = ref<any>([
@@ -259,145 +263,72 @@ const user = ref<any>([
   { uid: '10099', name: '浅灰色、邂逅', head: '98.jpg' },
   { uid: '10100', name: '软喵酱メ', head: '99.jpg' }
 ])
-const cards = ref([
-  {
-    id: 'yLjFwPlx3UpVlNYXfXAyO2s6ygSwdcUOGcrzLsCrvN2bAuAvZgdHpg5M7Tk=',
-    src: 'gift/10001.png',
-    name: '小心心',
-    price: 1
-  },
-  {
-    id: 'n1/Dg1905sj1FyoBlQBvmbaDZFBNaKuKZH6zxHkv8Lg5x2cRfrKUTb8gzMs=',
-    src: 'gift/10003.png',
-    name: '仙女棒',
-    price: 1
-  },
-  {
-    id: '28rYzVFNyXEXFC8HI+f/WG+I7a6lfl3OyZZjUS+CVuwCgYZrPrUdytGHu0c=',
-    src: 'gift/10004.png',
-    name: '能力药丸',
-    price: 10
-  },
-  {
-    id: 'fJs8HKQ0xlPRixn8JAUiL2gFRiLD9S6IFCFdvZODSnhyo9YN8q7xUuVVyZI=',
-    src: 'gift/10005.png',
-    name: '魔法镜',
-    price: 19
-  },
-  {
-    id: 'PJ0FFeaDzXUreuUBZH6Hs+b56Jh0tQjrq0bIrrlZmv13GSAL9Q1hf59fjGk=',
-    src: 'gift/10006.png',
-    name: '甜甜圈',
-    price: 52
-  },
-  {
-    id: 'IkkadLfz7O/a5UR45p/OOCCG6ewAWVbsuzR/Z+v1v76CBU+mTG/wPjqdpfg=',
-    src: 'gift/10007.png',
-    name: '能量电池',
-    price: 99
-  },
-  {
-    id: 'gx7pmjQfhBaDOG2XkWI2peZ66YFWkCWRjZXpTqb23O/epru+sxWyTV/3Ufs=',
-    src: 'gift/10008.png',
-    name: '恶魔炸弹',
-    price: 199
-  },
-  {
-    id: 'pGLo7HKNk1i4djkicmJXf6iWEyd+pfPBjbsHmd3WcX0Ierm2UdnRR7UINvI=',
-    src: 'gift/10009.png',
-    name: '神秘空投',
-    price: 299
-  },
-  {
-    id: 'lsEGaeC++k/yZbzTU2ST64EukfpPENQmqEZxaK9v1+7etK+qnCRKOnDyjsE=',
-    src: 'gift/10010.png',
-    name: '超级空投',
-    price: 666
-  },
-  {
-    id: 'P7zDZzpeO215SpUptB+aURb1+zC14UC9MY1+MHszKoF0p5gzYk8CNEbey60=',
-    src: 'gift/10011.png',
-    name: '超能喷射',
-    price: 999
-  }
+const cards = ref<any[]>([
+  // {
+  //   id: 'yLjFwPlx3UpVlNYXfXAyO2s6ygSwdcUOGcrzLsCrvN2bAuAvZgdHpg5M7Tk=',
+  //   src: 'gift/10001.png',
+  //   name: '小心心',
+  //   price: 1
+  // },
+  // {
+  //   id: 'n1/Dg1905sj1FyoBlQBvmbaDZFBNaKuKZH6zxHkv8Lg5x2cRfrKUTb8gzMs=',
+  //   src: 'gift/10003.png',
+  //   name: '仙女棒',
+  //   price: 1
+  // },
+  // {
+  //   id: '28rYzVFNyXEXFC8HI+f/WG+I7a6lfl3OyZZjUS+CVuwCgYZrPrUdytGHu0c=',
+  //   src: 'gift/10004.png',
+  //   name: '能力药丸',
+  //   price: 10
+  // },
+  // {
+  //   id: 'fJs8HKQ0xlPRixn8JAUiL2gFRiLD9S6IFCFdvZODSnhyo9YN8q7xUuVVyZI=',
+  //   src: 'gift/10005.png',
+  //   name: '魔法镜',
+  //   price: 19
+  // },
+  // {
+  //   id: 'PJ0FFeaDzXUreuUBZH6Hs+b56Jh0tQjrq0bIrrlZmv13GSAL9Q1hf59fjGk=',
+  //   src: 'gift/10006.png',
+  //   name: '甜甜圈',
+  //   price: 52
+  // },
+  // {
+  //   id: 'IkkadLfz7O/a5UR45p/OOCCG6ewAWVbsuzR/Z+v1v76CBU+mTG/wPjqdpfg=',
+  //   src: 'gift/10007.png',
+  //   name: '能量电池',
+  //   price: 99
+  // },
+  // {
+  //   id: 'gx7pmjQfhBaDOG2XkWI2peZ66YFWkCWRjZXpTqb23O/epru+sxWyTV/3Ufs=',
+  //   src: 'gift/10008.png',
+  //   name: '恶魔炸弹',
+  //   price: 199
+  // },
+  // {
+  //   id: 'pGLo7HKNk1i4djkicmJXf6iWEyd+pfPBjbsHmd3WcX0Ierm2UdnRR7UINvI=',
+  //   src: 'gift/10009.png',
+  //   name: '神秘空投',
+  //   price: 299
+  // },
+  // {
+  //   id: 'lsEGaeC++k/yZbzTU2ST64EukfpPENQmqEZxaK9v1+7etK+qnCRKOnDyjsE=',
+  //   src: 'gift/10010.png',
+  //   name: '超级空投',
+  //   price: 666
+  // },
+  // {
+  //   id: 'P7zDZzpeO215SpUptB+aURb1+zC14UC9MY1+MHszKoF0p5gzYk8CNEbey60=',
+  //   src: 'gift/10011.png',
+  //   name: '超能喷射',
+  //   price: 999
+  // }
 ])
-const tiktokCards = ref([
-  {
-    id: '5655',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eba3a9bb85c33e017f3648eaf88d7189~tplv-obj.webp',
-    name: 'Rose',
-    price: 1
-  },
-  {
-    id: '5487',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/a4c4dc437fd3a6632aba149769491f49.png~tplv-obj.webp',
-    name: 'Finger Heart',
-    price: 5
-  },
-  {
-    id: '5719',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/f4fdb4b513b21485ab5e3d30a1112263~tplv-obj.webp',
-    name: 'Fire',
-    price: 5
-  },
-  {
-    id: '8913',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/eb77ead5c3abb6da6034d3cf6cfeb438~tplv-obj.webp',
-    name: 'Rosa',
-    price: 10
-  },
-  {
-    id: '5658',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/20b8f61246c7b6032777bb81bf4ee055~tplv-obj.webp',
-    name: 'Perfume',
-    price: 20
-  },
-  {
-    id: '5659',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/0f158a08f7886189cdabf496e8a07c21~tplv-obj.webp',
-    name: 'Paper Crane',
-    price: 99
-  },
-  {
-    id: '5660',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/6cd022271dc4669d182cad856384870f~tplv-obj.webp',
-    name: 'Hand Hearts',
-    price: 100
-  },
-  {
-    id: '5509',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/08af67ab13a8053269bf539fd27f3873.png~tplv-obj.webp',
-    name: 'Sunglasses',
-    price: 199
-  },
-  {
-    id: '6267',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/148eef0884fdb12058d1c6897d1e02b9~tplv-obj.webp',
-    name: 'Corgi',
-    price: 299
-  },
-  {
-    id: '7168',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/e0589e95a2b41970f0f30f6202f5fce6~tplv-obj.webp',
-    name: 'Money Gun',
-    price: 500
-  },
-  {
-    id: '7122',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/dd06007ade737f1001977590b11d3f61~tplv-obj.webp',
-    name: 'Gem Gun',
-    price: 500
-  },
-  {
-    id: '5978',
-    src: 'https://p16-webcast.tiktokcdn.com/img/maliva/webcast-va/4227ed71f2c494b554f9cbe2147d4899~tplv-obj.webp',
-    name: 'Train',
-    price: 899
-  }
-])
+
 const form = ref<any>({
   user: null,
-  count: null,
+  count: 1,
   content: ''
 })
 function findUser(id) {
@@ -505,7 +436,7 @@ function onSendGift(item) {
         timestamp: new Date().getTime(),
         sec_gift_id: item.id,
         gift_num: form.value.count || 1,
-        gift_value: item.price * form.value.count || 1
+        gift_value: item.lw_price * (form.value.count ? form.value.count : 1)
       }
     ]
   }
@@ -537,6 +468,10 @@ watch(
 function betaBeta() {
   window.api.sendBetaObj(beta.value)
 }
+onMounted(async () => {
+  const res: any = await getGifts()
+  cards.value = res.data.list
+})
 </script>
 
 <style lang="less" scoped>

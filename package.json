@@ -42,7 +42,8 @@
     "swiper": "^11.0.5",
     "uuid": "^9.0.1",
     "vue-i18n": "^9.9.1",
-    "ws": "^8.16.0"
+    "ws": "^8.16.0",
+    "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config": "^1.0.1",

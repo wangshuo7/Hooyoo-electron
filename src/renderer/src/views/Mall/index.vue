@@ -367,10 +367,10 @@
             >
               <template #content>
                 {{ $t('detail.divide') }}：
-                <span v-if="detail.jisuan_bl.bl_gonghui !== 0">
+                <!-- <span v-if="detail.jisuan_bl.bl_gonghui !== 0">
                   {{ detail.jisuan_bl.bl_gonghui }}%
-                </span>
-                <span> + </span>
+                </span> -->
+                <!-- <span> + </span>
                 <span v-if="detail.jisuan_bl.bl_pingtai !== 0">
                   {{ detail.jisuan_bl.bl_pingtai }}%
                 </span>
@@ -378,7 +378,7 @@
                 <span v-if="detail.jisuan_bl.bl_youxizuozhe !== 0">
                   {{ detail.jisuan_bl.bl_youxizuozhe }}%
                 </span>
-                <span> = </span>
+                <span> = </span> -->
                 <span>
                   {{
                     detail.jisuan_bl.bl_gonghui +
@@ -592,6 +592,8 @@ import {
   ElNotification,
   FormInstance
 } from 'element-plus'
+import { useToast } from 'vue-toastification'
+const Toast = useToast()
 
 import {
   deductDiamond,
@@ -800,6 +802,13 @@ async function openDetail(item: any) {
   const res: any = await getGameInfo({ game_id: item.game_id })
   localStorage.setItem('game_id', item.game_id)
   detail.value = res?.data?.info
+  const toastOption: any = {
+    position: 'top-center',
+    timeout: 4000
+  }
+  if (detail.value.gonggao) {
+    Toast.info(`公告: ${detail.value.gonggao}`, toastOption)
+  }
   divide_total.value =
     (detail.value.jisuan_bl.bl_gonghui +
       detail.value.jisuan_bl.bl_pingtai +
@@ -816,6 +825,12 @@ async function openDetail(item: any) {
     window.api.checkGame(item.game_id, res?.data?.info.xiazai_url)
   }
 }
+watch(
+  () => detailVisible.value,
+  (newVal) => {
+    if (!newVal) Toast.clear()
+  }
+)
 // 更改安装路径后重置游戏状态
 window.api.initGameStatus(() => {
   gameStatus.value = {}

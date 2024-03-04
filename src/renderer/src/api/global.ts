@@ -28,3 +28,7 @@ export const getGiftIcon = (data: any) => {
 export const computedPrice = (data: any) => {
   return request.post('/commpublic/param/money_jisuan', data)
 }
+// 获取礼物
+export const getGifts = () => {
+  return request.post('/commpublic/param/liwu')
+}
