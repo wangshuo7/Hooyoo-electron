@@ -263,68 +263,7 @@ const user = ref<any>([
   { uid: '10099', name: '浅灰色、邂逅', head: '98.jpg' },
   { uid: '10100', name: '软喵酱メ', head: '99.jpg' }
 ])
-const cards = ref<any[]>([
-  // {
-  //   id: 'yLjFwPlx3UpVlNYXfXAyO2s6ygSwdcUOGcrzLsCrvN2bAuAvZgdHpg5M7Tk=',
-  //   src: 'gift/10001.png',
-  //   name: '小心心',
-  //   price: 1
-  // },
-  // {
-  //   id: 'n1/Dg1905sj1FyoBlQBvmbaDZFBNaKuKZH6zxHkv8Lg5x2cRfrKUTb8gzMs=',
-  //   src: 'gift/10003.png',
-  //   name: '仙女棒',
-  //   price: 1
-  // },
-  // {
-  //   id: '28rYzVFNyXEXFC8HI+f/WG+I7a6lfl3OyZZjUS+CVuwCgYZrPrUdytGHu0c=',
-  //   src: 'gift/10004.png',
-  //   name: '能力药丸',
-  //   price: 10
-  // },
-  // {
-  //   id: 'fJs8HKQ0xlPRixn8JAUiL2gFRiLD9S6IFCFdvZODSnhyo9YN8q7xUuVVyZI=',
-  //   src: 'gift/10005.png',
-  //   name: '魔法镜',
-  //   price: 19
-  // },
-  // {
-  //   id: 'PJ0FFeaDzXUreuUBZH6Hs+b56Jh0tQjrq0bIrrlZmv13GSAL9Q1hf59fjGk=',
-  //   src: 'gift/10006.png',
-  //   name: '甜甜圈',
-  //   price: 52
-  // },
-  // {
-  //   id: 'IkkadLfz7O/a5UR45p/OOCCG6ewAWVbsuzR/Z+v1v76CBU+mTG/wPjqdpfg=',
-  //   src: 'gift/10007.png',
-  //   name: '能量电池',
-  //   price: 99
-  // },
-  // {
-  //   id: 'gx7pmjQfhBaDOG2XkWI2peZ66YFWkCWRjZXpTqb23O/epru+sxWyTV/3Ufs=',
-  //   src: 'gift/10008.png',
-  //   name: '恶魔炸弹',
-  //   price: 199
-  // },
-  // {
-  //   id: 'pGLo7HKNk1i4djkicmJXf6iWEyd+pfPBjbsHmd3WcX0Ierm2UdnRR7UINvI=',
-  //   src: 'gift/10009.png',
-  //   name: '神秘空投',
-  //   price: 299
-  // },
-  // {
-  //   id: 'lsEGaeC++k/yZbzTU2ST64EukfpPENQmqEZxaK9v1+7etK+qnCRKOnDyjsE=',
-  //   src: 'gift/10010.png',
-  //   name: '超级空投',
-  //   price: 666
-  // },
-  // {
-  //   id: 'P7zDZzpeO215SpUptB+aURb1+zC14UC9MY1+MHszKoF0p5gzYk8CNEbey60=',
-  //   src: 'gift/10011.png',
-  //   name: '超能喷射',
-  //   price: 999
-  // }
-])
+const cards = ref<any[]>([])
 
 const form = ref<any>({
   user: null,
@@ -434,7 +373,7 @@ function onSendGift(item) {
         avatar_url: `http://www.h2t.me/cdn/huyouyun${findUser(form.value.user).head}`,
         nickname: findUser(form.value.user).name,
         timestamp: new Date().getTime(),
-        sec_gift_id: item.id,
+        sec_gift_id: item.lw_id,
         gift_num: form.value.count || 1,
         gift_value: item.lw_price * (form.value.count ? form.value.count : 1)
       }
@@ -442,10 +381,10 @@ function onSendGift(item) {
   }
   window.api.sendBetaWs(data)
   ElNotification({
-    message: `${findUser(form.value.user).name} 送出礼物 ${item.name} x ${form.value.count || 1}`,
+    message: `${findUser(form.value.user).name} 送出礼物 ${item.lw_name} x ${form.value.count || 1}`,
     type: 'success'
   })
-  console.log('礼物', data)
+  // console.log('礼物', data)
   return
 }
 const props = defineProps({
@@ -471,6 +410,7 @@ function betaBeta() {
 onMounted(async () => {
   const res: any = await getGifts()
   cards.value = res.data.list
+  console.log('gift', res.data.list)
 })
 </script>
 
