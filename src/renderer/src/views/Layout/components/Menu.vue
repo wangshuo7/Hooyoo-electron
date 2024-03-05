@@ -106,6 +106,7 @@ const logo = ref<any>()
 async function viewPersonal() {
   const res: any = await getPersonalInfo()
   liveStore.setDiamond(res.data.one.jifen)
+  window.api.sendAnchor(res.data.one)
   const result: any = await getGuildOem({ id: res.data.one.gonghui_id })
   logo.value = result.data.list[0].tiepai_icon
 }

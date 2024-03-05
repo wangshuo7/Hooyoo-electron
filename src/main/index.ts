@@ -118,6 +118,7 @@ let connectKey: string
 let gameId: string
 let rc4Key: string
 let lan: any
+let anchor: any // 主播信息（自己维护的）
 const default_download_path = path.join(
   app.getPath('documents'),
   'huyouyun_game_download'
@@ -160,11 +161,29 @@ function createWindow(): void {
   })
   const server = new WebSocket.Server({ port: 8080 })
   server.on('connection', (socket: any) => {
-    // console.log('socket', socket)
-    wsServer = socket
+    const send_data = {
+      type: 'server_msg',
+      code: 0,
+      msg: '链接直播间成功！',
+      data: {
+        room_id: anchor.username,
+        anchor_open_id: anchor.username,
+        avatar_url: anchor.header_img.includes('http')
+          ? anchor.header_img
+          : 'http://image.huyouyun.cn/liwu_img/huyouyun0.jpg',
+        nick_name: anchor.nickname
+      }
+    }
+    sendWsData(send_data)
+    // wsServer = socket
     console.log('Client connected')
     // 监听来自客户端的消息
-    socket.on('message', () => {})
+    socket.on('message', (data) => {
+      // const parseData = JSON.parse(data)
+      // const id = parseData.gameid || parseData.GameId || parseData.GAMEID
+      // wsServer[id] = socket
+      console.log(data)
+    })
 
     // 监听连接关闭事件
     socket.on('close', () => {
@@ -216,6 +235,10 @@ function createWindow(): void {
   // 监听窗口取消最大化事件
   mainWindow.on('unmaximize', sendMaximizeStatus)
 }
+
+ipcMain.on('send-anchor', (_event, data: any) => {
+  anchor = data
+})
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')

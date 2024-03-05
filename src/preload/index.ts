@@ -3,6 +3,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
+  sendAnchor: (data: any) => ipcRenderer.send('send-anchor', data),
   mainSendVersion: (callback: (version: any) => void) => {
     ipcRenderer.on('main-send-version', (_event, version) => {
       callback(version)

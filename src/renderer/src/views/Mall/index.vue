@@ -800,6 +800,7 @@ const divide_total = ref<number>(0)
 // 打开详情
 async function openDetail(item: any) {
   const res: any = await getGameInfo({ game_id: item.game_id })
+  console.log('xiangqing', res)
   localStorage.setItem('game_id', item.game_id)
   detail.value = res?.data?.info
   const toastOption: any = {
