@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { getPersonalInfo } from '../api/wallet'
 
 export const useLiveStore = defineStore('live', {
   state: () => ({
@@ -11,6 +12,10 @@ export const useLiveStore = defineStore('live', {
     },
     setDiamond(num: any) {
       this.diamond = num
+    },
+    async getDiamong() {
+      const res: any = await getPersonalInfo()
+      this.diamond = res.data.one.jifen
     }
   }
 })

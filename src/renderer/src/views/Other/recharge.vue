@@ -156,7 +156,7 @@ function submit() {
 
 // 卡密-取消
 function cancel() {
-  ruleFormRef.value?.resetFields()
+  form.value.miyao = ''
 }
 const order_id = ref<any>()
 // 检查微信订单

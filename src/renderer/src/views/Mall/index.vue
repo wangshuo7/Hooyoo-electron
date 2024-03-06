@@ -985,7 +985,9 @@ let salts = reactive<string[]>([])
 // 启动游戏
 async function launchGame(type: string) {
   if (!is_start.value) {
-    if (+liveStore.diamond < +detail.value.min_price) {
+    // 获取个人信息
+    await liveStore.getDiamong()
+    if (+current_diamond.value < +detail.value.min_price) {
       ElMessageBox.confirm(
         `${t('detail.start_tip')}${+detail.value.min_price}`,
         t('system.tip'),
@@ -997,6 +999,7 @@ async function launchGame(type: string) {
       ).then(() => {
         rechargeVisible.value = true
       })
+      return
     }
     window.api.removeAllListeners()
     const res: any = await getGameUse({ game_id: buyID.value })
@@ -1095,6 +1098,12 @@ watchEffect(() => {
         console.log('扣钻res', res)
         console.log('礼物列表', gift_data.value)
         const kouDiamond = send_data.jifen
+        // if (kouDiamond > 0) {
+        //   window.api.showNotification(
+        //     '提醒',
+        //     `自动抽成记录：收益${kouDiamond}钻石，扣除${kouDiamond}钻石，剩余${res.data.jifen}钻石`
+        //   )
+        // }
         // 没有积分或者欠费
         if (res?.data?.is_do !== 'yes') {
           theEndLiving() // 下播
@@ -1107,7 +1116,7 @@ watchEffect(() => {
           }
         }
         gift_data.value = []
-      }, 60 * 1000)
+      }, 60 * 2000)
     }
   }
 })

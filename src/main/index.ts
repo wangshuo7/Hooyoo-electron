@@ -161,20 +161,22 @@ function createWindow(): void {
   })
   const server = new WebSocket.Server({ port: 8080 })
   server.on('connection', (socket: any) => {
-    const send_data = {
-      type: 'server_msg',
-      code: 0,
-      msg: '链接直播间成功！',
-      data: {
-        room_id: anchor.username,
-        anchor_open_id: anchor.username,
-        avatar_url: anchor.header_img.includes('http')
-          ? anchor.header_img
-          : 'http://image.huyouyun.cn/liwu_img/huyouyun0.jpg',
-        nick_name: anchor.nickname
+    if (anchor) {
+      const send_data = {
+        type: 'server_msg',
+        code: 0,
+        msg: '链接直播间成功！',
+        data: {
+          room_id: anchor?.username,
+          anchor_open_id: anchor?.username,
+          avatar_url: anchor?.header_img?.includes('http')
+            ? anchor?.header_img
+            : 'http://image.huyouyun.cn/liwu_img/huyouyun0.jpg',
+          nick_name: anchor?.nickname
+        }
       }
+      socket.send(JSON.stringify(send_data))
     }
-    sendWsData(send_data)
     // wsServer = socket
     console.log('Client connected')
     // 监听来自客户端的消息
@@ -408,7 +410,9 @@ ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
   }
 })
 let gameProcess: any
-const jiami: any = {}
+const jiami: any = {
+  '1': 2
+}
 // 启动项目
 ipcMain.on('start-game', (event, id, lang, name, key, jm) => {
   gameId = id
