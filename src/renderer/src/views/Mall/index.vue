@@ -166,7 +166,7 @@
     v-model="detailVisible"
     :title="game_name"
     width="945"
-    top="10vh"
+    top="5vh"
     @close="detailDialogClose"
   >
     <div class="detail">
@@ -322,7 +322,9 @@
             :key="index"
             class="package-card"
           >
-            <div class="card-left">{{ JSON.parse(item.content).ttitle }}</div>
+            <div class="card-left">
+              {{ JSON.parse(item.content).ttitle }}
+            </div>
             <div class="card-right">
               <div>
                 <span>{{ $t('detail.days') }}：</span
@@ -430,9 +432,13 @@
         </div>
       </div>
       <!-- 专属礼物 -->
-      <!-- <div class="detail-info" style="margin-top: 10px">
+      <div
+        v-if="exclusiveGifts.length > 0"
+        class="detail-info"
+        style="margin-top: 10px"
+      >
         <h3>
-          专属礼物
+          {{ $t('detail.exclusiveGifts') }}
           <el-tooltip
             effect="dark"
             :show-arrow="true"
@@ -440,22 +446,33 @@
             :offset="10"
           >
             <template #content>
-              <div>收到分成礼物将扣除分成钻石</div>
+              <div>{{ $t('detail.gift_tip') }}</div>
             </template>
             <span style="margin-left: 10px; position: relative; top: 3px"
               ><el-icon><QuestionFilled /></el-icon
             ></span>
           </el-tooltip>
         </h3>
-        <el-table
-          :data="JSON.parse(detail.liwu_select)"
-          style="width: 100%; height: 200px"
-        >
-          <el-table-column label="ID" width="60">
-            <template #default="{ row }">{{ row.zhibo_log_id }}</template>
-          </el-table-column>
-        </el-table>
-      </div> -->
+        <div>
+          <div class="line-one line">
+            <span>{{ $t('detail.gift') }}</span>
+            <span v-for="item in exclusiveGifts" :key="item.id">
+              <img
+                style="width: 50px; height: auto; margin-bottom: 7px"
+                :src="item.lw_icon"
+                alt=""
+              />
+              {{ item.lw_name }}</span
+            >
+          </div>
+          <div class="line-two line">
+            <span>{{ $t('detail.value') }}</span>
+            <span v-for="item in exclusiveGifts" :key="item.id"
+              >{{ +item.lw_price }}{{ $t('system.diamond') }}</span
+            >
+          </div>
+        </div>
+      </div>
     </div>
   </el-dialog>
   <!-- 购买 -->
@@ -585,6 +602,7 @@ import Moment from 'moment'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
 import { buyGame, getGameList } from '../../api/game'
 import { getGameInfo } from '../../api/rc4'
+import { getGifts } from '../../api/global'
 import { useGlobalStore } from '../../store/globalStore'
 import {
   ElMessage,
@@ -797,6 +815,8 @@ function iconChange(e: boolean) {
 //   my_game.value = res.data.list.map((item: any) => item.mg_game_id)
 // }
 const divide_total = ref<number>(0)
+const exclusiveGifts = ref<any[]>([])
+const exclusiveGiftIds = ref<any[]>([])
 // 打开详情
 async function openDetail(item: any) {
   const res: any = await getGameInfo({ game_id: item.game_id })
@@ -807,6 +827,13 @@ async function openDetail(item: any) {
     position: 'top-center',
     timeout: 4000
   }
+  exclusiveGiftIds.value = detail.value.liwu_select
+    ? JSON.parse(detail.value.liwu_select)
+    : []
+  if (detail.value.liwu_select) {
+    exclusiveGifts.value = filterObjById(JSON.parse(detail.value.liwu_select))
+  }
+  // console.log('exclusiveGifts', exclusiveGifts.value)
   if (detail.value.gonggao) {
     Toast.info(`公告: ${detail.value.gonggao}`, toastOption)
   }
@@ -1004,7 +1031,17 @@ async function launchGame(type: string) {
 }
 const gift_data = ref<any[]>([])
 window.api.getGift((res) => {
-  gift_data.value.push(res)
+  if (exclusiveGifts.value.length > 0) {
+    const secGiftId = res.sec_gift_id + ''
+    const exclusiveGiftIds = exclusiveGifts.value.map((item) => item.lw_id)
+    if (exclusiveGiftIds.includes(secGiftId)) {
+      // 如果存在，则将 res 添加到 gift_data.value 中
+      gift_data.value.push(res)
+      console.log('thegift', res)
+    }
+  } else {
+    gift_data.value.push(res)
+  }
 })
 const deductInterval = ref<any>(null)
 const diamond_not_num = ref<number>(0) // 钻石不足次数
@@ -1033,16 +1070,18 @@ watchEffect(() => {
           diamond_not_num.value !== 3
         ) {
           diamond_not_num.value++
-          ElMessage.warning(t('detail.message_warn_notdiamond'))
+          ElMessage.warning(
+            `${t('detail.message_warn_notdiamond')}${4 - diamond_not_num.value}${t('detail.message_warn_notdiamond2')}`
+          )
           window.api.showNotification(
             '钻石不足',
-            t('detail.message_warn_notdiamond')
+            `${t('detail.message_warn_notdiamond')}${4 - diamond_not_num.value}${t('detail.message_warn_notdiamond2')}`
           )
           return
         }
         const res: any = await deductDiamond(send_data)
         if (
-          res.data.jifen * divide_total.value < +detail.value.min_price &&
+          res.data.jifen * divide_total.value < +detail.value.yj_zuanshi &&
           diamond_not_num.value !== 3
         ) {
           ElMessage.error(t('detail.message_error_rechargetip'))
@@ -1255,6 +1294,16 @@ function autoOpenDetail() {
   }
   openDetail({ game_id: Number(route.query.game_id), title: route.query.title })
 }
+function filterObjById(arr: any) {
+  const filterObjects = liwuList.value.filter((obj) => arr.includes(obj.lw_id))
+  return filterObjects
+}
+// 礼物列表
+const liwuList = ref<any[]>([])
+async function getAllGifts() {
+  const res: any = await getGifts()
+  liwuList.value = res.data.list
+}
 onMounted(async () => {
   query()
   await globalStore.setLanguage()
@@ -1266,6 +1315,7 @@ onMounted(async () => {
   platforms.value = globalStore.platform
   ratio.value = globalStore.ratio
   autoOpenDetail()
+  getAllGifts()
 })
 
 // 格式化时间
@@ -1591,5 +1641,40 @@ function formatTime(time: any) {
 .refresh:hover {
   color: #f5f5f5;
   background: #444444;
+}
+// 专属礼物
+.line,
+.line {
+  height: 100px;
+  display: flex;
+  margin-bottom: 2px;
+  span {
+    display: flex;
+    flex-direction: column;
+    width: 120px;
+    align-items: center;
+    justify-content: center;
+    background: #28292b;
+    margin-right: 2px;
+  }
+}
+.line-one {
+  span:first-child {
+    width: 100px;
+    border-top-left-radius: 10px;
+  }
+  span:last-child {
+    border-top-right-radius: 10px;
+  }
+}
+.line-two {
+  height: 60px;
+  span:first-child {
+    width: 100px;
+    border-bottom-left-radius: 10px;
+  }
+  span:last-child {
+    border-bottom-right-radius: 10px;
+  }
 }
 </style>

@@ -40,12 +40,15 @@
 import { onMounted, ref } from 'vue'
 // import { getTBoxVersion } from '../api/rc4'
 // import { ElMessage } from 'element-plus'
+import { useGlobalStore } from '../store/globalStore'
+const globalStore = useGlobalStore()
 const update_content = ref<any>([{ content: '' }])
 const appVersion = ref<any>()
 const is_update = ref<boolean>(false)
 
 window.api.mainSendVersion((version) => {
   appVersion.value = version
+  globalStore.setAppVersion(version)
 })
 interface progressObj {
   bytesPerSecond: number

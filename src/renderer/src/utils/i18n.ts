@@ -113,6 +113,10 @@ const i18n = createI18n({
         start_en: '运行英文游戏'
       },
       detail: {
+        gift: '礼物',
+        value: '价值',
+        exclusiveGifts: '专属礼物',
+        gift_tip: '收到分成礼物将扣除分成钻石',
         package: '套餐',
         days: '天数',
         price: '价格',
@@ -145,8 +149,8 @@ const i18n = createI18n({
         message_error_noturl: '暂无游戏地址',
         message_error_notfindmain: '未找到游戏入口文件',
         message_error_startfail: '启动失败',
-        message_warn_notdiamond:
-          '钻石即将耗尽，为避免影响正常开播，请在3分钟内完成钻石充值',
+        message_warn_notdiamond: '钻石即将耗尽，为避免影响正常开播，请在',
+        message_warn_notdiamond2: '分钟内完成钻石充值',
         message_error_rechargetip: '剩余钻石不足，为避免影响开播，请及时充值',
         message_success_kaibo: '开播',
         message_success_xiabo: '下播',
@@ -310,6 +314,10 @@ const i18n = createI18n({
         start_en: 'Start in EN'
       },
       detail: {
+        gift: 'Gift',
+        value: 'Value',
+        exclusiveGifts: 'Exclusive gift',
+        gift_tip: 'Received bonus gifts will deduct bonus diamonds',
         package: 'Package',
         days: 'Days',
         price: 'Price',
@@ -511,6 +519,10 @@ const i18n = createI18n({
         start_en: '運行英文遊戲'
       },
       detail: {
+        gift: '禮物',
+        value: '價值',
+        exclusiveGifts: '專屬禮物',
+        gift_tip: '收到分成禮物將扣除分成鑽石',
         package: '套餐',
         days: '天數',
         price: '價格',

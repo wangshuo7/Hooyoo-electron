@@ -31,22 +31,38 @@
       </div>
     </el-form>
     <template #footer>
-      <el-button @click="settingVisible = false">{{
-        $t('buttons.cancel')
-      }}</el-button>
-      <el-button type="primary" @click="onChangePaths">{{
-        $t('buttons.confirm')
-      }}</el-button>
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+        "
+      >
+        <span>ver {{ appVersion }}</span>
+        <div class="btns">
+          <el-button @click="settingVisible = false">{{
+            $t('buttons.cancel')
+          }}</el-button>
+          <el-button type="primary" @click="onChangePaths">{{
+            $t('buttons.confirm')
+          }}</el-button>
+        </div>
+      </div>
     </template>
   </el-dialog>
 </template>
 
 <script lang="ts" setup>
 import { ElMessage } from 'element-plus'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useGlobalStore } from '../../store/globalStore'
+const globalStore = useGlobalStore()
 const form = ref<any>({})
 const settingVisible = ref<boolean>(false)
 
+const appVersion = computed(() => {
+  return globalStore.appVersion
+})
 window.api.getPathReply((paths: any) => {
   form.value.download = paths.downloadPath
   form.value.install = paths.installPath

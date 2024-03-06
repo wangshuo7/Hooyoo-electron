@@ -7,7 +7,8 @@ export const useGlobalStore = defineStore('global', {
     category: null,
     platform: null,
     ratio: null,
-    guildId: ''
+    guildId: '',
+    appVersion: ''
   }),
   actions: {
     async setLanguage() {
@@ -28,6 +29,9 @@ export const useGlobalStore = defineStore('global', {
     },
     setGuildId(id: any) {
       this.guildId = id
+    },
+    setAppVersion(version: string) {
+      this.appVersion = version
     }
   }
 })

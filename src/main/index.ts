@@ -111,7 +111,7 @@ const store = new Store()
 //   installPath: path.join(app.getPath('documents'), 'huyouyun_game_install')
 // })
 const gameStatus = {}
-let wsServer: any
+const clients = {}
 let mainWindow: any
 let liveRoom: any // 直播间
 let connectKey: string
@@ -179,15 +179,22 @@ function createWindow(): void {
     console.log('Client connected')
     // 监听来自客户端的消息
     socket.on('message', (data) => {
-      // const parseData = JSON.parse(data)
-      // const id = parseData.gameid || parseData.GameId || parseData.GAMEID
-      // wsServer[id] = socket
-      console.log(data)
+      const parseData = JSON.parse(data)
+      const id =
+        parseData.gameid ||
+        parseData.Gameid ||
+        parseData.GameId ||
+        parseData.GAMEID
+      clients[id] = socket
     })
 
     // 监听连接关闭事件
     socket.on('close', () => {
       console.log('Client disconnected')
+      const id = Object.keys(clients).find((key) => clients[key] === socket)
+      if (id) {
+        delete clients[id]
+      }
     })
   })
 
@@ -401,15 +408,14 @@ ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
   }
 })
 let gameProcess: any
-let jiami: any
+const jiami: any = {}
 // 启动项目
 ipcMain.on('start-game', (event, id, lang, name, key, jm) => {
-  gameId = id + ''
+  gameId = id
   lan = lang == 'zh' ? '11' : lang == 'en' ? '13' : '39'
   connectKey = key
   rc4Key = md5(`PojieSqj521${gameId}${connectKey}`) + authToken
-  jiami = jm
-  console.log('jm', jiami)
+  jiami[id] = jm
   // const gameFolderPath = `D:\\hooyoo\\game${id}`
   const gameFolderPath = path.join(
     store.get('installPath') + '',
@@ -741,18 +747,34 @@ function sendWsData(data: any) {
   const encoder = new TextEncoder()
   const utf8Encoded = encoder.encode(msgData)
   const utf8Buffer = Buffer.from(utf8Encoded)
-  if (jiami == 1) {
-    // 加密
-    wsServer?.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
-      binary: true
-    })
-  } else {
-    // 不加密
-    wsServer?.send(msgData)
-  }
-  // 生成日志
+  // if (jiami == 1) {
+  //   // 加密
+  //   clients?.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
+  //     binary: true
+  //   })
+  // } else {
+  //   // 不加密
+  //   clients?.send(msgData)
+  // }
+  // 获取所有游戏 ID 的数组
+  const gameIds = Object.keys(clients)
+  // 遍历所有游戏 ID，并发送消息
+  gameIds.forEach((gameId) => {
+    const socket = clients[gameId]
+    const jm = jiami[gameId]
+    if (jm === 1) {
+      // 加密
+      socket.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
+        binary: true
+      })
+    } else {
+      // 不加密
+      socket.send(msgData)
+    }
+  })
   mainWindow.webContents.send('main-send-log', msgData)
 }
+// 生成日志
 ipcMain.on('send-beta-obj', (_event, obj: any) => {
   console.log(JSON.parse(obj))
   initGiftData(JSON.parse(obj))
