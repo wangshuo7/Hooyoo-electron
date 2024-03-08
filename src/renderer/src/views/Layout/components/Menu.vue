@@ -23,6 +23,10 @@
           <el-icon><Shop /></el-icon>
           <template #title>{{ $t('menu.mall') }}</template>
         </el-menu-item>
+        <el-menu-item index="/learn" class="menu-item">
+          <el-icon><Cherry /></el-icon>
+          <template #title>{{ $t('menu.learn') }}</template>
+        </el-menu-item>
         <el-menu-item index="/develop" class="menu-item">
           <el-icon><Avatar /></el-icon>
           <template #title>{{ $t('menu.developer') }}</template>
@@ -75,7 +79,7 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, watchEffect, computed } from 'vue'
-import { Avatar, HomeFilled, Shop } from '@element-plus/icons-vue'
+import { Avatar, HomeFilled, Shop, Cherry } from '@element-plus/icons-vue'
 // import { Refresh } from '@element-plus/icons-vue'
 import { getGuildOem } from '../../../api/global'
 import { getPersonalInfo } from '../../../api/wallet'

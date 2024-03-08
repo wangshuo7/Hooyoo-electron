@@ -182,7 +182,18 @@ const api = {
       callback(res)
     })
   },
-  sendBetaObj: (obj: any) => ipcRenderer.send('send-beta-obj', obj)
+  sendBetaObj: (obj: any) => ipcRenderer.send('send-beta-obj', obj),
+  openLearnWindow: (url: any) => ipcRenderer.send('open-learn-window', url),
+  learnSend: (callback: (url: any) => void) => {
+    ipcRenderer.on('learn-send', (_event, url) => {
+      callback(url)
+    })
+  },
+  mainCloseLearn: (callback: () => void) => {
+    ipcRenderer.on('main-close-learn', () => {
+      callback()
+    })
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

@@ -58,6 +58,9 @@ declare global {
       sendLanguage: (id: any) => void
       mainSendLog: (callback: (res: any) => void) => void
       sendBetaObj: (obj: any) => void
+      openLearnWindow: (url: any) => void
+      learnSend: (callback: (url: any) => void) => void
+      mainCloseLearn: (callback: () => void) => void
     }
   }
 }

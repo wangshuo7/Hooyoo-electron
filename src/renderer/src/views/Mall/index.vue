@@ -1101,7 +1101,7 @@ watchEffect(() => {
         // if (kouDiamond > 0) {
         //   window.api.showNotification(
         //     '提醒',
-        //     `自动抽成记录：收益${kouDiamond}钻石，扣除${kouDiamond}钻石，剩余${res.data.jifen}钻石`
+        //     `自动抽成记录：收益${res.data.jifen_req}钻石，扣除${res.data.jifen_jisuan}钻石，剩余${res.data.jifen}钻石`
         //   )
         // }
         // 没有积分或者欠费
@@ -1335,7 +1335,7 @@ function formatTime(time: any) {
 
 <style lang="less" scoped>
 .container {
-  height: calc(100vh - 200px);
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

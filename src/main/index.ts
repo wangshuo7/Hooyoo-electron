@@ -302,6 +302,43 @@ function saveImage(url) {
       console.error('Failed to show save dialog:', err)
     })
 }
+let learnWin
+// 打开教程窗口
+ipcMain.on('open-learn-window', (_event, url) => {
+  learnWin = new BrowserWindow({
+    width: 1250,
+    height: 1300,
+    // frame: false,
+    // titleBarOverlay: {
+    //   color: '#121212',
+    //   symbolColor: '121212',
+    //   height: 60
+    // },
+    autoHideMenuBar: true // 自动隐藏菜单栏
+    // webPreferences: {
+    //   preload: join(__dirname, '../preload/index.js'),
+    //   sandbox: false,
+    //   nodeIntegration: false, // 禁用 Node.js 集成，以提高安全性
+    //   contextIsolation: false // 启用上下文隔离，提高安全性
+    // }
+  })
+  learnWin.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url)
+    return { action: 'deny' }
+  })
+  // learnWin.webContents.send('learn-send', url)
+  learnWin.loadURL(url)
+  // if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+  //   learnWin.webContents.openDevTools() // 打开开发者工具
+  //   learnWin.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/learn.html`)
+  // } else {
+  //   learnWin.loadFile(path.join(__dirname, '../renderer/learn.html'))
+  // }
+  learnWin.on('closed', () => {
+    learnWin = null
+    mainWindow.webContents.send('main-close-learn')
+  })
+})
 // 显示通知
 ipcMain.on('show-notification', function (_event, head, message) {
   const notification = new Notification({
