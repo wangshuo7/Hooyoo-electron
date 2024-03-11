@@ -34,14 +34,16 @@
           <div class="img-box">
             <el-image class="img" :src="item.fengmian"></el-image>
           </div>
-          <div class="item-title">
+          <div style="margin-bottom: 5px">
             <span>{{ item.title }}</span>
           </div>
-          <div class="item-price">
+          <!-- <div class="item-price">
             <span v-if="+item.yundou == 0">{{ $t('detail.free') }}</span>
             <span v-else>价格：{{ +item.yundou }}</span>
+          </div> -->
+          <div>
+            <span>{{ item.remark }}</span>
           </div>
-          <div class="item-percent"></div>
         </div>
       </div>
     </div>
@@ -111,9 +113,9 @@ import { ref, onMounted, computed } from 'vue'
 import { getLearnList, getLearnCateList, getLearnInfo } from '../../api/learn'
 import { Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { useDebounceFn } from '@vueuse/core'
-import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
-const { t } = useI18n()
+// import { useI18n } from 'vue-i18n'
+// import { ElMessage } from 'element-plus'
+// const { t } = useI18n()
 const is_start = ref<any>(false)
 const dialogVisible = ref<any>(false)
 const teachPrice = ref<any>()
@@ -159,10 +161,10 @@ function viewAll() {
   query()
 }
 async function onViewLearn(row: any) {
-  if (is_start.value) {
-    ElMessage.warning(t('learn.warn'))
-    return
-  }
+  // if (is_start.value) {
+  //   ElMessage.warning(t('learn.warn'))
+  //   return
+  // }
   teachId.value = row.id
   teachPrice.value = row.yundou
   if (row.yundou == '0.00') {
@@ -292,7 +294,7 @@ onMounted(() => {
     }
     .img-box {
       width: 100%;
-      aspect-ratio: 547/260;
+      aspect-ratio: 900/383;
       border-radius: 4px;
       margin-bottom: 10px;
       overflow: hidden;
