@@ -220,7 +220,7 @@ onMounted(() => {
 
 <style lang="less" scoped>
 .container {
-  height: 100%;
+  height: calc(100vh - 200px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;

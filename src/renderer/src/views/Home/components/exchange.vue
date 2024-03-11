@@ -28,8 +28,8 @@
               <span style="margin-right: 20px">
                 {{
                   info.youhuiquan.is_use == 1
-                    ? $t('exchange.unused')
-                    : $t('exchange.used')
+                    ? $t('exchange.used')
+                    : $t('exchange.unused')
                 }}
               </span>
               <span v-if="info.youhuiquan.is_use == 1">

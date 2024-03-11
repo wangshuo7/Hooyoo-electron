@@ -306,8 +306,8 @@ let learnWin
 // 打开教程窗口
 ipcMain.on('open-learn-window', (_event, url) => {
   learnWin = new BrowserWindow({
-    width: 1250,
-    height: 1300,
+    width: 1400,
+    height: 740,
     // frame: false,
     // titleBarOverlay: {
     //   color: '#121212',
