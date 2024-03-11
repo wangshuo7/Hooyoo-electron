@@ -70,32 +70,34 @@
             class="list-item"
             @click="onGoDetail(item)"
           >
-            <el-tag
-              v-if="gameStatus[item.game_id] !== 'nopurchased'"
-              class="tag"
-              effect="dark"
-              :type="
-                gameStatus[item.game_id] !== 'nopurchased'
-                  ? gameStatus[item.game_id] === 'expire'
-                    ? 'danger'
-                    : 'success'
-                  : ''
-              "
-              >{{
-                gameStatus[item.game_id] !== 'nopurchased'
-                  ? gameStatus[item.game_id] === 'expire'
-                    ? $t('detail.expired')
-                    : $t('detail.purchased')
-                  : ''
-              }}</el-tag
-            >
-            <el-tag
-              v-if="item.game_id == start_id"
-              class="pre-tag"
-              effect="dark"
-            >
-              {{ $t('system.last_open') }}
-            </el-tag>
+            <div v-if="is_login">
+              <el-tag
+                v-if="gameStatus[item.game_id] !== 'nopurchased'"
+                class="tag"
+                effect="dark"
+                :type="
+                  gameStatus[item.game_id] !== 'nopurchased'
+                    ? gameStatus[item.game_id] === 'expire'
+                      ? 'danger'
+                      : 'success'
+                    : ''
+                "
+                >{{
+                  gameStatus[item.game_id] !== 'nopurchased'
+                    ? gameStatus[item.game_id] === 'expire'
+                      ? $t('detail.expired')
+                      : $t('detail.purchased')
+                    : ''
+                }}</el-tag
+              >
+              <el-tag
+                v-if="item.game_id == start_id"
+                class="pre-tag"
+                effect="dark"
+              >
+                {{ $t('system.last_open') }}
+              </el-tag>
+            </div>
             <div class="img-box">
               <el-image
                 class="img"
@@ -113,11 +115,15 @@
               <div v-else>{{ $t('detail.free') }}</div>
             </div>
             <div class="item-percent">
-              {{ $t('detail.divide') }}：{{
-                item.jisuan_bl.bl_gonghui +
-                item.jisuan_bl.bl_pingtai +
-                item.jisuan_bl.bl_youxizuozhe
-              }}%
+              {{ $t('detail.divide') }}：
+              <span v-if="!is_login">--</span>
+              <span v-else
+                >{{
+                  item.jisuan_bl?.bl_gonghui +
+                  item.jisuan_bl?.bl_pingtai +
+                  item.jisuan_bl?.bl_youxizuozhe
+                }}%</span
+              >
             </div>
           </div>
         </div>
@@ -132,10 +138,11 @@
     :visible="liveVisible"
     @close="closeLiveRecordDialog"
   ></TheLiveRecord>
+  <TheLogin :visible="loginVisible" @close="closeLoginDialog"></TheLogin>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   SwitchFilled,
   Compass,
@@ -156,9 +163,15 @@ import 'swiper/css/pagination'
 import 'swiper/css/navigation'
 import TheExchange from './components/exchange.vue'
 import TheLiveRecord from './components/liveRecord.vue'
+import TheLogin from '../Login/index.vue'
 import { useDebounceFn, useTimestamp } from '@vueuse/core'
-import { getBannerList, getGameList } from '../../api/game'
+import { getBannerList, getGameList, getGameListUnlogin } from '../../api/game'
 import { useRouter } from 'vue-router'
+import { useAccountStore } from '../../store/account'
+const accountStore = useAccountStore()
+const is_login = computed(() => {
+  return accountStore.is_login
+})
 const router = useRouter()
 const modules = [Autoplay, Pagination, Navigation, Mousewheel, Keyboard]
 const start_id = localStorage.getItem('start-pre')
@@ -176,6 +189,10 @@ const onRefresh = useDebounceFn(debounceOnRefresh, 300)
  */
 const exchangeVisible = ref<boolean>(false)
 function onExchange() {
+  if (!is_login.value) {
+    loginVisible.value = true
+    return
+  }
   exchangeVisible.value = true
 }
 function closeExchangeDialog() {
@@ -186,6 +203,10 @@ function closeExchangeDialog() {
  */
 const liveVisible = ref<boolean>(false)
 function onOpenLiveRecord() {
+  if (!is_login.value) {
+    loginVisible.value = true
+    return
+  }
   liveVisible.value = true
 }
 function closeLiveRecordDialog() {
@@ -196,8 +217,20 @@ function closeLiveRecordDialog() {
  */
 const token = localStorage.getItem('authtoken')
 function onOpenManage() {
+  if (!is_login.value) {
+    loginVisible.value = true
+    return
+  }
   window.open(`http://box.huyouyun.cn/?auth=${token}`, '_blank')
 }
+/**
+ *  登录窗口
+ */
+const loginVisible = ref<boolean>(false)
+function closeLoginDialog() {
+  loginVisible.value = false
+}
+
 /**
  * 游戏列表
  */
@@ -207,7 +240,12 @@ const gameStatus = ref<any>({}) // 游戏状态
 const timestamp = useTimestamp()
 async function query() {
   loading.value = true
-  const res: any = await getGameList({})
+  let res: any
+  if (!is_login.value) {
+    res = await getGameListUnlogin({})
+  } else {
+    res = await getGameList({})
+  }
   tableData.value = res?.data?.list.slice(0, 8) // 前八条
   tableData.value?.map((item: any) => {
     if (item.game_buy_end_time === null) {
@@ -226,6 +264,10 @@ async function query() {
 }
 const gameId = ref<any>()
 function onGoDetail(item) {
+  if (!is_login.value) {
+    loginVisible.value = true
+    return
+  }
   const obj = {
     game_id: item.game_id,
     title: item.title
@@ -239,12 +281,18 @@ function onGoDetail(item) {
 const bannerData = ref<any>()
 async function queryBanner() {
   const res: any = await getBannerList()
-  bannerData.value = res.data.list
+  bannerData.value = res?.data?.list
 }
 onMounted(async () => {
   query()
   queryBanner()
 })
+watch(
+  () => is_login.value,
+  () => {
+    query()
+  }
+)
 </script>
 
 <style lang="less" scoped>

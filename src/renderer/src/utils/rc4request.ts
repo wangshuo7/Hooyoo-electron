@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import md5 from 'md5'
 import { rc4Encrypt, rc4Decrypt, utf8Encode, utf8Decode } from './rc4'
-import { ElMessage } from 'element-plus'
+// import { ElMessage } from 'element-plus'
 
 const baseURL =
   process.env.NODE_ENV === 'production'
@@ -64,7 +64,7 @@ request.interceptors.response.use(
     // const decryptedData = rc4Decrypt(rc4Key, response.data)
     response.data = JSON.parse(decryptedData)
     if (response.data?.code !== 200) {
-      ElMessage.error(response.data?.msg)
+      // ElMessage.error(response.data?.msg)
     }
     return response.data
   },

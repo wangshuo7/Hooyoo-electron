@@ -10,5 +10,6 @@ export const getLearnCateList = () => {
 }
 // 查看教程
 export const getLearnInfo = (data: any) => {
-  return request.post('/zhuboduan/jiaocheng/chakanjiaocheng', data)
+  return request.post('/commpublic/param/chakanjiaocheng', data)
 }
+// /zhuboduan/jiaocheng/chakanjiaocheng

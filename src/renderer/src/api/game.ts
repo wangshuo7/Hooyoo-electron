@@ -4,6 +4,9 @@ import request from '../utils/request'
 export const getGameList = (data: any) => {
   return request.post('/zhuboduan/game/index', data)
 }
+export const getGameListUnlogin = (data: any) => {
+  return request.post('/commpublic/param/gamelist', data)
+}
 // 单条信息
 export const gameInfo = (data: any) => {
   return request.post('/zhuboduan/game/info', data)
@@ -18,5 +21,5 @@ export const exchangeGame = (data: any) => {
 }
 // banner
 export const getBannerList = () => {
-  return request.post('/zhuboduan/banner/index')
+  return request.post('/commpublic/param/bannerlist')
 }

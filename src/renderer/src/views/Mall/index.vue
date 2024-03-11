@@ -65,32 +65,34 @@
         >
           <!-- @click="openDetail(item)" -->
           <!-- v-if="hasPurchasedGame(item.game_id)" -->
-          <el-tag
-            v-if="gameStatus[item.game_id] !== 'nopurchased'"
-            class="tag"
-            effect="dark"
-            :type="
-              gameStatus[item.game_id] !== 'nopurchased'
-                ? gameStatus[item.game_id] === 'expire'
-                  ? 'danger'
-                  : 'success'
-                : ''
-            "
-            >{{
-              gameStatus[item.game_id] !== 'nopurchased'
-                ? gameStatus[item.game_id] === 'expire'
-                  ? $t('detail.expired')
-                  : $t('detail.purchased')
-                : ''
-            }}</el-tag
-          >
-          <el-tag
-            v-if="item.game_id == pre_id || item.game_id == start_id"
-            class="pre-tag"
-            effect="dark"
-          >
-            {{ $t('system.last_open') }}
-          </el-tag>
+          <div v-if="is_login">
+            <el-tag
+              v-if="gameStatus[item.game_id] !== 'nopurchased'"
+              class="tag"
+              effect="dark"
+              :type="
+                gameStatus[item.game_id] !== 'nopurchased'
+                  ? gameStatus[item.game_id] === 'expire'
+                    ? 'danger'
+                    : 'success'
+                  : ''
+              "
+              >{{
+                gameStatus[item.game_id] !== 'nopurchased'
+                  ? gameStatus[item.game_id] === 'expire'
+                    ? $t('detail.expired')
+                    : $t('detail.purchased')
+                  : ''
+              }}</el-tag
+            >
+            <el-tag
+              v-if="item.game_id == pre_id || item.game_id == start_id"
+              class="pre-tag"
+              effect="dark"
+            >
+              {{ $t('system.last_open') }}
+            </el-tag>
+          </div>
           <div class="img-box">
             <el-image
               class="img"
@@ -108,11 +110,15 @@
             <div v-else>{{ $t('detail.free') }}</div>
           </div>
           <div class="item-percent">
-            {{ $t('detail.divide') }}：{{
-              item.jisuan_bl.bl_gonghui +
-              item.jisuan_bl.bl_pingtai +
-              item.jisuan_bl.bl_youxizuozhe
-            }}%
+            {{ $t('detail.divide') }}：
+            <span v-if="!is_login">--</span>
+            <span v-else
+              >{{
+                item.jisuan_bl?.bl_gonghui +
+                item.jisuan_bl?.bl_pingtai +
+                item.jisuan_bl?.bl_youxizuozhe
+              }}%</span
+            >
           </div>
         </div>
       </div>
@@ -589,6 +595,7 @@
     :visible="rechargeVisible"
     @close="closeRechargeDialog"
   ></TheRecharge>
+  <TheLogin :visible="loginVisible" @close="closeLoginDialog"></TheLogin>
 </template>
 
 <script lang="ts" setup>
@@ -600,7 +607,7 @@ import GiftIcon from './components/giftIcon.vue'
 import Moment from 'moment'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
-import { buyGame, getGameList } from '../../api/game'
+import { buyGame, getGameList, getGameListUnlogin } from '../../api/game'
 import { getGameInfo } from '../../api/rc4'
 import { getGifts } from '../../api/global'
 import { useGlobalStore } from '../../store/globalStore'
@@ -611,8 +618,6 @@ import {
   FormInstance
 } from 'element-plus'
 import { useToast } from 'vue-toastification'
-const Toast = useToast()
-
 import {
   deductDiamond,
   endLiving,
@@ -625,16 +630,27 @@ import { useStateStore } from '../../store/state'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useLiveStore } from '../../store/live'
+import { useAccountStore } from '../../store/account'
 import TheRecharge from '../Other/recharge.vue'
+import TheLogin from '../Login/index.vue'
+const Toast = useToast()
 const rechargeVisible = ref<boolean>(false)
 const closeRechargeDialog = () => {
   rechargeVisible.value = false
 }
+const loginVisible = ref<boolean>(false)
+const closeLoginDialog = () => {
+  loginVisible.value = false
+}
 const liveStore = useLiveStore()
+const accountStore = useAccountStore()
 const route = useRoute()
 const { t } = useI18n()
 const current_diamond = computed(() => {
   return liveStore.diamond
+})
+const is_login = computed(() => {
+  return accountStore.is_login
 })
 // const gameDetailVisible = ref<boolean>(false)
 // const gameId = ref<any>()
@@ -769,13 +785,24 @@ function viewAll() {
 async function query() {
   try {
     loading.value = true
-    const response = await getGameList({
-      page: currentPage.value,
-      page_size: pageSize.value,
-      title: queryForm.value.title,
-      orderby: queryForm.value.sort,
-      cate_id: queryForm.value.cate
-    })
+    let response: any
+    if (!is_login.value) {
+      response = await getGameListUnlogin({
+        page: currentPage.value,
+        page_size: pageSize.value,
+        title: queryForm.value.title,
+        orderby: queryForm.value.sort,
+        cate_id: queryForm.value.cate
+      })
+    } else {
+      response = await getGameList({
+        page: currentPage.value,
+        page_size: pageSize.value,
+        title: queryForm.value.title,
+        orderby: queryForm.value.sort,
+        cate_id: queryForm.value.cate
+      })
+    }
     tableData.value = response?.data?.list
     totalItems.value = response?.data?.count
     // console.log('now', timestamp.value / 1000)
@@ -819,6 +846,10 @@ const exclusiveGifts = ref<any[]>([])
 const exclusiveGiftIds = ref<any[]>([])
 // 打开详情
 async function openDetail(item: any) {
+  if (!is_login.value) {
+    loginVisible.value = true
+    return
+  }
   const res: any = await getGameInfo({ game_id: item.game_id })
   console.log('xiangqing', res)
   localStorage.setItem('game_id', item.game_id)
@@ -1331,6 +1362,12 @@ onMounted(async () => {
 function formatTime(time: any) {
   return time ? Moment(time * 1000).format('YYYY-MM-DD HH:mm:ss') : '-'
 }
+watch(
+  () => is_login.value,
+  () => {
+    query()
+  }
+)
 </script>
 
 <style lang="less" scoped>

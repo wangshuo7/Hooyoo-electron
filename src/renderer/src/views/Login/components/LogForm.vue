@@ -100,8 +100,8 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { login, getPhoneCode } from '../../../api/login'
 import { Base64 } from 'js-base64'
 import { useAccountStore } from '../../../store/account'
-import { useRouter } from 'vue-router'
-const router = useRouter()
+// import { useRouter } from 'vue-router'
+// const router = useRouter()
 
 const accountStore = useAccountStore()
 
@@ -128,6 +128,7 @@ const rules = reactive<FormRules<any>>({
     }
   ]
 })
+const emit = defineEmits(['loginSuccess'])
 async function onSubmit() {
   let send_data: any
   if (loginType.value) {
@@ -150,8 +151,11 @@ async function onSubmit() {
       if (res?.code === 200) {
         if (!loginType.value) {
           localStorage.setItem('authtoken', res.data.t)
-          router.push('/mall')
+          // router.push('/home')
+          accountStore.setIsLogin(true)
+          localStorage.setItem('is_login', 'true')
           window.api.sendToken(res.data.t)
+          emit('loginSuccess')
           return ElMessage.success('登录成功')
         }
         localStorage.setItem('hoo_anchor_remember', remember.value + '')
@@ -164,8 +168,11 @@ async function onSubmit() {
           localStorage.removeItem('hoo_anchor_password')
         }
         localStorage.setItem('authtoken', res.data.t)
-        router.push('/mall')
+        accountStore.setIsLogin(true)
+        localStorage.setItem('is_login', 'true')
+        // router.push('/home')
         window.api.sendToken(res.data.t)
+        emit('loginSuccess')
         return ElMessage.success('登录成功')
       }
     } else {

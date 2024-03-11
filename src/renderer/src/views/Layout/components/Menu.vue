@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watchEffect, computed } from 'vue'
+import { ref, onMounted, watchEffect, computed, watch } from 'vue'
 import { Avatar, HomeFilled, Shop, Cherry } from '@element-plus/icons-vue'
 // import { Refresh } from '@element-plus/icons-vue'
 import { getGuildOem } from '../../../api/global'
@@ -86,6 +86,11 @@ import { getPersonalInfo } from '../../../api/wallet'
 import { useRoute } from 'vue-router'
 import { useLiveStore } from '../../../store/live'
 import { useLanguageStore } from '../../../store/languageStore'
+import { useAccountStore } from '../../../store/account'
+const accountStore = useAccountStore()
+const is_login = computed(() => {
+  return accountStore.is_login
+})
 const languageStore = useLanguageStore()
 const liveStore = useLiveStore()
 const live_state_before = computed(() => {
@@ -109,14 +114,14 @@ const menu_active = ref<any>('/home')
 const logo = ref<any>()
 async function viewPersonal() {
   const res: any = await getPersonalInfo()
-  liveStore.setDiamond(res.data.one.jifen)
-  window.api.sendAnchor(res.data.one)
-  const result: any = await getGuildOem({ id: res.data.one.gonghui_id })
-  logo.value = result.data.list[0].tiepai_icon
+  liveStore.setDiamond(res?.data?.one.jifen)
+  window.api.sendAnchor(res?.data?.one)
+  const result: any = await getGuildOem({ id: res?.data.one.gonghui_id })
+  logo.value = result?.data?.list[0]?.tiepai_icon
 }
 async function viewPrice() {
   const res: any = await getPersonalInfo()
-  liveStore.setDiamond(res.data.one.jifen)
+  liveStore.setDiamond(res?.data?.one?.jifen)
 }
 function onRefresh() {
   viewPrice()
@@ -128,6 +133,14 @@ onMounted(() => {
   viewPersonal()
   liveStore.setState('no_live')
 })
+watch(
+  () => is_login.value,
+  (val) => {
+    if (val) {
+      viewPrice()
+    }
+  }
+)
 </script>
 
 <style lang="less" scoped>

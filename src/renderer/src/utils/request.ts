@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
-import { ElMessage } from 'element-plus'
-import router from '../router'
+// import { ElMessage } from 'element-plus'
+// import router from '../router'
 const baseURL =
   process.env.NODE_ENV === 'production'
     ? 'http://box-server.huyouyun.cn'
@@ -36,13 +36,13 @@ request.interceptors.response.use(
     const { code, msg } = response.data
     if (code === 205) {
       // 未登录
-      ElMessage.error(msg)
-      router.push('/login')
+      // ElMessage.error(msg)
+      // router.push('/login')
     } else if (code === 200) {
       return response.data
     } else if (code === 0) {
       // 请求失败
-      ElMessage.error(msg)
+      // ElMessage.error(msg)
       return Promise.reject(msg)
     }
   },

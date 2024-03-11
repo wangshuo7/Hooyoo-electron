@@ -1,6 +1,8 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Layout from '../views/Layout/index.vue'
-import { isLogin } from '../api/rc4'
+// import { isLogin } from '../api/rc4'
+// import { useAccountStore } from '../store/account'
+// const accountStore = useAccountStore()
 const routes = [
   {
     path: '/',
@@ -34,35 +36,43 @@ const routes = [
         component: () => import('../views/Library/index.vue')
       }
     ]
-  },
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('../views/Login/index.vue')
   }
+  // {
+  //   path: '/login',
+  //   name: 'Login',
+  //   component: () => import('../views/Login/index.vue')
+  // }
 ]
 const router = createRouter({
   history: createWebHashHistory(),
   routes
 })
 
-router.beforeEach(async (to, _from, next) => {
-  if (to.path === '/login') {
-    next()
-    return
-  }
-  try {
-    const res: any = await isLogin()
-    if (res.code === 200) {
-      next()
-    } else {
-      next('/login')
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    next('/login')
-  }
-})
+// router.beforeEach(async (to, _from, next) => {
+//   if (to.path === '/login') {
+//     next()
+//     return
+//   }
+//   try {
+//     const res: any = await isLogin()
+//     if (res.code === 200) {
+//       // accountStore.setIsLogin(true)
+//       localStorage.setItem('is_login', 'true')
+//       next()
+//     } else {
+//       // accountStore.setIsLogin(false)
+//       // next('/login')
+//       localStorage.setItem('is_login', 'false')
+//       next()
+//     }
+//   } catch (error) {
+//     console.error('Error:', error)
+//     // next('/login')
+//     // accountStore.setIsLogin(false)
+//     localStorage.setItem('is_login', 'false')
+//     next()
+//   }
+// })
 
 export function useRouter() {
   return router

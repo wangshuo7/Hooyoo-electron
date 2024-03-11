@@ -124,7 +124,7 @@ function closeRechargeDialog() {
 const diamonds = ref<any>(0)
 async function changePrice(num) {
   const res: any = await computedPrice({ cny: num })
-  diamonds.value = res.data.jifen
+  diamonds.value = res?.data?.jifen
 }
 // 充值
 const ruleFormRef = ref<FormInstance>()
@@ -146,7 +146,7 @@ function submit() {
         // viewBalance()
         return (dialogVisible.value = false)
       }
-      return ElMessage.error(res.msg)
+      return ElMessage.error(res?.msg)
     } else {
       // 表单验证未通过
       return ElMessage.error('表单验证未通过')
@@ -162,7 +162,7 @@ const order_id = ref<any>()
 // 检查微信订单
 async function checkOrder() {
   const res: any = await checkWeixinOrder({ order_id: order_id.value })
-  if (res.data.status === 'yes') {
+  if (res?.data?.status === 'yes') {
     ElMessage.success(t('recharge.message_vx_success'))
     code_url.value = ''
     clearInterval(intervalId.value)
@@ -182,8 +182,8 @@ async function onRechargeWeixin() {
     }
     const res: any = await rechargeWeixin(send_data)
     if (res.code === 200) {
-      code_url.value = res.data.code_url
-      order_id.value = res.data.order_id
+      code_url.value = res?.data?.code_url
+      order_id.value = res?.data?.order_id
       ElMessage.success(t('message_qrcode'))
       intervalId.value = setInterval(async () => {
         await checkOrder()
@@ -209,7 +209,7 @@ function onCancelRechargeWeixin() {
 }
 async function viewPersonal() {
   const res = await getPersonalInfo()
-  info.value = res.data.one
+  info.value = res?.data?.one
 }
 watch(
   () => target_type.value,

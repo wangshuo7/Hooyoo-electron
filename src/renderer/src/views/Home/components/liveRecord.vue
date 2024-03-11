@@ -82,6 +82,9 @@
       <el-table-column :label="$t('liveLog.kou_diamond')">
         <template #default="{ row }">{{ row.del_jifen_price }}</template>
       </el-table-column>
+      <el-table-column label="礼物收益">
+        <template #default="{ row }">{{ row.del_jifen_price_req }}</template>
+      </el-table-column>
       <el-table-column :label="$t('liveLog.kou_time')">
         <template #default="{ row }">{{ formatTime(row.ctime) }}</template>
       </el-table-column>
