@@ -193,7 +193,15 @@ const api = {
     ipcRenderer.on('main-close-learn', () => {
       callback()
     })
-  }
+  },
+  // 查询游戏
+  searchGameInfo: (callback: (id) => void) => {
+    ipcRenderer.on('search-game-info', (_event, id) => {
+      callback(id)
+    })
+  },
+  // 回复主进程
+  searchGameInfoReply: (obj) => ipcRenderer.send('search-game-info-reply', obj)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

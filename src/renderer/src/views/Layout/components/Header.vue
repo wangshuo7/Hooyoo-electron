@@ -52,7 +52,7 @@
           class="info-item"
           circle
           size="large"
-          style="font-size: 16px"
+          style="font-size: 14px"
           @click="onLogin"
           >{{ $t('login.login') }}</el-button
         >

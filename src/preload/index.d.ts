@@ -61,6 +61,8 @@ declare global {
       openLearnWindow: (url: any) => void
       learnSend: (callback: (url: any) => void) => void
       mainCloseLearn: (callback: () => void) => void
+      searchGameInfo: (callback: (id) => void) => void
+      searchGameInfoReply: (obj: any) => void
     }
   }
 }

@@ -16,7 +16,7 @@ import { ElConfigProvider } from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import zhTw from 'element-plus/es/locale/lang/zh-tw'
 import en from 'element-plus/es/locale/lang/en'
-import { isLogin } from './api/rc4'
+import { getGameInfo, isLogin } from './api/rc4'
 import { useLanguageStore } from './store/languageStore'
 import { useAccountStore } from './store/account'
 const accountStore = useAccountStore()
@@ -45,6 +45,21 @@ onMounted(async () => {
     loginVisible.value = true
     localStorage.setItem('is_login', 'false')
   }
+})
+async function searchGame(id) {
+  const res: any = await getGameInfo({ game_id: +id })
+  // console.log('res', res)
+  const obj = {
+    game_id: id,
+    is_jiami: res?.data?.info?.is_jiami ? res?.data?.info?.is_jiami : 2,
+    jiami: res?.data?.info?.miyaostr ? res?.data?.info?.miyaostr : ''
+  }
+  // console.log('obj', obj)
+  window.api.searchGameInfoReply(obj)
+  return
+}
+window.api.searchGameInfo((id) => {
+  searchGame(id)
 })
 </script>
 

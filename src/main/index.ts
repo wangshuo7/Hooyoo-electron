@@ -187,7 +187,13 @@ function createWindow(): void {
         parseData.Gameid ||
         parseData.GameId ||
         parseData.GAMEID
-      clients[id] = socket
+      // clients[id] = socket
+      clients[id] = {
+        socket: socket,
+        is_jiami: null,
+        jiami: null
+      }
+      mainWindow.webContents.send('search-game-info', id)
     })
 
     // 监听连接关闭事件
@@ -244,7 +250,17 @@ function createWindow(): void {
   // 监听窗口取消最大化事件
   mainWindow.on('unmaximize', sendMaximizeStatus)
 }
-
+// jiami= {
+//   1: {
+//     is_jiami: 1,
+//     miyaostr: 123132123
+//   }
+// }
+ipcMain.on('search-game-info-reply', (_event, obj) => {
+  const { game_id, is_jiami, jiami } = obj
+  clients[game_id].is_jiami = is_jiami
+  clients[game_id].jiami = jiami
+})
 ipcMain.on('send-anchor', (_event, data: any) => {
   anchor = data
 })
@@ -447,9 +463,7 @@ ipcMain.on('check-game', (event, id: any, downloadLink: string) => {
   }
 })
 let gameProcess: any
-const jiami: any = {
-  '1': 2
-}
+const jiami: any = {}
 // 启动项目
 ipcMain.on('start-game', (event, id, lang, name, key, jm) => {
   gameId = id
@@ -801,13 +815,18 @@ function sendWsData(data: any) {
   const gameIds = Object.keys(clients)
   // 遍历所有游戏 ID，并发送消息
   gameIds.forEach((gameId) => {
-    const socket = clients[gameId]
-    const jm = jiami[gameId]
+    const socket = clients[gameId].socket
+    const jm = clients[gameId].is_jiami
+    const jmKey =
+      md5(`PojieSqj521${gameId}${clients[gameId].jiami}`) + authToken
     if (jm === 1) {
       // 加密
-      socket.send(Buffer.from(rc4Encrypt2(rc4Key, utf8Buffer), 'hex'), {
-        binary: true
-      })
+      socket.send(
+        Buffer.from(rc4Encrypt2(jmKey ? jmKey : rc4Key, utf8Buffer), 'hex'),
+        {
+          binary: true
+        }
+      )
     } else {
       // 不加密
       socket.send(msgData)
@@ -939,22 +958,18 @@ function computedGiftNum(data: any) {
   if (data.groupId == '0') {
     return data.repeatCount
   }
-  console.log(2)
   if (filterGift[tempId]) {
     // 之前记录的比这次大，返回0
     if (data.repeatCount <= filterGift[tempId]) {
       filterGift[tempId] = data.repeatCount
-      console.log(4)
       return 0
     }
     // 之前记录过，求差
     const count = data.repeatCount - filterGift[tempId]
     filterGift[tempId] = data.repeatCount
-    console.log(5)
     return count
   }
   // 之前没记录过，取值
-  console.log(3)
   filterGift[tempId] = data.repeatCount
   return data.repeatCount
 }
