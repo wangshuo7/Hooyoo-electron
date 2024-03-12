@@ -48,6 +48,12 @@
         </div>
       </div>
     </div>
+    <div v-if="is_login && oemData.hezigonggao" class="post">
+      <HornSvg></HornSvg>
+      <Vue3Marquee :pause-on-hover="true">{{
+        oemData.hezigonggao
+      }}</Vue3Marquee>
+    </div>
     <div class="bottom">
       <div class="bottom-title">
         <div class="title">
@@ -143,6 +149,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue'
+import HornSvg from './svg/horn.vue'
 import {
   SwitchFilled,
   Compass,
@@ -172,6 +179,10 @@ const accountStore = useAccountStore()
 const is_login = computed(() => {
   return accountStore.is_login
 })
+const oemData = computed(() => {
+  return accountStore.oem
+})
+console.log(oemData)
 const router = useRouter()
 const modules = [Autoplay, Pagination, Navigation, Mousewheel, Keyboard]
 const start_id = localStorage.getItem('start-pre')
@@ -283,6 +294,7 @@ async function queryBanner() {
   const res: any = await getBannerList()
   bannerData.value = res?.data?.list
 }
+
 onMounted(async () => {
   query()
   queryBanner()
@@ -296,6 +308,16 @@ watch(
 </script>
 
 <style lang="less" scoped>
+.post {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  background: #2d2d2d;
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  padding: 0 10px;
+}
 .top {
   display: flex;
   margin-bottom: 25px;

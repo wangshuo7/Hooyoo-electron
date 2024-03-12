@@ -1286,6 +1286,13 @@ async function connectLive() {
       // 请连接已打开游戏的直播间的弹幕
       return ElMessage.error(t('detail.message_error_nogameroom'))
     }
+    // 系统提示 --> 如果无法获取弹幕，请登录一个非当前主播的TikTok账号（⚠️注意！非当前主播！）
+    window.api.showNotification(t('system.tip'), t('system.danmu_tip'))
+    ElNotification({
+      offset: 10,
+      title: t('system.tip'),
+      message: h('i', { style: '' }, t('system.danmu_tip'))
+    })
     window.api.startLive(processCanshu(liveRoom.value))
     localStorage.setItem('liveUrl', processCanshu(liveRoom.value))
     is_barrage.value = true
@@ -1294,6 +1301,12 @@ async function connectLive() {
     return
   } else {
     is_barrage.value = true
+    window.api.showNotification(t('system.tip'), t('system.danmu_tip'))
+    ElNotification({
+      offset: 10,
+      title: t('system.tip'),
+      message: h('i', { style: '' }, t('system.danmu_tip'))
+    })
     window.api.startLive(processCanshu(liveRoom.value))
     localStorage.setItem('liveUrl', processCanshu(liveRoom.value))
     is_start_live.value = true

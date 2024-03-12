@@ -113,40 +113,45 @@
         </el-scrollbar>
       </div>
       <div class="gift">
-        <!-- <el-scrollbar
+        <el-scrollbar
+          always
           height="700px"
-          style="flex: 1; display: flex; flex-wrap: wrap"
-        > -->
-        <el-card
-          v-for="item in cards"
-          :key="item.id"
-          class="card"
-          shadow="hover"
-          @click="onSendGift(item)"
+          style="width: 100%; display: flex; flex-wrap: wrap"
         >
-          <template #header>
-            <div class="card-head">
-              <span>{{ item.lw_name }}</span>
-              <span class="price">{{ item.lw_price }}钻石</span>
-            </div>
-          </template>
-          <div
-            style="
-              width: 100%;
-              height: 100%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            "
-          >
-            <img
-              :src="item.lw_icon"
-              alt=""
-              style="height: auto; width: 100px"
-            />
+          <div style="width: 100%; display: flex; flex-wrap: wrap">
+            <el-card
+              v-for="item in cards"
+              :key="item.id"
+              class="card"
+              shadow="hover"
+              @click="onSendGift(item)"
+            >
+              <template #header>
+                <div class="card-head">
+                  <span style="font-size: 14px">{{ item.lw_name }}</span>
+                  <span class="price">{{ +item.lw_price }}钻石</span>
+                </div>
+              </template>
+              <div
+                style="
+                  width: 100%;
+                  height: 100%;
+                  display: flex;
+                  flex-direction: column;
+                  /* align-items: center; */
+                  justify-content: center;
+                "
+              >
+                <img
+                  :src="item.lw_icon"
+                  alt=""
+                  style="height: auto; width: 100px; margin: 0 auto"
+                />
+                <div>ID: {{ item.lw_id }}</div>
+              </div>
+            </el-card>
           </div>
-        </el-card>
-        <!-- </el-scrollbar> -->
+        </el-scrollbar>
       </div>
     </div>
   </el-dialog>
@@ -478,5 +483,8 @@ onMounted(async () => {
   .card:hover {
     border: 1px solid #409eff;
   }
+}
+:deep(.el-card__header) {
+  padding: 18px 5px;
 }
 </style>

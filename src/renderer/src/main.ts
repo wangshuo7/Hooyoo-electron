@@ -7,6 +7,8 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 // 引入 vue-toastification
 import Toast from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
+// 引入 Vue3Marquee
+import Vue3Marquee from 'vue3-marquee'
 import { TostOptions } from './utils/toast'
 // 引入 vue-i18n
 import i18n from './utils/i18n'
@@ -17,6 +19,7 @@ const pinia = createPinia()
 createApp(App)
   .use(router)
   .use(Toast, TostOptions)
+  .use(Vue3Marquee)
   .use(ElementPlus)
   .use(pinia)
   .use(i18n)

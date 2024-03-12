@@ -1,6 +1,11 @@
 <template>
   <div class="header-drag">
-    <div class="empty"></div>
+    <div class="empty">
+      <div class="box-name">
+        <div v-if="is_login">互游盒子</div>
+        <div v-else>{{ oemData.tiepai_name }}</div>
+      </div>
+    </div>
     <div class="tool">
       <span class="item refresh" @click="controlRefresh">
         <!-- <el-icon><RefreshRight /></el-icon> -->
@@ -29,9 +34,16 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Refresh } from '@element-plus/icons-vue'
-
+import { useAccountStore } from '../store/account'
+const accountStore = useAccountStore()
+const is_login = computed(() => {
+  return accountStore.is_login
+})
+const oemData = computed(() => {
+  return accountStore.oem
+})
 const changeSize = ref<boolean>(true)
 
 // 监听主进程窗口状态 => 主要针对于双击可拖拽区域时全屏修改图标问题
@@ -68,6 +80,11 @@ function controlReduction() {
   .empty {
     flex: 1;
     -webkit-app-region: drag;
+    .box-name {
+      font-size: 20px;
+      text-indent: 20px;
+      margin-top: 10px;
+    }
   }
 
   .tool {

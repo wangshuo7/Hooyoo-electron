@@ -21,10 +21,14 @@ const i18n = createI18n({
         without: '无',
         log: '日志',
         last_open: '上次打开',
+        kefu: '客服',
+        lianxifangshi: '联系方式',
         incomplete: '功能开发中，暂未开放',
         no_live: '未开播',
         yes_live: '已开播',
-        tip: '提示'
+        tip: '提示',
+        danmu_tip:
+          '如果无法获取弹幕，请登录一个非当前主播的TikTok账号（⚠️注意！非当前主播！）'
       },
       home: {
         redeem: '兑换游戏',
@@ -231,10 +235,14 @@ const i18n = createI18n({
         without: 'Without',
         log: 'Log',
         last_open: 'Last Open',
+        kefu: 'Customer service',
+        lianxifangshi: 'Contact details',
         incomplete: 'Under development of functions, not yet open',
         no_live: 'Not broadcasted',
         yes_live: 'Started broadcasting',
-        tip: 'Tip'
+        tip: 'Tip',
+        danmu_tip:
+          "If you can't get pop-ups, log into a TikTok account that is not the current anchor (⚠️ Note! Non-current anchor!)"
       },
       home: {
         redeem: 'Redeem game',
@@ -445,10 +453,14 @@ const i18n = createI18n({
         without: '無',
         log: '日誌',
         last_open: '上次打開',
+        kefu: '客服',
+        lianxifangshi: '聯係方式',
         incomplete: '功能開發中，暫未開放',
         no_live: '未開播',
         yes_live: '已開播',
-        tip: '提示'
+        tip: '提示',
+        danmu_tip:
+          '如果無法獲取彈幕，請登錄壹個非當前主播的TikTok賬號（⚠️注意！非當前主播！）'
       },
       home: {
         redeem: '兌換遊戲',

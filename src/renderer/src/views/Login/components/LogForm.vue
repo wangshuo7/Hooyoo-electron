@@ -101,11 +101,15 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { login, getPhoneCode } from '../../../api/login'
 import { Base64 } from 'js-base64'
 import { useAccountStore } from '../../../store/account'
+import { useLiveStore } from '../../../store/live'
 // import { useRouter } from 'vue-router'
 // const router = useRouter()
 import { useI18n } from 'vue-i18n'
+import { getPersonalInfo } from '../../../api/wallet'
+import { getGuildOem } from '../../../api/global'
 const { t } = useI18n()
 const accountStore = useAccountStore()
+const liveStore = useLiveStore()
 
 const loginType = ref<boolean>(true) // true为密码登录 | false为验证码登录
 
@@ -155,6 +159,7 @@ async function onSubmit() {
           localStorage.setItem('authtoken', res.data.t)
           // router.push('/home')
           accountStore.setIsLogin(true)
+          queryOem()
           localStorage.setItem('is_login', 'true')
           window.api.sendToken(res.data.t)
           emit('loginSuccess')
@@ -171,6 +176,7 @@ async function onSubmit() {
         }
         localStorage.setItem('authtoken', res.data.t)
         accountStore.setIsLogin(true)
+        queryOem()
         localStorage.setItem('is_login', 'true')
         // router.push('/home')
         window.api.sendToken(res.data.t)
@@ -181,6 +187,14 @@ async function onSubmit() {
       return console.log('表单验证未通过')
     }
   })
+}
+// 登陆成功查询贴牌信息
+async function queryOem() {
+  const res: any = await getPersonalInfo()
+  liveStore.setDiamond(res?.data?.one.jifen)
+  window.api.sendAnchor(res?.data?.one)
+  const result: any = await getGuildOem({ id: res?.data.one.gonghui_id })
+  accountStore.setOem(result?.data?.list[0])
 }
 const countdown = ref<number>(0)
 // 获取手机验证码
