@@ -39,7 +39,7 @@ import Header from './components/Header.vue'
   width: 17%; // 196 0.1670929241
 }
 .main {
-  padding: 0;
+  padding: 0 0 35px;
   background-color: #121212;
 }
 </style>

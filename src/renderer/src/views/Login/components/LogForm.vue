@@ -18,8 +18,9 @@
               v-if="!loginType"
               color="#303030"
               :dark="true"
+              size="large"
               :disabled="countdown > 0"
-              style="width: 100px; position: relative; bottom: 10px"
+              style="position: relative; bottom: 10px"
               @click="onGetCode"
             >
               {{ countdown > 0 ? `${countdown}` : $t('login.get_code') }}
@@ -102,7 +103,8 @@ import { Base64 } from 'js-base64'
 import { useAccountStore } from '../../../store/account'
 // import { useRouter } from 'vue-router'
 // const router = useRouter()
-
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const accountStore = useAccountStore()
 
 const loginType = ref<boolean>(true) // true为密码登录 | false为验证码登录
@@ -118,13 +120,13 @@ const rules = reactive<FormRules<any>>({
   username: [
     {
       required: true,
-      message: '必填'
+      message: t('login.required')
     }
   ],
   password: [
     {
       required: true,
-      message: '必填'
+      message: t('login.required')
     }
   ]
 })
@@ -156,7 +158,7 @@ async function onSubmit() {
           localStorage.setItem('is_login', 'true')
           window.api.sendToken(res.data.t)
           emit('loginSuccess')
-          return ElMessage.success('登录成功')
+          return ElMessage.success(t('login.msg_login_success'))
         }
         localStorage.setItem('hoo_anchor_remember', remember.value + '')
         const basePassword = Base64.encode(form.password) // 加密
@@ -173,7 +175,7 @@ async function onSubmit() {
         // router.push('/home')
         window.api.sendToken(res.data.t)
         emit('loginSuccess')
-        return ElMessage.success('登录成功')
+        return ElMessage.success(t('login.msg_login_success'))
       }
     } else {
       return console.log('表单验证未通过')
@@ -184,7 +186,7 @@ const countdown = ref<number>(0)
 // 获取手机验证码
 async function onGetCode() {
   if (!form.username) {
-    return ElMessage.error('请填写手机号后获取')
+    return ElMessage.error(t('login.msg_phone_err'))
   }
   const res: any = await getPhoneCode({ tel: form.username })
   if (res.code === 200) {

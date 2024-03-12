@@ -63,7 +63,11 @@ const i18n = createI18n({
         more: '填写更多信息',
         receive: '收起',
         required: '必填',
-        format: '手机号码格式不正确'
+        format: '手机号码格式不正确',
+        msg_re_yes: '密码重置成功',
+        msg_phone_err: '请填写手机号后获取',
+        msg_register_success: '注册成功',
+        msg_login_success: '登录成功'
       },
       menu: {
         mall: '商城',
@@ -269,7 +273,11 @@ const i18n = createI18n({
         more: 'Fill in more information',
         receive: 'Receive',
         required: 'Required',
-        format: 'The phone number format is incorrect'
+        format: 'The phone number format is incorrect',
+        msg_re_yes: 'Password reset successfully',
+        msg_phone_err: 'Please fill in your cell phone number to get',
+        msg_register_success: 'Successful registration',
+        msg_login_success: 'Login Successful'
       },
       menu: {
         mall: 'Mall',
@@ -479,7 +487,11 @@ const i18n = createI18n({
         more: '填寫更多信息',
         receive: '收起',
         required: '必填',
-        format: '手機號碼格式不正確'
+        format: '手機號碼格式不正確',
+        msg_re_yes: '密碼重置成功',
+        msg_phone_err: '請填寫手機號后獲取',
+        msg_register_success: '註冊成功',
+        msg_login_success: '登錄成功'
       },
       menu: {
         mall: '商城',

@@ -62,6 +62,8 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { resettingPassword, getPhoneCode } from '../../../api/login'
 import { useAccountStore } from '../../../store/account'
 import { Base64 } from 'js-base64'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const accountStore = useAccountStore()
 const ruleFormRef = ref<FormInstance>()
 const form = reactive<any>({
@@ -72,16 +74,18 @@ const form = reactive<any>({
   telkey: ''
 })
 const rules = reactive<FormRules<any>>({
-  telcode: [{ required: true, message: '必填', trigger: 'blur' }],
-  cpassword: [{ required: true, message: '必填', trigger: 'blur' }],
-  password: [{ required: true, message: '必填' }],
+  telcode: [{ required: true, message: t('login.required'), trigger: 'blur' }],
+  cpassword: [
+    { required: true, message: t('login.required'), trigger: 'blur' }
+  ],
+  password: [{ required: true, message: t('login.required') }],
   mobile: [
     {
       pattern: /^1[3|4|5|6|7|8|9]\d{9}$/,
-      message: '手机号格式不正确',
+      message: t('login.format'),
       trigger: 'blur'
     },
-    { required: true, message: '必填' }
+    { required: true, message: t('login.required') }
   ]
 })
 function onSubmit() {
@@ -95,7 +99,7 @@ function onSubmit() {
     if (valid) {
       const res: any = await resettingPassword(send_data)
       if (res.code === 200) {
-        ElMessage.success('密码重置成功')
+        ElMessage.success(t('login.msg_re_yes'))
         localStorage.setItem('hoo_anchor_username', send_data.mobile)
         localStorage.setItem(
           'hoo_anchor_password',
@@ -112,7 +116,7 @@ function onSubmit() {
 const countdown = ref<number>(0)
 async function onGetCode() {
   if (!form.mobile) {
-    return ElMessage.error('请填写手机号后获取')
+    return ElMessage.error(t('login.msg_phone_err'))
   }
   const res: any = await getPhoneCode({ tel: form.mobile })
   if (res.code === 200) {

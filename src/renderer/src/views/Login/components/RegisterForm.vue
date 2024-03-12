@@ -117,7 +117,7 @@ const form = reactive<any>({
   telkey: ''
 })
 const rules = reactive<FormRules<any>>({
-  username: [{ required: true, message: '必填', trigger: 'blur' }],
+  username: [{ required: true, message: t('login.required'), trigger: 'blur' }],
   password: [
     {
       required: true,
@@ -146,7 +146,7 @@ function onSubmit() {
     if (valid) {
       const res: any = await register(send_data)
       if (res.code === 200) {
-        ElMessage.success('注册成功')
+        ElMessage.success(t('login.msg_register_success'))
         localStorage.setItem('hoo_anchor_username', send_data.username)
         localStorage.setItem(
           'hoo_anchor_password',
@@ -163,7 +163,7 @@ function onSubmit() {
 const countdown = ref<number>(0)
 async function onGetCode() {
   if (!form.mobile) {
-    return ElMessage.error('请填写手机号后获取')
+    return ElMessage.error(t('login.msg_phone_err'))
   }
   const res: any = await getPhoneCode({ tel: form.mobile })
   if (res.code === 200) {

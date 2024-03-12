@@ -55,6 +55,9 @@ watch(
   () => props.visible,
   (val: boolean) => {
     loginVisible.value = val
+    if (val) {
+      accountStore.setActive('login')
+    }
   },
   { immediate: true }
 )
