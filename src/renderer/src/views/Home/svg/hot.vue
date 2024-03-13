@@ -4,7 +4,7 @@
       display: flex;
       align-items: center;
       /* justify-content: center; */
-      width: 40px;
+      width: 30px;
     "
   >
     <svg

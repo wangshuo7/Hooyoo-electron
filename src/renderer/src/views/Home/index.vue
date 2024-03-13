@@ -49,13 +49,13 @@
       </div>
     </div>
     <div v-if="is_login && oemData.hezigonggao" class="post">
-      <HornSvg></HornSvg>
+      <!-- <HornSvg></HornSvg> -->
       <Vue3Marquee :pause-on-hover="true">{{
         oemData.hezigonggao
       }}</Vue3Marquee>
     </div>
     <!-- 热门 -->
-    <div class="game" style="margin-bottom: 5px">
+    <div v-if="remenData.length > 0" class="game" style="margin-bottom: 5px">
       <div class="game-title">
         <div class="title">
           <HotSvg></HotSvg>
@@ -232,7 +232,7 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import HornSvg from './svg/horn.vue'
+// import HornSvg from './svg/horn.vue'
 import {
   SwitchFilled,
   Compass,
@@ -337,7 +337,6 @@ function closeLoginDialog() {
 const loading = ref<boolean>(false) // 加载
 const tableData = ref<any>() // 列表数据
 const gameStatus = ref<any>({}) // 游戏状态
-const allGames = ref<any[]>([])
 const timestamp = useTimestamp()
 async function query() {
   loading.value = true
@@ -347,8 +346,6 @@ async function query() {
   } else {
     res = await getGameList({})
   }
-  allGames.value = res.data.list
-  lastOpenGame.value = res.data.list?.find((item) => item.game_id == start_id)
   tableData.value = res?.data?.list.slice(0, 8) // 前八条
   tableData.value?.map((item: any) => {
     if (item.game_buy_end_time === null) {
@@ -365,7 +362,6 @@ async function query() {
   })
   loading.value = false
 }
-const lastOpenGame = ref<any>()
 /**
  * 热门游戏
  */
@@ -374,13 +370,21 @@ const remenData = ref<any[]>([])
 async function queryRemen() {
   remen_loading.value = true
   let res: any
+  let ress: any
   if (!is_login.value) {
     res = await getGameListUnlogin({ is_remen: 1 })
   } else {
     res = await getGameList({ is_remen: 1 })
+    if (start_id) {
+      ress = await getGameList({ is_remen: 0, req_game_id: start_id })
+    }
   }
-  remenData.value = [lastOpenGame.value, ...res.data.list]
-  console.log(lastOpenGame.value)
+  console.log('res', res)
+  console.log('ress', ress)
+  remenData.value =
+    ress?.data.list && ress?.data.list.length
+      ? [ress?.data.list[0], ...res.data.list]
+      : res.data.list
   remenData.value?.map((item: any) => {
     if (item.game_buy_end_time === null) {
       return (gameStatus.value[item.game_id] = 'nopurchased')

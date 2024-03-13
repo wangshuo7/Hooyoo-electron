@@ -1,8 +1,10 @@
 <template>
   <el-dialog
     v-model="loginVisible"
+    modal-class="login-dialog"
     top="10vh"
     width="500"
+    style="background: #202020"
     @close="closeLoginDialog"
   >
     <div class="main">
@@ -106,6 +108,9 @@ watch(
     line-height: 1.5625rem;
     letter-spacing: -0.2px;
   }
+}
+:deep(.el-dialog) {
+  background: red;
 }
 // }
 </style>
