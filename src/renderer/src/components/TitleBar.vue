@@ -2,7 +2,7 @@
   <div class="header-drag">
     <div class="empty">
       <div class="box-name">
-        <div v-if="is_login">互游盒子</div>
+        <div v-if="!is_login">互游盒子</div>
         <div v-else>{{ oemData.tiepai_name }}</div>
       </div>
     </div>

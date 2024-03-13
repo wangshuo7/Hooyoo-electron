@@ -34,7 +34,8 @@ const i18n = createI18n({
         redeem: '兑换游戏',
         manage: '管理后台',
         livelog: '直播记录',
-        recent: '最近上新'
+        recent: '最近上新',
+        hot: '热门游戏'
       },
       login: {
         login: '登录',
@@ -248,7 +249,8 @@ const i18n = createI18n({
         redeem: 'Redeem game',
         manage: 'Manage backend',
         livelog: 'Live recording',
-        recent: 'Recently updated'
+        recent: 'Recently updated',
+        hot: 'Hot Games'
       },
       login: {
         login: 'Login',
@@ -466,7 +468,8 @@ const i18n = createI18n({
         redeem: '兌換遊戲',
         manage: '管理後台',
         livelog: '直播記錄',
-        recent: '最近上新'
+        recent: '最近上新',
+        hot: '熱門遊戲'
       },
       login: {
         login: '登錄',

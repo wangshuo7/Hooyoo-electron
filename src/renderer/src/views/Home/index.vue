@@ -54,10 +54,93 @@
         oemData.hezigonggao
       }}</Vue3Marquee>
     </div>
-    <div class="bottom">
-      <div class="bottom-title">
+    <!-- 热门 -->
+    <div class="game" style="margin-bottom: 5px">
+      <div class="game-title">
         <div class="title">
-          <el-icon class="icon" style="margin-right: 10px"><Guide /></el-icon>
+          <HotSvg></HotSvg>
+          <span>{{ $t('home.hot') }}</span>
+        </div>
+        <div class="refresh" @click="onRemenRefresh">
+          <el-icon
+            class="refresh-icon"
+            :style="{ transform: `rotate(${remenRotation}deg)` }"
+            ><Refresh
+          /></el-icon>
+        </div>
+      </div>
+      <div class="game-content">
+        <div v-loading="remen_loading" class="list">
+          <div
+            v-for="(item, index) in remenData"
+            :key="index"
+            class="list-item"
+            @click="onGoDetail(item)"
+          >
+            <div v-if="is_login">
+              <el-tag
+                v-if="gameStatus[item?.game_id] !== 'nopurchased'"
+                class="tag"
+                effect="dark"
+                :type="
+                  gameStatus[item.game_id] !== 'nopurchased'
+                    ? gameStatus[item.game_id] === 'expire'
+                      ? 'danger'
+                      : 'success'
+                    : ''
+                "
+                >{{
+                  gameStatus[item.game_id] !== 'nopurchased'
+                    ? gameStatus[item.game_id] === 'expire'
+                      ? $t('detail.expired')
+                      : $t('detail.purchased')
+                    : ''
+                }}</el-tag
+              >
+              <el-tag
+                v-if="item.game_id == start_id"
+                class="pre-tag"
+                effect="dark"
+              >
+                {{ $t('system.last_open') }}
+              </el-tag>
+            </div>
+            <div class="img-box">
+              <el-image
+                class="img"
+                :src="item.icon?.includes('http') ? item.icon : 'danzhu.jpg'"
+              ></el-image>
+            </div>
+            <div class="item-title">
+              <span>{{ item.title }}</span>
+            </div>
+            <div class="item-price">
+              <div v-if="item.price">
+                <span class="price_1">{{ item.price }}</span>
+                <span class="price_2">{{ item.cuxiao_price }}</span>
+              </div>
+              <div v-else>{{ $t('detail.free') }}</div>
+            </div>
+            <div class="item-percent">
+              {{ $t('detail.divide') }}：
+              <span v-if="!is_login">--</span>
+              <span v-else
+                >{{
+                  item.jisuan_bl?.bl_gonghui +
+                  item.jisuan_bl?.bl_pingtai +
+                  item.jisuan_bl?.bl_youxizuozhe
+                }}%</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 最近 -->
+    <div class="game">
+      <div class="game-title">
+        <div class="title">
+          <RecentSvg></RecentSvg>
           <span>{{ $t('home.recent') }}</span>
         </div>
         <div class="refresh" @click="onRefresh">
@@ -68,7 +151,7 @@
           /></el-icon>
         </div>
       </div>
-      <div class="bottom-content">
+      <div class="game-content">
         <div v-loading="loading" class="list">
           <div
             v-for="(item, index) in tableData"
@@ -154,9 +237,10 @@ import {
   SwitchFilled,
   Compass,
   VideoCamera,
-  Guide,
   Refresh
 } from '@element-plus/icons-vue'
+import HotSvg from './svg/hot.vue'
+import RecentSvg from './svg/recent.vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import {
   Autoplay,
@@ -182,10 +266,10 @@ const is_login = computed(() => {
 const oemData = computed(() => {
   return accountStore.oem
 })
-console.log(oemData)
 const router = useRouter()
 const modules = [Autoplay, Pagination, Navigation, Mousewheel, Keyboard]
 const start_id = localStorage.getItem('start-pre')
+
 /**
  * 刷新icon
  */
@@ -195,6 +279,11 @@ function debounceOnRefresh() {
   query()
 }
 const onRefresh = useDebounceFn(debounceOnRefresh, 300)
+const remenRotation = ref<number>(0)
+const onRemenRefresh = useDebounceFn(() => {
+  remenRotation.value -= 180
+  queryRemen()
+}, 300)
 /**
  * 兑换游戏
  */
@@ -243,11 +332,12 @@ function closeLoginDialog() {
 }
 
 /**
- * 游戏列表
+ *  最近游戏
  */
 const loading = ref<boolean>(false) // 加载
 const tableData = ref<any>() // 列表数据
 const gameStatus = ref<any>({}) // 游戏状态
+const allGames = ref<any[]>([])
 const timestamp = useTimestamp()
 async function query() {
   loading.value = true
@@ -257,6 +347,8 @@ async function query() {
   } else {
     res = await getGameList({})
   }
+  allGames.value = res.data.list
+  lastOpenGame.value = res.data.list?.find((item) => item.game_id == start_id)
   tableData.value = res?.data?.list.slice(0, 8) // 前八条
   tableData.value?.map((item: any) => {
     if (item.game_buy_end_time === null) {
@@ -272,6 +364,37 @@ async function query() {
     return
   })
   loading.value = false
+}
+const lastOpenGame = ref<any>()
+/**
+ * 热门游戏
+ */
+const remen_loading = ref<boolean>(false) // 加载
+const remenData = ref<any[]>([])
+async function queryRemen() {
+  remen_loading.value = true
+  let res: any
+  if (!is_login.value) {
+    res = await getGameListUnlogin({ is_remen: 1 })
+  } else {
+    res = await getGameList({ is_remen: 1 })
+  }
+  remenData.value = [lastOpenGame.value, ...res.data.list]
+  console.log(lastOpenGame.value)
+  remenData.value?.map((item: any) => {
+    if (item.game_buy_end_time === null) {
+      return (gameStatus.value[item.game_id] = 'nopurchased')
+    } else if (item.game_buy_end_time >= timestamp.value / 1000) {
+      return (gameStatus.value[item.game_id] = 'purchased')
+    } else if (
+      item.game_buy_end_time > 0 &&
+      item.game_buy_end_time < timestamp.value
+    ) {
+      return (gameStatus.value[item.game_id] = 'expire')
+    }
+    return
+  })
+  remen_loading.value = false
 }
 const gameId = ref<any>()
 function onGoDetail(item) {
@@ -296,13 +419,15 @@ async function queryBanner() {
 }
 
 onMounted(async () => {
-  query()
-  queryBanner()
+  await query()
+  await queryBanner()
+  await queryRemen()
 })
 watch(
   () => is_login.value,
   () => {
     query()
+    queryRemen()
   }
 )
 </script>
@@ -315,12 +440,12 @@ watch(
   background: #2d2d2d;
   display: flex;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   padding: 0 10px;
 }
 .top {
   display: flex;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
   .banner {
     width: 81%;
     height: 100%;
@@ -361,11 +486,12 @@ watch(
     }
   }
 }
-.bottom {
-  .bottom-title {
+.game {
+  min-height: 200px;
+  .game-title {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     .title {
       display: flex;
       align-items: center;
@@ -400,7 +526,7 @@ watch(
   .list {
     grid-template-columns: 25% 25% 25% 25%;
     .list-item {
-      height: 250px;
+      height: 220px;
     }
   }
   .icon {
@@ -417,7 +543,7 @@ watch(
   .list {
     grid-template-columns: 25% 25% 25% 25%;
     .list-item {
-      height: 270px;
+      height: 250px;
     }
   }
   .icon {
@@ -434,7 +560,7 @@ watch(
     // grid-template-columns: 25% 25% 25% 25%;
 
     .list-item {
-      height: 280px;
+      height: 220px;
     }
   }
   .icon {

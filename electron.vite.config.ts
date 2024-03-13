@@ -28,7 +28,7 @@ export default defineConfig({
     server: {
       proxy: {
         '/api': {
-          target: 'http://box-server.huyouyun.cn',
+          target: 'http://cdn-box.huyouyun.cn',
           changeOrigin: true, // 允许跨域
           rewrite: (path) => path.replace(/^\/api/, '')
         }
@@ -37,3 +37,4 @@ export default defineConfig({
     plugins: [vue()]
   }
 })
+// http://test-box-server.huyouyun.cn
