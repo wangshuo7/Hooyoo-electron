@@ -4,6 +4,8 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
+      updateApp: (url: string) => void
+      downloadAppProgress: (callback: (data) => void) => void
       sendAnchor: (data: any) => void
       mainSendVersion: (Callback: (version) => void) => void
       saveImage: (url: string) => void

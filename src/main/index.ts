@@ -6,7 +6,7 @@ import {
   dialog,
   Notification
 } from 'electron'
-import { autoUpdater } from 'electron-updater'
+// import { autoUpdater } from 'electron-updater'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import WebSocket from 'ws'
@@ -15,7 +15,7 @@ import fs from 'fs'
 import path from 'path'
 import http from 'http'
 import AdmZip from 'adm-zip'
-import { spawn } from 'child_process'
+import { exec, spawn } from 'child_process'
 import Store from 'electron-store'
 import { simplifyObject } from './lib/webcastDataConverter'
 import protobufjs from 'protobufjs'
@@ -51,56 +51,56 @@ import { rc4Encrypt2 } from './public/rc4'
  */
 const appVersion = app.getVersion()
 
-autoUpdater.setFeedURL('http://cdn.huyouyun.cn/huyouyunbox')
-autoUpdater.autoDownload = false
-// 1. 渲染进程App.vue触发获取更新，开始进行更新流程
-ipcMain.on('check-updates-first', () => {
-  autoUpdater.checkForUpdates()
-})
-autoUpdater.on('error', (error) => {
-  printUpdaterMessage('error')
-  mainWindow.webContents.send('update-error', error)
-})
-// 2. 开始检查是否有更新
-autoUpdater.on('checking-for-update', function () {
-  printUpdaterMessage('checking')
-})
-// 3. 有更新时触发
-autoUpdater.on('update-available', (info) => {
-  printUpdaterMessage('updateAvailable')
-  mainWindow.webContents.send('update-available', info)
-})
-// 7. 收到确认更新提示，执行下载
-ipcMain.on('confirm-update', () => {
-  autoUpdater.downloadUpdate()
-})
-autoUpdater.on('update-not-available', () => {
-  printUpdaterMessage('updateNotAvailable')
-})
+// autoUpdater.setFeedURL('http://cdn.huyouyun.cn/huyouyunbox')
+// autoUpdater.autoDownload = false
+// // 1. 渲染进程App.vue触发获取更新，开始进行更新流程
+// ipcMain.on('check-updates-first', () => {
+//   autoUpdater.checkForUpdates()
+// })
+// autoUpdater.on('error', (error) => {
+//   printUpdaterMessage('error')
+//   mainWindow.webContents.send('update-error', error)
+// })
+// // 2. 开始检查是否有更新
+// autoUpdater.on('checking-for-update', function () {
+//   printUpdaterMessage('checking')
+// })
+// // 3. 有更新时触发
+// autoUpdater.on('update-available', (info) => {
+//   printUpdaterMessage('updateAvailable')
+//   mainWindow.webContents.send('update-available', info)
+// })
+// // 7. 收到确认更新提示，执行下载
+// ipcMain.on('confirm-update', () => {
+//   autoUpdater.downloadUpdate()
+// })
+// autoUpdater.on('update-not-available', () => {
+//   printUpdaterMessage('updateNotAvailable')
+// })
 
-// 8. 下载进度，包含进度百分比、下载速度、已下载字节、总字节等
-autoUpdater.on('download-progress', (progressObj) => {
-  printUpdaterMessage('downloadProgress')
-  mainWindow.webContents.send('e-download-progress', progressObj)
-})
-// 10. 下载完成，是否立即执行更新安装操作
-autoUpdater.on('update-downloaded', () => {
-  mainWindow.webContents.send('update-downloaded')
-  // 12.立即更新安装
-  ipcMain.on('update-now', () => {
-    autoUpdater.quitAndInstall()
-  })
-})
-function printUpdaterMessage(arg: any) {
-  const message = {
-    error: '更新出错',
-    checking: '正在检查更新',
-    updateAvailable: '检测到新版本',
-    downloadProgress: '下载中',
-    updateNotAvailable: '无新版本'
-  }
-  mainWindow.webContents.send('print-updater-message', message[arg] ?? arg)
-}
+// // 8. 下载进度，包含进度百分比、下载速度、已下载字节、总字节等
+// autoUpdater.on('download-progress', (progressObj) => {
+//   printUpdaterMessage('downloadProgress')
+//   mainWindow.webContents.send('e-download-progress', progressObj)
+// })
+// // 10. 下载完成，是否立即执行更新安装操作
+// autoUpdater.on('update-downloaded', () => {
+//   mainWindow.webContents.send('update-downloaded')
+//   // 12.立即更新安装
+//   ipcMain.on('update-now', () => {
+//     autoUpdater.quitAndInstall()
+//   })
+// })
+// function printUpdaterMessage(arg: any) {
+//   const message = {
+//     error: '更新出错',
+//     checking: '正在检查更新',
+//     updateAvailable: '检测到新版本',
+//     downloadProgress: '下载中',
+//     updateNotAvailable: '无新版本'
+//   }
+//   mainWindow.webContents.send('print-updater-message', message[arg] ?? arg)
+// }
 // 将 zlib.unzip 转换为 promisify(zlib.unzip)
 const unzip = promisify(zlibUnzip)
 let authToken = ''
@@ -119,6 +119,7 @@ let gameId: string
 let rc4Key: string
 let lan: any
 let anchor: any // 主播信息（自己维护的）
+let installerPath: any // 安装包体
 const default_download_path = path.join(
   app.getPath('documents'),
   'huyouyun_game_download'
@@ -127,6 +128,7 @@ const default_install_path = path.join(
   app.getPath('documents'),
   'huyouyun_game_install'
 )
+let box_request: any // http下载安装包请求对象
 // let floatWin: any
 // function reverseStr(str: string) {
 //   return str?.split('')?.reverse()?.join('')
@@ -251,6 +253,52 @@ function createWindow(): void {
   // 监听窗口取消最大化事件
   mainWindow.on('unmaximize', sendMaximizeStatus)
 }
+// 更新
+ipcMain.on('update-app', (_event, url) => {
+  console.log(url)
+  const download_url = `${url}?time=${Date.now()}`
+  console.log(download_url)
+  downloadSetup(download_url)
+})
+function downloadSetup(url) {
+  const installerFolder = path.join(app.getPath('documents'), 'huyouyunApp')
+  installerPath = path.join(installerFolder, 'huyouyun-setup.exe')
+
+  if (!fs.existsSync(installerFolder)) {
+    fs.mkdirSync(installerFolder, { recursive: true })
+  }
+
+  const file = fs.createWriteStream(installerPath)
+  box_request = http.get(url, (response: any) => {
+    const totalSize = parseInt(response.headers['content-length'], 10)
+    let downloadedSize = 0
+    response.on('data', (chunk) => {
+      downloadedSize += chunk.length
+      const progress = Math.round((downloadedSize / totalSize) * 100)
+      mainWindow.webContents.send('download-app-progress', {
+        progress,
+        totalSize
+      })
+      file.write(chunk)
+    })
+
+    response.on('end', () => {
+      file.end(() => {
+        // 下载完成后，执行系统命令打开安装包
+        exec(`"${installerPath}"`, (error) => {
+          if (error) {
+            console.error('无法打开安装包:', error)
+          }
+        })
+        app.quit()
+      })
+    })
+  })
+
+  box_request.on('error', (error) => {
+    console.error('下载安装包失败:', error)
+  })
+}
 ipcMain.on('audio-tip', () => {
   mainWindow.webContents.send('play-audio')
 })
@@ -285,6 +333,11 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+app.on('before-quit', () => {
+  if (box_request) {
+    box_request.abort()
   }
 })
 // 保存图片

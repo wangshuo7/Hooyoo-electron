@@ -1,7 +1,8 @@
 <template>
   <el-dialog
     v-model="updateVisible"
-    title="更新提示"
+    :close-on-press-escape="false"
+    :title="$t('system.update')"
     width="700px"
     :show-close="false"
     :close-on-click-modal="false"
@@ -28,8 +29,8 @@
             /* padding-right: 55px; */
           "
         >
-          <span>{{ formatDownloadSpeed(downloadSpeed) }}</span>
-          <span>{{ formatSize(current, total) }}</span>
+          <span></span>
+          <span>{{ bytesToMegabytes() }}M</span>
         </div>
       </div>
     </div>
@@ -37,100 +38,76 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
-// import { getTBoxVersion } from '../api/rc4'
-// import { ElMessage } from 'element-plus'
+import { ref, onMounted } from 'vue'
+import { getTBoxVersion } from '../api/rc4'
 import { useGlobalStore } from '../store/globalStore'
-import { useAccountStore } from '../store/account'
-const accountStore = useAccountStore()
 const globalStore = useGlobalStore()
+const updateVisible = ref<boolean>(false)
 const update_content = ref<any>([{ content: '' }])
-const appVersion = ref<any>()
-const is_update = ref<boolean>(false)
-
+const boxVersion = ref<any>() // 远程版本
+const appVersion = ref<any>() // 当前版本
+const appUrl = ref<string>('')
 window.api.mainSendVersion((version) => {
   appVersion.value = version
   globalStore.setAppVersion(version)
 })
-interface progressObj {
-  bytesPerSecond: number
-  delta: number
-  percent: number
-  total: number
-  transferred: number
+async function getVersion() {
+  const res: any = await getTBoxVersion()
+  boxVersion.value = res?.data?.info?.version
+  appUrl.value = res?.data?.info?.url
 }
-const updateVisible = ref<boolean>(false)
-const state = ref<any>()
-const progress = ref<any>() // 进度
-const downloadSpeed = ref<number>(0) // 速度
-function formatDownloadSpeed(bytesPerSecond: number): string {
-  if (bytesPerSecond < 1024 * 1024) {
-    return bytesPerSecond.toFixed(0) + ' B/s'
+// 检查是否需要更新
+function checkUpdates() {
+  console.log('current', appVersion.value)
+  console.log('remote', boxVersion.value)
+  const res: boolean = checkUpdateNeeded(appVersion.value, boxVersion.value)
+  if (res) {
+    updateVisible.value = true
+    window.api.updateApp(appUrl.value)
+    console.log('需要更新')
   } else {
-    const speedInMB = bytesPerSecond / (1024 * 1024)
-    return speedInMB.toFixed(2) + ' MB/s'
+    console.log('不需要更新')
   }
 }
-const current = ref<number>(0)
-const total = ref<number>(0)
-function formatSize(transferred: number, total: number): string {
-  const transferredStr =
-    transferred < 1024 * 1024
-      ? (transferred / (1024 * 1024)).toFixed(2) + 'M'
-      : (transferred / (1024 * 1024)).toFixed(0) + 'M'
+/**
+ * 检查当前版本是否需要更新
+ * @param {string} currentVersion 当前版本号
+ * @param {string} remoteVersion 远程版本号
+ * @returns {boolean} 如果需要更新返回true，否则返回false
+ */
+function checkUpdateNeeded(currentVersion, remoteVersion) {
+  const currentParts = currentVersion?.split('.').map(Number)
+  const remoteParts = remoteVersion?.split('.').map(Number)
 
-  const totalStr =
-    total < 1024 * 1024
-      ? (total / (1024 * 1024)).toFixed(2) + 'M'
-      : (total / (1024 * 1024)).toFixed(0) + 'M'
+  for (
+    let i = 0;
+    i < Math.max(currentParts?.length, remoteParts?.length);
+    i++
+  ) {
+    const currentPart = currentParts[i] || 0
+    const remotePart = remoteParts[i] || 0
 
-  return transferredStr + '/' + totalStr
+    if (currentPart < remotePart) {
+      return true
+    } else if (currentPart > remotePart) {
+      return false
+    }
+  }
+  // 如果所有版本号相同，则不需要更新
+  return false
 }
-window.api.sendMessage('Hello from App.vue!')
-
-window.api.checkUpdates()
-window.api.printUpdaterMessage((res) => {
-  console.log('res->', res)
-  state.value = res
-})
-// 5. 收到主进程可更新的消息
-window.api.updateAvailable((info) => {
-  console.log('info->', info)
-  is_update.value = true
-  accountStore.setIsUpdate(true)
-  updateVisible.value = true
-  downloadExe()
-})
-// 点击立即下载
-function downloadExe() {
-  window.api.confirmUpdate()
-}
-window.api.updateDownloaded(() => {
-  window.api.updateNow()
-})
-// 收到进度条信息
-window.api.edownloadProgress((data: progressObj) => {
-  // console.log('progress->', data)
-  progress.value = Math.floor(data.percent)
-  downloadSpeed.value = data.bytesPerSecond
-  current.value = data.transferred
-  total.value = data.total
-})
-// 更新出错时
-window.api.updateError((err) => {
-  console.log('err->', err)
-})
-// async function checkVersion() {
-//   const res: any = await getTBoxVersion()
-//   if (appVersion.value != res.data.info.version && !is_update.value) {
-//     ElMessage.error('版本无法使用')
-//     setTimeout(() => {
-//       window.api.quit()
-//     }, 3000)
-//   }
-// }
 onMounted(async () => {
-  // checkVersion()
+  await getVersion()
+  await checkUpdates()
+})
+const progress = ref<number>(0)
+const totalSize = ref<number>(0)
+function bytesToMegabytes() {
+  return (totalSize.value / (1024 * 1024)).toFixed(2)
+}
+window.api.downloadAppProgress((data) => {
+  progress.value = data?.progress
+  totalSize.value = data?.totalSize
 })
 </script>
 

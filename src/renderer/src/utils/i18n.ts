@@ -9,6 +9,7 @@ const i18n = createI18n({
     zh: {
       lang: '中文',
       system: {
+        update: '更新提示',
         day: '天',
         price: '余额',
         diamond: '钻石',
@@ -225,6 +226,7 @@ const i18n = createI18n({
       lang: 'English',
       system: {
         day: 'day',
+        update: 'Update Tips',
         price: 'Price',
         diamond: 'Diamond',
         recharge: 'Recharge',
@@ -443,6 +445,7 @@ const i18n = createI18n({
     tw: {
       lang: '繁体',
       system: {
+        update: '更新提示',
         day: '天',
         price: '餘額',
         diamond: '鑽石',

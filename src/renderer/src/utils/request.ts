@@ -1,5 +1,8 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
+import pinia from '../store/store'
 import { ElMessage } from 'element-plus'
+import { useAccountStore } from '../store/account'
+const accountStore = useAccountStore(pinia)
 // import router from '../router'
 const baseURL =
   process.env.NODE_ENV === 'production' ? 'http://cdn-box.huyouyun.cn' : '/api'
@@ -37,6 +40,7 @@ request.interceptors.response.use(
         // 未登录
         // ElMessage.error(msg)
         // router.push('/login')
+        accountStore.setIsLogin(false)
       } else if (code === 200) {
         return response.data
       } else if (code === 0) {

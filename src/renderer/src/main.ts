@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import axios from 'axios'
 import router from './router' // 引用 router
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -13,14 +14,16 @@ import { TostOptions } from './utils/toast'
 // 引入 vue-i18n
 import i18n from './utils/i18n'
 // 引入 pinia
-import { createPinia } from 'pinia'
-const pinia = createPinia()
+import pinia from './store/store'
+import './utils/request'
+const app = createApp(App)
+app.config.globalProperties.$axios = axios
 
-createApp(App)
+app
+  .use(pinia)
   .use(router)
   .use(Toast, TostOptions)
   .use(Vue3Marquee)
   .use(ElementPlus)
-  .use(pinia)
   .use(i18n)
   .mount('#app')
