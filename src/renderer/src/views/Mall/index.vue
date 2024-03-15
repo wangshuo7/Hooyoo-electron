@@ -1111,11 +1111,14 @@ watchEffect(() => {
             '钻石不足',
             `${t('detail.message_warn_notdiamond')}${4 - diamond_not_num.value}${t('detail.message_warn_notdiamond2')}`
           )
+          // 语音提示-钻石不足
+          window.api.audioTip()
           return
         }
         const res: any = await deductDiamond(send_data)
+        console.log('kou_res', res)
         if (
-          res.data.jifen * divide_total.value < +detail.value.yj_zuanshi &&
+          res?.data?.jifen * divide_total.value < +detail.value.yj_zuanshi &&
           diamond_not_num.value !== 3
         ) {
           ElMessage.error(t('detail.message_error_rechargetip'))
@@ -1123,9 +1126,10 @@ watchEffect(() => {
             '钻石不足',
             t('detail.message_error_rechargetip')
           )
+          window.api.audioTip()
         }
         console.log('扣钻数量', send_data)
-        liveStore.setDiamond(res.data.jifen)
+        liveStore.setDiamond(res?.data?.jifen)
         console.log('扣钻res', res)
         console.log('礼物列表', gift_data.value)
         const kouDiamond = send_data.jifen
@@ -1147,7 +1151,7 @@ watchEffect(() => {
           }
         }
         gift_data.value = []
-      }, 60 * 2000)
+      }, 60 * 1000)
     }
   }
 })
@@ -1191,7 +1195,7 @@ async function sendStartLivingRequest() {
           // 结束游戏
           window.api.rendererCloseGame()
         }
-      }, 60 * 1000)
+      }, 60 * 2000)
     }
   } catch (error) {
     console.error('发送开播请求时出错：', error)

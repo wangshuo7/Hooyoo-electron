@@ -4,9 +4,7 @@ import { rc4Encrypt, rc4Decrypt, utf8Encode, utf8Decode } from './rc4'
 // import { ElMessage } from 'element-plus'
 
 const baseURL =
-  process.env.NODE_ENV === 'production'
-    ? 'http://box-server.huyouyun.cn'
-    : '/api'
+  process.env.NODE_ENV === 'production' ? 'http://cdn-box.huyouyun.cn' : '/api'
 const request = axios.create({
   baseURL: baseURL,
   timeout: 5000, // 请求超时时间

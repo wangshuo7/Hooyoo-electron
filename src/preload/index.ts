@@ -201,7 +201,15 @@ const api = {
     })
   },
   // 回复主进程
-  searchGameInfoReply: (obj) => ipcRenderer.send('search-game-info-reply', obj)
+  searchGameInfoReply: (obj) => ipcRenderer.send('search-game-info-reply', obj),
+  // 语音提示
+  audioTip: () => ipcRenderer.send('audio-tip'),
+  // 播放音频
+  playAudio: (callback: () => void) => {
+    ipcRenderer.on('play-audio', () => {
+      callback()
+    })
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

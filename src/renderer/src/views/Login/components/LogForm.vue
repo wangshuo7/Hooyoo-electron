@@ -153,35 +153,39 @@ async function onSubmit() {
   }
   ruleFormRef.value?.validate(async (valid) => {
     if (valid) {
-      const res: any = await login(send_data)
-      if (res?.code === 200) {
-        if (!loginType.value) {
+      try {
+        const res: any = await login(send_data)
+        if (res?.code === 200) {
+          if (!loginType.value) {
+            localStorage.setItem('authtoken', res.data.t)
+            // router.push('/home')
+            accountStore.setIsLogin(true)
+            queryOem()
+            localStorage.setItem('is_login', 'true')
+            window.api.sendToken(res.data.t)
+            emit('loginSuccess')
+            return ElMessage.success(t('login.msg_login_success'))
+          }
+          localStorage.setItem('hoo_anchor_remember', remember.value + '')
+          const basePassword = Base64.encode(form.password) // 加密
+          if (remember.value) {
+            localStorage.setItem('hoo_anchor_username', form.username)
+            localStorage.setItem('hoo_anchor_password', basePassword)
+          } else {
+            localStorage.removeItem('hoo_anchor_username')
+            localStorage.removeItem('hoo_anchor_password')
+          }
           localStorage.setItem('authtoken', res.data.t)
-          // router.push('/home')
           accountStore.setIsLogin(true)
           queryOem()
           localStorage.setItem('is_login', 'true')
+          // router.push('/home')
           window.api.sendToken(res.data.t)
           emit('loginSuccess')
           return ElMessage.success(t('login.msg_login_success'))
         }
-        localStorage.setItem('hoo_anchor_remember', remember.value + '')
-        const basePassword = Base64.encode(form.password) // 加密
-        if (remember.value) {
-          localStorage.setItem('hoo_anchor_username', form.username)
-          localStorage.setItem('hoo_anchor_password', basePassword)
-        } else {
-          localStorage.removeItem('hoo_anchor_username')
-          localStorage.removeItem('hoo_anchor_password')
-        }
-        localStorage.setItem('authtoken', res.data.t)
-        accountStore.setIsLogin(true)
-        queryOem()
-        localStorage.setItem('is_login', 'true')
-        // router.push('/home')
-        window.api.sendToken(res.data.t)
-        emit('loginSuccess')
-        return ElMessage.success(t('login.msg_login_success'))
+      } catch (error: any) {
+        ElMessage.error(error)
       }
     } else {
       return console.log('表单验证未通过')

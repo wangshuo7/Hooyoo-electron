@@ -4,6 +4,7 @@ export const useAccountStore = defineStore('account', {
   state: () => ({
     login_active: 'login',
     is_login: false,
+    is_update: false,
     oem: {
       guanwang: '',
       hezigonggao: '',
@@ -21,6 +22,9 @@ export const useAccountStore = defineStore('account', {
     },
     setOem(data: any) {
       this.oem = data
+    },
+    setIsUpdate(active: boolean) {
+      this.is_update = active
     }
   }
 })

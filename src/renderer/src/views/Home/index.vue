@@ -69,72 +69,74 @@
           /></el-icon>
         </div>
       </div>
-      <div class="game-content">
-        <div v-loading="remen_loading" class="list">
-          <div
-            v-for="(item, index) in remenData"
-            :key="index"
-            class="list-item"
-            @click="onGoDetail(item)"
-          >
-            <div v-if="is_login">
-              <el-tag
-                v-if="gameStatus[item?.game_id] !== 'nopurchased'"
-                class="tag"
-                effect="dark"
-                :type="
-                  gameStatus[item.game_id] !== 'nopurchased'
-                    ? gameStatus[item.game_id] === 'expire'
-                      ? 'danger'
-                      : 'success'
-                    : ''
-                "
-                >{{
-                  gameStatus[item.game_id] !== 'nopurchased'
-                    ? gameStatus[item.game_id] === 'expire'
-                      ? $t('detail.expired')
-                      : $t('detail.purchased')
-                    : ''
-                }}</el-tag
-              >
-              <el-tag
-                v-if="item.game_id == start_id"
-                class="pre-tag"
-                effect="dark"
-              >
-                {{ $t('system.last_open') }}
-              </el-tag>
-            </div>
-            <div class="img-box">
-              <el-image
-                class="img"
-                :src="item.icon?.includes('http') ? item.icon : 'danzhu.jpg'"
-              ></el-image>
-            </div>
-            <div class="item-title">
-              <span>{{ item.title }}</span>
-            </div>
-            <div class="item-price">
-              <div v-if="item.price">
-                <span class="price_1">{{ item.price }}</span>
-                <span class="price_2">{{ item.cuxiao_price }}</span>
+      <el-scrollbar>
+        <div class="game-content">
+          <div v-loading="remen_loading" class="hot-list">
+            <div
+              v-for="(item, index) in remenData"
+              :key="index"
+              class="hot-list-item"
+              @click="onGoDetail(item)"
+            >
+              <div v-if="is_login">
+                <el-tag
+                  v-if="gameStatus[item?.game_id] !== 'nopurchased'"
+                  class="tag"
+                  effect="dark"
+                  :type="
+                    gameStatus[item.game_id] !== 'nopurchased'
+                      ? gameStatus[item.game_id] === 'expire'
+                        ? 'danger'
+                        : 'success'
+                      : ''
+                  "
+                  >{{
+                    gameStatus[item.game_id] !== 'nopurchased'
+                      ? gameStatus[item.game_id] === 'expire'
+                        ? $t('detail.expired')
+                        : $t('detail.purchased')
+                      : ''
+                  }}</el-tag
+                >
+                <el-tag
+                  v-if="item.game_id == start_id"
+                  class="pre-tag"
+                  effect="dark"
+                >
+                  {{ $t('system.last_open') }}
+                </el-tag>
               </div>
-              <div v-else>{{ $t('detail.free') }}</div>
-            </div>
-            <div class="item-percent">
-              {{ $t('detail.divide') }}：
-              <span v-if="!is_login">--</span>
-              <span v-else
-                >{{
-                  item.jisuan_bl?.bl_gonghui +
-                  item.jisuan_bl?.bl_pingtai +
-                  item.jisuan_bl?.bl_youxizuozhe
-                }}%</span
-              >
+              <div class="img-box">
+                <el-image
+                  class="img"
+                  :src="item.icon?.includes('http') ? item.icon : 'danzhu.jpg'"
+                ></el-image>
+              </div>
+              <div class="item-title">
+                <span>{{ item.title }}</span>
+              </div>
+              <div class="item-price">
+                <div v-if="item.price">
+                  <span class="price_1">{{ item.price }}</span>
+                  <span class="price_2">{{ item.cuxiao_price }}</span>
+                </div>
+                <div v-else>{{ $t('detail.free') }}</div>
+              </div>
+              <div class="item-percent">
+                {{ $t('detail.divide') }}：
+                <span v-if="!is_login">--</span>
+                <span v-else
+                  >{{
+                    item.jisuan_bl?.bl_gonghui +
+                    item.jisuan_bl?.bl_pingtai +
+                    item.jisuan_bl?.bl_youxizuozhe
+                  }}%</span
+                >
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </el-scrollbar>
     </div>
     <!-- 最近 -->
     <div class="game">
@@ -370,21 +372,12 @@ const remenData = ref<any[]>([])
 async function queryRemen() {
   remen_loading.value = true
   let res: any
-  let ress: any
   if (!is_login.value) {
     res = await getGameListUnlogin({ is_remen: 1 })
   } else {
-    res = await getGameList({ is_remen: 1 })
-    if (start_id) {
-      ress = await getGameList({ is_remen: 0, req_game_id: start_id })
-    }
+    res = await getGameList({ is_remen: 1, req_game_id: start_id })
   }
-  console.log('res', res)
-  console.log('ress', ress)
-  remenData.value =
-    ress?.data.list && ress?.data.list.length
-      ? [ress?.data.list[0], ...res.data.list]
-      : res.data.list
+  remenData.value = res.data.list
   remenData.value?.map((item: any) => {
     if (item.game_buy_end_time === null) {
       return (gameStatus.value[item.game_id] = 'nopurchased')
@@ -513,8 +506,11 @@ watch(
   .list {
     grid-template-columns: 33.3% 33.3% 33.3%;
     .list-item {
-      height: 230px;
+      height: 240px;
     }
+  }
+  .hot-list-item {
+    width: 287px;
   }
   .icon {
     font-size: 25px;
@@ -530,8 +526,11 @@ watch(
   .list {
     grid-template-columns: 25% 25% 25% 25%;
     .list-item {
-      height: 220px;
+      height: 240px;
     }
+  }
+  .hot-list-item {
+    width: 298px;
   }
   .icon {
     font-size: 30px;
@@ -547,8 +546,11 @@ watch(
   .list {
     grid-template-columns: 25% 25% 25% 25%;
     .list-item {
-      height: 250px;
+      height: 270px;
     }
+  }
+  .hot-list-item {
+    width: 335px;
   }
   .icon {
     font-size: 35px;
@@ -567,14 +569,95 @@ watch(
       height: 220px;
     }
   }
+  .hot-list-item {
+    width: 266px;
+  }
   .icon {
     font-size: 35px;
+  }
+}
+.game-content {
+  padding-bottom: 10px;
+  .hot-list {
+    display: flex;
+    flex-wrap: nowrap;
+    .hot-list-item {
+      flex-shrink: 0;
+      // width: 3px;
+      padding: 16px;
+      border-radius: 6px;
+      transition: all 0.2s linear;
+      // height: 342px;
+      position: relative;
+      .tag {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 999;
+      }
+      .pre-tag {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 999;
+      }
+      .img-box {
+        width: 100%;
+        aspect-ratio: 547/260;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+      // .img {
+      //   // max-height: 145px;
+      //   // width: 100%;
+      //   // height: 45%;
+      //   // border-radius: 4px;
+      //   // margin-bottom: 10px;
+      // }
+      .item-title {
+        display: flex;
+        justify-content: space-between;
+        text-indent: 5px;
+      }
+      .item-price {
+        display: flex;
+        margin: 3px 0;
+
+        .price_1 {
+          color: rgba(245, 245, 245, 0.6);
+          text-decoration: line-through;
+          margin: 0 7px;
+          font-size: 14px;
+        }
+        .price_2 {
+          color: #f5f5f5;
+        }
+      }
+      .item-percent {
+        font-size: 16px;
+        color: #9a9a9a;
+        text-indent: 5px;
+      }
+    }
+  }
+  .item-download {
+    margin-top: 5px;
+    display: flex;
+    // align-items: center;
+    color: #9a9a9a;
+    span {
+      margin-right: 10px;
+    }
+    span:last-child {
+      line-height: 16px;
+    }
   }
 }
 .list {
   display: grid;
   .list-item {
-    padding: 16px 16px 0;
+    padding: 16px;
     border-radius: 6px;
     transition: all 0.2s linear;
     // height: 342px;
@@ -643,7 +726,8 @@ watch(
     }
   }
 }
-.list-item::after {
+.list-item::after,
+.hot-list-item::after {
   content: '';
   position: absolute;
   top: 0;
@@ -657,7 +741,8 @@ watch(
   border-radius: 6px;
   transition: opacity 0.3s ease;
 }
-.list-item:hover::after {
+.list-item:hover::after,
+.hot-list-item:hover::after {
   opacity: 0.1;
 }
 // 刷新

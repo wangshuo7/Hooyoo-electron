@@ -51,7 +51,7 @@ import { rc4Encrypt2 } from './public/rc4'
  */
 const appVersion = app.getVersion()
 
-autoUpdater.setFeedURL('http://61.160.236.29:886/box/upload/dist')
+autoUpdater.setFeedURL('http://cdn.huyouyun.cn/huyouyunbox')
 autoUpdater.autoDownload = false
 // 1. 渲染进程App.vue触发获取更新，开始进行更新流程
 ipcMain.on('check-updates-first', () => {
@@ -159,6 +159,7 @@ function createWindow(): void {
       // contextIsolation: false // 启用上下文隔离，提高安全性
     }
   })
+
   const server = new WebSocket.Server({ port: 8080 })
   server.on('connection', (socket: any) => {
     if (anchor) {
@@ -250,6 +251,9 @@ function createWindow(): void {
   // 监听窗口取消最大化事件
   mainWindow.on('unmaximize', sendMaximizeStatus)
 }
+ipcMain.on('audio-tip', () => {
+  mainWindow.webContents.send('play-audio')
+})
 // jiami= {
 //   1: {
 //     is_jiami: 1,
@@ -278,7 +282,6 @@ app.whenReady().then(() => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
-
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()

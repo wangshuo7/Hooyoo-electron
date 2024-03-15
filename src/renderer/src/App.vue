@@ -19,12 +19,19 @@ import en from 'element-plus/es/locale/lang/en'
 import { getGameInfo, isLogin } from './api/rc4'
 import { useLanguageStore } from './store/languageStore'
 import { useAccountStore } from './store/account'
+import zhMp3 from './assets/mp3/zh.mp3'
+import enMp3 from './assets/mp3/en.mp3'
+const is_update = computed(() => {
+  return accountStore.is_update
+})
 const accountStore = useAccountStore()
 const languageStore = useLanguageStore()
 const locale = computed(() =>
   languageStore.locale == 'zh' ? zhCn : languageStore.locale == 'en' ? en : zhTw
 )
-
+const lang = computed(() => {
+  return languageStore.locale
+})
 window.api.sendToken(localStorage.getItem('authtoken') || '')
 
 const loginVisible = ref<boolean>(false)
@@ -37,13 +44,19 @@ onMounted(async () => {
     if (res.code === 200) {
       accountStore.setIsLogin(true)
     } else {
-      loginVisible.value = true
-      accountStore.setIsLogin(false)
+      if (!is_update.value) {
+        loginVisible.value = true
+        accountStore.setIsLogin(false)
+      }
     }
   } catch (error) {
     console.error('Error:', error)
-    loginVisible.value = true
-    localStorage.setItem('is_login', 'false')
+    if (!is_update.value) {
+      loginVisible.value = true
+      accountStore.setIsLogin(false)
+      loginVisible.value = true
+      localStorage.setItem('is_login', 'false')
+    }
   }
 })
 async function searchGame(id) {
@@ -60,6 +73,16 @@ async function searchGame(id) {
 }
 window.api.searchGameInfo((id) => {
   searchGame(id)
+})
+window.api.playAudio(() => {
+  let audioFilePath: any
+  if (lang.value == 'en') {
+    audioFilePath = enMp3
+  } else {
+    audioFilePath = zhMp3
+  }
+  const audio = new Audio(audioFilePath)
+  audio.play()
 })
 </script>
 

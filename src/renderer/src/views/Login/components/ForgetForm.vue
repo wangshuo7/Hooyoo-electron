@@ -97,15 +97,19 @@ function onSubmit() {
   }
   ruleFormRef.value?.validate(async (valid) => {
     if (valid) {
-      const res: any = await resettingPassword(send_data)
-      if (res.code === 200) {
-        ElMessage.success(t('login.msg_re_yes'))
-        localStorage.setItem('hoo_anchor_username', send_data.mobile)
-        localStorage.setItem(
-          'hoo_anchor_password',
-          Base64.encode(send_data.password)
-        )
-        switchLogin()
+      try {
+        const res: any = await resettingPassword(send_data)
+        if (res.code === 200) {
+          ElMessage.success(t('login.msg_re_yes'))
+          localStorage.setItem('hoo_anchor_username', send_data.mobile)
+          localStorage.setItem(
+            'hoo_anchor_password',
+            Base64.encode(send_data.password)
+          )
+          switchLogin()
+        }
+      } catch (error: any) {
+        ElMessage.error(error)
       }
     } else {
       // 表单验证未通过

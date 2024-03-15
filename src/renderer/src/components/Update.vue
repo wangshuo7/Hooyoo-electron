@@ -41,6 +41,8 @@ import { onMounted, ref } from 'vue'
 // import { getTBoxVersion } from '../api/rc4'
 // import { ElMessage } from 'element-plus'
 import { useGlobalStore } from '../store/globalStore'
+import { useAccountStore } from '../store/account'
+const accountStore = useAccountStore()
 const globalStore = useGlobalStore()
 const update_content = ref<any>([{ content: '' }])
 const appVersion = ref<any>()
@@ -95,6 +97,7 @@ window.api.printUpdaterMessage((res) => {
 window.api.updateAvailable((info) => {
   console.log('info->', info)
   is_update.value = true
+  accountStore.setIsUpdate(true)
   updateVisible.value = true
   downloadExe()
 })

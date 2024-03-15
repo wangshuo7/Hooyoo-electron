@@ -1,10 +1,8 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
-// import { ElMessage } from 'element-plus'
+import { ElMessage } from 'element-plus'
 // import router from '../router'
 const baseURL =
-  process.env.NODE_ENV === 'production'
-    ? 'http://box-server.huyouyun.cn'
-    : '/api'
+  process.env.NODE_ENV === 'production' ? 'http://cdn-box.huyouyun.cn' : '/api'
 const request = axios.create({
   baseURL: baseURL,
   timeout: 5000, // 请求超时时间
@@ -33,17 +31,21 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response: AxiosResponse) => {
-    const { code, msg } = response.data
-    if (code === 205) {
-      // 未登录
-      // ElMessage.error(msg)
-      // router.push('/login')
-    } else if (code === 200) {
-      return response.data
-    } else if (code === 0) {
-      // 请求失败
-      // ElMessage.error(msg)
-      return Promise.reject(msg)
+    try {
+      const { code, msg } = response.data
+      if (code === 205) {
+        // 未登录
+        // ElMessage.error(msg)
+        // router.push('/login')
+      } else if (code === 200) {
+        return response.data
+      } else if (code === 0) {
+        // 请求失败
+        // ElMessage.error(msg)
+        return Promise.reject(msg)
+      }
+    } catch (error: any) {
+      ElMessage.error(error)
     }
   },
   (error) => {

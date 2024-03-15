@@ -48,4 +48,4 @@ appImage:
 npmRebuild: false
 publish:
   provider: generic
-  url: http://61.160.236.29:886/box/upload/dist
+  url: http://cdn.huyouyun.cn/huyouyunbox

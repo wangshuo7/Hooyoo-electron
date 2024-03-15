@@ -63,6 +63,8 @@ declare global {
       mainCloseLearn: (callback: () => void) => void
       searchGameInfo: (callback: (id) => void) => void
       searchGameInfoReply: (obj: any) => void
+      audioTip: () => void
+      playAudio: (callback: () => void) => void
     }
   }
 }

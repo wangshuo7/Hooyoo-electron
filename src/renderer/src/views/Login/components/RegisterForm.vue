@@ -144,15 +144,19 @@ function onSubmit() {
   }
   ruleFormRef.value?.validate(async (valid) => {
     if (valid) {
-      const res: any = await register(send_data)
-      if (res.code === 200) {
-        ElMessage.success(t('login.msg_register_success'))
-        localStorage.setItem('hoo_anchor_username', send_data.username)
-        localStorage.setItem(
-          'hoo_anchor_password',
-          Base64.encode(send_data.password)
-        )
-        switchLogin()
+      try {
+        const res: any = await register(send_data)
+        if (res.code === 200) {
+          ElMessage.success(t('login.msg_register_success'))
+          localStorage.setItem('hoo_anchor_username', send_data.username)
+          localStorage.setItem(
+            'hoo_anchor_password',
+            Base64.encode(send_data.password)
+          )
+          switchLogin()
+        }
+      } catch (error: any) {
+        ElMessage.error(error)
       }
     } else {
       // 表单验证未通过
@@ -165,19 +169,24 @@ async function onGetCode() {
   if (!form.mobile) {
     return ElMessage.error(t('login.msg_phone_err'))
   }
-  const res: any = await getPhoneCode({ tel: form.mobile })
-  if (res.code === 200) {
-    form.telkey = res.data.telkey
-    if (countdown.value === 0) {
-      countdown.value = 60
-      const timer = setInterval(() => {
-        countdown.value--
-        if (countdown.value === 0) {
-          clearInterval(timer)
-        }
-      }, 1000)
+  try {
+    const res: any = await getPhoneCode({ tel: form.mobile })
+    if (res.code === 200) {
+      form.telkey = res.data.telkey
+      if (countdown.value === 0) {
+        countdown.value = 60
+        const timer = setInterval(() => {
+          countdown.value--
+          if (countdown.value === 0) {
+            clearInterval(timer)
+          }
+        }, 1000)
+      }
     }
+  } catch (error: any) {
+    ElMessage.error(error)
   }
+
   return
 }
 function switchLogin() {
