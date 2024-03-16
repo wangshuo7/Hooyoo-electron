@@ -23,3 +23,7 @@ export const exchangeGame = (data: any) => {
 export const getBannerList = () => {
   return request.post('/commpublic/param/bannerlist')
 }
+// 上传直播礼物
+export const uploadGift = (data) => {
+  return request.post('/zhuboduan/gameser/lw_log', data)
+}

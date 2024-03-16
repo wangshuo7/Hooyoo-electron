@@ -29,7 +29,8 @@ const i18n = createI18n({
         yes_live: '已开播',
         tip: '提示',
         danmu_tip:
-          '如果无法获取弹幕，请登录一个非当前主播的TikTok账号（⚠️注意！非当前主播！）'
+          '如果无法获取弹幕，请登录一个非当前主播的TikTok账号（⚠️注意！非当前主播！）',
+        not_diamond: '钻石不足'
       },
       home: {
         redeem: '兑换游戏',
@@ -166,7 +167,8 @@ const i18n = createI18n({
         message_success_kaibo: '开播',
         message_success_xiabo: '下播',
         message_error_noroom: '请填写直播间地址',
-        message_error_nogameroom: '请连接已打开游戏的直播间的弹幕'
+        message_error_nogameroom: '请连接已打开游戏的直播间的弹幕',
+        message_error_close: '请先关闭已打开的游戏'
       },
       learn: {
         tip: '该教程为非免费教程，首次查看需要支付',
@@ -245,7 +247,8 @@ const i18n = createI18n({
         yes_live: 'Started broadcasting',
         tip: 'Tip',
         danmu_tip:
-          "If you can't get pop-ups, log into a TikTok account that is not the current anchor (⚠️ Note! Non-current anchor!)"
+          "If you can't get pop-ups, log into a TikTok account that is not the current anchor (⚠️ Note! Non-current anchor!)",
+        not_diamond: 'Not enough diamonds'
       },
       home: {
         redeem: 'Redeem game',
@@ -302,9 +305,9 @@ const i18n = createI18n({
         name: 'Name',
         sort: 'Sort',
         cate: 'Category',
-        name_placeholder: 'Please enter the game name',
-        sort_placeholder: 'Please select sorting method',
-        cate_placeholder: 'Please select a game category',
+        name_placeholder: 'Enter the game name',
+        sort_placeholder: 'Select sorting method',
+        cate_placeholder: 'Select a game category',
         sort_ctime_up: 'Create time positive order',
         sort_ctime_down: 'Create time reverse order',
         sort_hot_up: 'Heat positive order',
@@ -386,7 +389,8 @@ const i18n = createI18n({
         message_error_noroom:
           'Please fill in the address of the live broadcast room',
         message_error_nogameroom:
-          'Please connect the barrage in the live broadcast room of the opened game'
+          'Please connect the barrage in the live broadcast room of the opened game',
+        message_error_close: 'Please close the opened game first'
       },
       learn: {
         tip: 'This tutorial is not free and you need to pay for the first time to view it!',
@@ -465,7 +469,8 @@ const i18n = createI18n({
         yes_live: '已開播',
         tip: '提示',
         danmu_tip:
-          '如果無法獲取彈幕，請登錄壹個非當前主播的TikTok賬號（⚠️注意！非當前主播！）'
+          '如果無法獲取彈幕，請登錄壹個非當前主播的TikTok賬號（⚠️注意！非當前主播！）',
+        not_diamond: '鑽石不足'
       },
       home: {
         redeem: '兌換遊戲',
@@ -602,7 +607,8 @@ const i18n = createI18n({
         message_success_kaibo: '開播',
         message_success_xiabo: '下播',
         message_error_noroom: '請填寫直播間地址',
-        message_error_nogameroom: '請連接已打開游戲的直播間的彈幕'
+        message_error_nogameroom: '請連接已打開游戲的直播間的彈幕',
+        message_error_close: '請先關閉已打開的游戲'
       },
       learn: {
         tip: '該教程為非免費教程，首次查看需要支付',

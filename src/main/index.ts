@@ -929,9 +929,21 @@ function initGiftData(obj: any) {
       }
     ]
   }
+  const gift_data = {
+    msg_id: obj.msgId,
+    sec_openid: obj.userId,
+    avatar_url: obj.userDetails.profilePictureUrls[2],
+    nickname: obj.nickname,
+    timestamp: new Date().getTime(),
+    sec_gift_id: obj.giftId,
+    gift_num: giftCount, // 数量 -> 需要计算
+    gift_value: obj.diamondCount * giftCount,
+    diamondCount: obj.diamondCount,
+    giftName: obj.giftName
+  }
   if (giftCount) {
     sendWsData(send_data)
-    mainWindow.webContents.send('get-gift', send_data.data[0])
+    mainWindow.webContents.send('get-gift', gift_data)
   }
   // writeToLog(JSON.stringify(obj).toString())
   // writeToLog(JSON.stringify(send_data).toString())

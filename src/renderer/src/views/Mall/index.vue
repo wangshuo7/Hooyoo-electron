@@ -607,7 +607,12 @@ import GiftIcon from './components/giftIcon.vue'
 import Moment from 'moment'
 // import TheSwiper from '../../components/TheSwiper/index.vue'
 // import TheSwiperCards from '../../components/TheSwiperCards/index.vue'
-import { buyGame, getGameList, getGameListUnlogin } from '../../api/game'
+import {
+  buyGame,
+  getGameList,
+  getGameListUnlogin,
+  uploadGift
+} from '../../api/game'
 import { getGameInfo } from '../../api/rc4'
 import { getGifts } from '../../api/global'
 import { useGlobalStore } from '../../store/globalStore'
@@ -1081,22 +1086,37 @@ const deductInterval = ref<any>(null)
 const diamond_not_num = ref<number>(0) // 钻石不足次数
 watchEffect(() => {
   // if (kaibo.value && gift_data.value.length >= 1) {
+  // 满足开播要求
   if (kaibo.value) {
     // const gift_num = gift_data.value.length
+    // 满足扣钻计时器为null
     if (!deductInterval.value) {
       deductInterval.value = setInterval(async () => {
         let diamond = 0
+        const upload_send_data: any = {
+          zhibo_id: live_id.value,
+          data: []
+        }
         gift_data.value.forEach((item) => {
           diamond += item.gift_value
+          const data = {
+            lw_name: item.giftName,
+            sl_name: item.nickname,
+            sl_id: item.sec_openid,
+            one_price: item.diamondCount,
+            num: item.gift_num,
+            all_price: item.gift_value
+          }
+          upload_send_data.data.push(data)
         })
         const send_data = {
           zhibo_id: live_id.value,
           // jifen: (diamond / 100) * bili * ratio.value
           jifen: diamond
         }
-        if (!gift_data.value.length) {
+        if (!gift_data.value.length || diamond < 10) {
           // 没有收到礼物就不走扣钻接口
-          return console.log('没有收到礼物')
+          return console.log('没有收到礼物或者扣钻小于10')
         }
         // 当本分钟累计但还没有扣除的钻石数x分成比例>剩余钻石余额时，提示：钻石即将耗尽，为避免影响正常开播，请在3分钟内完成钻石充值
         if (
@@ -1108,13 +1128,14 @@ watchEffect(() => {
             `${t('detail.message_warn_notdiamond')}${4 - diamond_not_num.value}${t('detail.message_warn_notdiamond2')}`
           )
           window.api.showNotification(
-            '钻石不足',
+            t('system.not_diamond'),
             `${t('detail.message_warn_notdiamond')}${4 - diamond_not_num.value}${t('detail.message_warn_notdiamond2')}`
           )
           // 语音提示-钻石不足
           window.api.audioTip()
           return
         }
+        await uploadGift(upload_send_data)
         const res: any = await deductDiamond(send_data)
         console.log('kou_res', res)
         if (
@@ -1123,12 +1144,12 @@ watchEffect(() => {
         ) {
           ElMessage.error(t('detail.message_error_rechargetip'))
           window.api.showNotification(
-            '钻石不足',
+            t('system.not_diamond'),
             t('detail.message_error_rechargetip')
           )
           window.api.audioTip()
         }
-        console.log('扣钻数量', send_data)
+        console.log('send_data', send_data)
         liveStore.setDiamond(res?.data?.jifen)
         console.log('扣钻res', res)
         console.log('礼物列表', gift_data.value)
@@ -1143,7 +1164,7 @@ watchEffect(() => {
         if (res?.data?.is_do !== 'yes') {
           theEndLiving() // 下播
           // window.api.rendererCloseGame() // 关游戏
-          clearInterval(deductInterval.value) // 清除扣钻计时器
+          // clearInterval(deductInterval.value) // 清除扣钻计时器
         } else {
           // 扣除成功
           if (res.data.jifen - kouDiamond * 3 <= 0) {
@@ -1151,7 +1172,7 @@ watchEffect(() => {
           }
         }
         gift_data.value = []
-      }, 60 * 1000)
+      }, 5000)
     }
   }
 })
@@ -1159,8 +1180,8 @@ watchEffect(() => {
 window.api.mainCloseGame(() => {
   is_start.value = false
   // clearInterval(intervalId.value)
-  clearInterval(pingInterval.value)
-  clearInterval(deductInterval.value)
+  // clearInterval(pingInterval.value)
+  // clearInterval(deductInterval.value)
   theEndLiving()
   salts = []
   stateStore.setState({ success: '', message: '' })
@@ -1215,28 +1236,28 @@ async function theEndLiving() {
   if (!kaibo.value) {
     return
   }
-  const res: any = await endLiving({ zhibo_id: live_id.value })
-  if (res.code === 200) {
-    clearInterval(pingInterval.value) // 下播关掉ping
-    clearInterval(deductInterval.value) // 下播关掉 扣钻
-    window.api.showNotification('下播', '下播成功')
-    liveStore.setState('no_live')
-    kaibo.value = false
-    lock.value = true
-    ElMessage.success(t('detail.message_success_xiabo'))
-  }
+  await endLiving({ zhibo_id: live_id.value })
+  clearInterval(pingInterval.value) // 下播关掉 ping
+  clearInterval(deductInterval.value) // 下播关掉 扣钻
+  deductInterval.value = null
+  window.api.showNotification('下播', '下播成功')
+  liveStore.setState('no_live')
+  kaibo.value = false
+  gift_data.value = []
+  lock.value = true
+  ElMessage.success(t('detail.message_success_xiabo'))
 }
 watch(
   () => is_start.value,
   (val) => {
     if (!val) {
       theEndLiving() // 下播
-      liveStore.setState('no_live')
-      clearInterval(pingInterval.value)
+      // liveStore.setState('no_live')
+      // clearInterval(pingInterval.value)
       // clearInterval(intervalId.value)
-      clearInterval(deductInterval.value)
-      gift_data.value = []
-      lock.value = true
+      // clearInterval(deductInterval.value)
+      // gift_data.value = []
+      // lock.value = true
     }
   }
 )
