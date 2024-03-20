@@ -49,10 +49,17 @@
               >{{ live_state }}</span
             >
             <!-- <span>{{ $t('system.diamond') }}：{{ diamond }}</span> -->
-            <span style="display: flex; align-items: center">
+            <div style="display: flex; align-items: center">
               <DiamondSvg></DiamondSvg>
-              <span style="margin-left: 5px">{{ diamond }}</span></span
-            >
+              <span style="margin: 0 10px">{{ diamond }}</span>
+              <el-link
+                style="font-size: 18px"
+                type="primary"
+                :underline="false"
+                @click="onOpenRecharge"
+                >充值</el-link
+              >
+            </div>
 
             <!-- <span class="refresh" @click="onRefresh">
               <el-icon class="refresh-icon"><Refresh /></el-icon>
@@ -62,6 +69,10 @@
       </el-menu>
     </div>
   </div>
+  <TheRecharge
+    :visible="rechargeVisible"
+    @close="closeRechargeDialog"
+  ></TheRecharge>
 </template>
 
 <script lang="ts" setup>
@@ -75,6 +86,14 @@ import { useRoute } from 'vue-router'
 import { useLiveStore } from '../../../store/live'
 import { useLanguageStore } from '../../../store/languageStore'
 import { useAccountStore } from '../../../store/account'
+import TheRecharge from '../../Other/recharge.vue'
+const rechargeVisible = ref<boolean>(false)
+function onOpenRecharge() {
+  rechargeVisible.value = true
+}
+function closeRechargeDialog() {
+  rechargeVisible.value = false
+}
 const accountStore = useAccountStore()
 const is_login = computed(() => {
   return accountStore.is_login
@@ -93,9 +112,7 @@ const live_state = computed(() => {
   } else if (languageStore.locale == 'tw') {
     return liveStore.state == 'no_live' ? '未開播' : '已開播'
   }
-  return liveStore.state == 'no_live'
-    ? 'Not broadcasted'
-    : 'Started broadcasting'
+  return liveStore.state == 'no_live' ? 'Ending' : 'Live'
 })
 const diamond = computed(() => {
   return liveStore.diamond

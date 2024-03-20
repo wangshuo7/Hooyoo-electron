@@ -243,8 +243,8 @@ const i18n = createI18n({
         kefu: 'Customer service',
         lianxifangshi: 'Contact details',
         incomplete: 'Under development of functions, not yet open',
-        no_live: 'Not broadcasted',
-        yes_live: 'Started broadcasting',
+        no_live: 'Ending',
+        yes_live: 'Live',
         tip: 'Tip',
         danmu_tip:
           "If you can't get pop-ups, log into a TikTok account that is not the current anchor (⚠️ Note! Non-current anchor!)",

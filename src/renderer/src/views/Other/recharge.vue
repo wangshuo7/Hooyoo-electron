@@ -261,8 +261,8 @@ watch(
 .qrcode-box {
   position: absolute;
   // margin-left: 70px;
-  right: 50px;
-  bottom: 50px;
+  right: 30px;
+  bottom: 30px;
 }
 .tip {
   color: #757575;
