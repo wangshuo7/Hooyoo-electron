@@ -1,5 +1,4 @@
 <template>
-  <el-button @click="theEndLiving()">xiabo</el-button>
   <div class="container">
     <div>
       <div style="display: flex; justify-content: space-between">
@@ -632,7 +631,7 @@ import {
   startLiving
 } from '../../api/rc4'
 // import { getGiftIcon } from '../../api/global'
-import { useStateStore } from '../../store/state'
+// import { useStateStore } from '../../store/state'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useLiveStore } from '../../store/live'
@@ -668,7 +667,7 @@ const is_login = computed(() => {
 //   gameDetailVisible.value = false
 // }
 const timestamp = useTimestamp()
-const stateStore = useStateStore()
+// const stateStore = useStateStore()
 const globalStore = useGlobalStore()
 const queryForm = ref<any>({})
 const languages = ref<any>([]) // 获取语言
@@ -1019,14 +1018,7 @@ const pingInterval = ref<any>(null)
 const live_id = ref<any>() // 直播id
 const kaibo = ref<boolean>(false) // 是否开播
 let salts = reactive<string[]>([])
-// 查看钻石是否充足，满足
-const is_enough = computed(() => {
-  if (+current_diamond.value < +detail.value.min_price) {
-    return false
-  } else {
-    return true
-  }
-})
+
 // 启动游戏
 async function launchGame(type: string) {
   if (!is_start.value) {
@@ -1046,6 +1038,7 @@ async function launchGame(type: string) {
       })
       return
     }
+    // sendStartLivingRequest()
     window.api.removeAllListeners()
     const res: any = await getGameUse({ game_id: buyID.value })
     console.log('res', res)
@@ -1174,8 +1167,8 @@ watchEffect(() => {
         // }
         // 没有积分或者欠费
         if (res?.data?.is_do !== 'yes') {
-          theEndLiving() // 下播
-          // window.api.rendererCloseGame() // 关游戏
+          // theEndLiving() // 下播
+          window.api.rendererCloseGame() // 关游戏
           // clearInterval(deductInterval.value) // 清除扣钻计时器
         } else {
           // 扣除成功
@@ -1194,11 +1187,11 @@ window.api.mainCloseGame(() => {
   // clearInterval(intervalId.value)
   // clearInterval(pingInterval.value)
   // clearInterval(deductInterval.value)
-  theEndLiving()
-  salts = []
-  stateStore.setState({ success: '', message: '' })
-  kaibo.value = false
-  gift_data.value = []
+  // theEndLiving()
+  // salts = []
+  // stateStore.setState({ success: '', message: '' })
+  // kaibo.value = false
+  // gift_data.value = []
 })
 // window.api.getAnchorFail(() => {
 //   window.api.showNotification('提示', '获取主播信息失败，请重新打开直播间')
@@ -1215,8 +1208,6 @@ async function sendStartLivingRequest() {
     const res: any = await startLiving(send_data)
     console.log('开播res', res)
     if (res.code === 200) {
-      // 开播 礼物有效
-      window.api.changeLiveState(true)
       kaibo.value = true
       ElMessage.success(t('detail.message_success_kaibo'))
       live_id.value = res.data.zhibo_id
@@ -1242,7 +1233,7 @@ async function sendStartLivingRequest() {
 const lock = ref<boolean>(true) // 避免重复执行sendStartLivingRequest()
 watchEffect(async () => {
   if (lock.value) {
-    if (is_start.value && gift_data.value.length >= 1 && is_enough.value) {
+    if (is_start.value && anchorInfo.value.name) {
       lock.value = false
       sendStartLivingRequest()
     }
@@ -1253,16 +1244,18 @@ async function theEndLiving() {
   if (!kaibo.value) {
     return
   }
-  await endLiving({ zhibo_id: live_id.value })
+  const res: any = await endLiving({ zhibo_id: live_id.value })
   clearInterval(pingInterval.value) // 下播关掉 ping
   clearInterval(deductInterval.value) // 下播关掉 扣钻
+  anchorInfo.value = {}
   deductInterval.value = null
+  console.log('下播res', res)
   window.api.showNotification('下播', '下播成功')
-  window.api.changeLiveState(false)
   liveStore.setState('no_live')
   kaibo.value = false
   gift_data.value = []
   lock.value = true
+  salts = []
   ElMessage.success(t('detail.message_success_xiabo'))
 }
 watch(
@@ -1270,12 +1263,6 @@ watch(
   (val) => {
     if (!val) {
       theEndLiving() // 下播
-      // liveStore.setState('no_live')
-      // clearInterval(pingInterval.value)
-      // clearInterval(intervalId.value)
-      // clearInterval(deductInterval.value)
-      // gift_data.value = []
-      // lock.value = true
     }
   }
 )
@@ -1357,14 +1344,22 @@ async function connectLive() {
     return
   }
 }
+// watch(
+//   () => is_start_live.value,
+//   (val) => {
+//     if (!val) {
+//       theEndLiving()
+//     }
+//   }
+// )
 // 关闭直播间
 window.api.mainCloseLive(() => {
   theEndLiving()
   is_start_live.value = false
   is_barrage.value = false
-  gift_data.value = []
-  kaibo.value = false
-  salts = []
+  // gift_data.value = []
+  // kaibo.value = false
+  // salts = []
 })
 
 const anchorInfo = ref<any>({})

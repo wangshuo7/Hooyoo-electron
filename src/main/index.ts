@@ -120,7 +120,6 @@ let rc4Key: string
 let lan: any
 let anchor: any // 主播信息（自己维护的）
 let installerPath: any // 安装包体
-let live_state: boolean
 const default_download_path = path.join(
   app.getPath('documents'),
   'huyouyun_game_download'
@@ -254,12 +253,6 @@ function createWindow(): void {
   // 监听窗口取消最大化事件
   mainWindow.on('unmaximize', sendMaximizeStatus)
 }
-// 是否开播
-ipcMain.on('change-live-state', (_event, state: boolean) => {
-  console.log('state=>', state)
-  live_state = state
-  console.log('live_state=>', live_state)
-})
 // 更新
 ipcMain.on('update-app', (_event, url) => {
   console.log(url)
@@ -274,7 +267,9 @@ function downloadSetup(url) {
   if (!fs.existsSync(installerFolder)) {
     fs.mkdirSync(installerFolder, { recursive: true })
   }
-
+  if (fs.existsSync(installerPath)) {
+    fs.unlinkSync(installerPath)
+  }
   const file = fs.createWriteStream(installerPath)
   box_request = http.get(url, (response: any) => {
     const totalSize = parseInt(response.headers['content-length'], 10)
@@ -295,9 +290,10 @@ function downloadSetup(url) {
         exec(`"${installerPath}"`, (error) => {
           if (error) {
             console.error('无法打开安装包:', error)
+          } else {
+            app.quit()
           }
         })
-        app.quit()
       })
     })
   })
@@ -554,11 +550,13 @@ ipcMain.on('start-game', (event, id, lang, name, key, jm) => {
     })
     // 在游戏进程关闭时的处理
     gameProcess.on('close', () => {
-      mainWindow.webContents.send('main-close-game')
-      if (liveRoom) {
-        closeLiveRoom()
-        // closeWebsocketClient()
+      if (gameProcess) {
+        mainWindow.webContents.send('main-close-game')
       }
+      // if (liveRoom) {
+      //   closeLiveRoom()
+      //   // closeWebsocketClient()
+      // }
 
       gameProcess = null // 清空引用
     })
@@ -695,8 +693,8 @@ ipcMain.on('start-live', async (_event, url: string) => {
     }
   }, 10 * 1000)
   liveRoom.on('closed', () => {
-    liveRoom = null
     mainWindow.webContents.send('main-close-live')
+    liveRoom = null
     clearInterval(mouseID)
     // closeWebsocketClient()
   })
@@ -861,9 +859,6 @@ function deserializeMessage(protoName, binaryMessage) {
 // }
 // 发给客户端
 function sendWsData(data: any) {
-  if (!live_state) {
-    return
-  }
   const msgData = JSON.stringify(data)
   const encoder = new TextEncoder()
   const utf8Encoded = encoder.encode(msgData)
@@ -952,8 +947,8 @@ function initGiftData(obj: any) {
     giftName: obj.giftName
   }
   if (giftCount) {
-    sendWsData(send_data)
     mainWindow.webContents.send('get-gift', gift_data)
+    sendWsData(send_data)
   }
   // writeToLog(JSON.stringify(obj).toString())
   // writeToLog(JSON.stringify(send_data).toString())
