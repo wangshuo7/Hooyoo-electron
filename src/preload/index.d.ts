@@ -4,6 +4,7 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
+      changeLiveState: (state: boolean) => void
       updateApp: (url: string) => void
       downloadAppProgress: (callback: (data) => void) => void
       sendAnchor: (data: any) => void

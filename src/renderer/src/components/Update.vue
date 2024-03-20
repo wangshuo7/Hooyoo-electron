@@ -41,6 +41,8 @@
 import { ref, onMounted } from 'vue'
 import { getTBoxVersion } from '../api/rc4'
 import { useGlobalStore } from '../store/globalStore'
+import { useAccountStore } from '../store/account'
+const accountStore = useAccountStore()
 const globalStore = useGlobalStore()
 const updateVisible = ref<boolean>(false)
 const update_content = ref<any>([{ content: '' }])
@@ -64,8 +66,10 @@ function checkUpdates() {
   if (res) {
     updateVisible.value = true
     window.api.updateApp(appUrl.value)
+    accountStore.setIsUpdate(true)
     console.log('需要更新')
   } else {
+    accountStore.setIsUpdate(false)
     console.log('不需要更新')
   }
 }

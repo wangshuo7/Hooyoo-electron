@@ -1,4 +1,5 @@
 <template>
+  <el-button @click="theEndLiving()">xiabo</el-button>
   <div class="container">
     <div>
       <div style="display: flex; justify-content: space-between">
@@ -1018,6 +1019,14 @@ const pingInterval = ref<any>(null)
 const live_id = ref<any>() // 直播id
 const kaibo = ref<boolean>(false) // 是否开播
 let salts = reactive<string[]>([])
+// 查看钻石是否充足，满足
+const is_enough = computed(() => {
+  if (+current_diamond.value < +detail.value.min_price) {
+    return false
+  } else {
+    return true
+  }
+})
 // 启动游戏
 async function launchGame(type: string) {
   if (!is_start.value) {
@@ -1093,12 +1102,14 @@ watchEffect(() => {
     if (!deductInterval.value) {
       deductInterval.value = setInterval(async () => {
         let diamond = 0
+        let giftNum = 0
         const upload_send_data: any = {
           zhibo_id: live_id.value,
           data: []
         }
         gift_data.value.forEach((item) => {
           diamond += item.gift_value
+          giftNum += item.gift_num
           const data = {
             lw_name: item.giftName,
             sl_name: item.nickname,
@@ -1112,6 +1123,7 @@ watchEffect(() => {
         const send_data = {
           zhibo_id: live_id.value,
           // jifen: (diamond / 100) * bili * ratio.value
+          num: giftNum,
           jifen: diamond
         }
         if (!gift_data.value.length || diamond < 10) {
@@ -1172,7 +1184,7 @@ watchEffect(() => {
           }
         }
         gift_data.value = []
-      }, 5000)
+      }, 3 * 60000) // 3 * 60000
     }
   }
 })
@@ -1203,20 +1215,25 @@ async function sendStartLivingRequest() {
     const res: any = await startLiving(send_data)
     console.log('开播res', res)
     if (res.code === 200) {
+      // 开播 礼物有效
+      window.api.changeLiveState(true)
       kaibo.value = true
       ElMessage.success(t('detail.message_success_kaibo'))
       live_id.value = res.data.zhibo_id
       liveStore.setDiamond(res.data.jifen)
       liveStore.setState('yes_live')
       // 开播成功每分钟发一次ping
-      pingInterval.value = setInterval(async () => {
-        const response: any = await getLivePing({ zhibo_id: live_id.value })
-        console.log('ping-res', response)
-        if (response.code !== 200) {
-          // 结束游戏
-          window.api.rendererCloseGame()
-        }
-      }, 60 * 2000)
+      pingInterval.value = setInterval(
+        async () => {
+          const response: any = await getLivePing({ zhibo_id: live_id.value })
+          console.log('ping-res', response)
+          if (response.code !== 200) {
+            // 结束游戏
+            window.api.rendererCloseGame()
+          }
+        },
+        3 * 60 * 1000
+      )
     }
   } catch (error) {
     console.error('发送开播请求时出错：', error)
@@ -1225,7 +1242,7 @@ async function sendStartLivingRequest() {
 const lock = ref<boolean>(true) // 避免重复执行sendStartLivingRequest()
 watchEffect(async () => {
   if (lock.value) {
-    if (is_start.value && gift_data.value.length >= 1) {
+    if (is_start.value && gift_data.value.length >= 1 && is_enough.value) {
       lock.value = false
       sendStartLivingRequest()
     }
@@ -1241,6 +1258,7 @@ async function theEndLiving() {
   clearInterval(deductInterval.value) // 下播关掉 扣钻
   deductInterval.value = null
   window.api.showNotification('下播', '下播成功')
+  window.api.changeLiveState(false)
   liveStore.setState('no_live')
   kaibo.value = false
   gift_data.value = []

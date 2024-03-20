@@ -120,6 +120,7 @@ let rc4Key: string
 let lan: any
 let anchor: any // 主播信息（自己维护的）
 let installerPath: any // 安装包体
+let live_state: boolean
 const default_download_path = path.join(
   app.getPath('documents'),
   'huyouyun_game_download'
@@ -253,6 +254,12 @@ function createWindow(): void {
   // 监听窗口取消最大化事件
   mainWindow.on('unmaximize', sendMaximizeStatus)
 }
+// 是否开播
+ipcMain.on('change-live-state', (_event, state: boolean) => {
+  console.log('state=>', state)
+  live_state = state
+  console.log('live_state=>', live_state)
+})
 // 更新
 ipcMain.on('update-app', (_event, url) => {
   console.log(url)
@@ -854,6 +861,9 @@ function deserializeMessage(protoName, binaryMessage) {
 // }
 // 发给客户端
 function sendWsData(data: any) {
+  if (!live_state) {
+    return
+  }
   const msgData = JSON.stringify(data)
   const encoder = new TextEncoder()
   const utf8Encoded = encoder.encode(msgData)

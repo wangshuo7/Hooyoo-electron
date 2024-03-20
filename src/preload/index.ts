@@ -3,6 +3,8 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
+  changeLiveState: (state: boolean) =>
+    ipcRenderer.send('change-live-state', state),
   // 更新
   updateApp: (url: string) => ipcRenderer.send('update-app', url),
   // 更新进度
