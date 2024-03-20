@@ -8,11 +8,7 @@
     :close-on-click-modal="false"
   >
     <div class="update">
-      <ul class="update-content">
-        <li v-for="(item, index) in update_content" :key="index">
-          {{ item.content }}
-        </li>
-      </ul>
+      <div class="update-content">{{ update_content }}</div>
       <div>
         <el-progress
           :percentage="progress"
@@ -45,7 +41,7 @@ import { useAccountStore } from '../store/account'
 const accountStore = useAccountStore()
 const globalStore = useGlobalStore()
 const updateVisible = ref<boolean>(false)
-const update_content = ref<any>([{ content: '' }])
+const update_content = ref<any>()
 const boxVersion = ref<any>() // 远程版本
 const appVersion = ref<any>() // 当前版本
 const appUrl = ref<string>('')
@@ -55,6 +51,8 @@ window.api.mainSendVersion((version) => {
 })
 async function getVersion() {
   const res: any = await getTBoxVersion()
+  console.log(res)
+  update_content.value = res?.data?.info?.remark
   boxVersion.value = res?.data?.info?.version
   appUrl.value = res?.data?.info?.url
 }
@@ -121,6 +119,7 @@ window.api.downloadAppProgress((data) => {
   padding: 0 30px;
   .update-content {
     margin-bottom: 30px;
+    font-size: 16px;
   }
 }
 li {
