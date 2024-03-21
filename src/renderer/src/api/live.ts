@@ -9,3 +9,11 @@ export const getLiveRecording = (data: any) => {
 export const deductDiamond = (data: any) => {
   return request.post('/zhuboduan/my/zblog_jifen', data)
 }
+
+// 下载礼物记录
+export const downloadGiftLog = (data: {
+  zhibo_id: number
+  is_down: number
+}) => {
+  return request.post('/zhuboduan/gameser/download_zhibo_log', data)
+}

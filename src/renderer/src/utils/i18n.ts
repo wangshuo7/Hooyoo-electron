@@ -122,7 +122,8 @@ const i18n = createI18n({
         gift_icon: '礼物贴纸',
         start_zh: '运行中文游戏',
         start_tw: '运行繁体游戏',
-        start_en: '运行英文游戏'
+        start_en: '运行英文游戏',
+        download_gift_log: '下载礼物记录'
       },
       detail: {
         gift: '礼物',
@@ -340,7 +341,8 @@ const i18n = createI18n({
         gift_icon: 'Gift stickers',
         start_zh: 'Start in ZH',
         start_tw: 'Start in ZH-TW',
-        start_en: 'Start in EN'
+        start_en: 'Start in EN',
+        download_gift_log: 'Download Log'
       },
       detail: {
         gift: 'Gift',
@@ -562,7 +564,8 @@ const i18n = createI18n({
         gift_icon: '禮物貼紙',
         start_zh: '運行中文遊戲',
         start_tw: '運行繁體遊戲',
-        start_en: '運行英文遊戲'
+        start_en: '運行英文遊戲',
+        download_gift_log: '下載禮物記錄'
       },
       detail: {
         gift: '禮物',

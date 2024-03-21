@@ -53,10 +53,13 @@
           row.is_php_jisuan == 2 ? row.lw_price : $t('liveLog.computed')
         }}</template>
       </el-table-column>
-      <el-table-column :label="$t('liveLog.kou_diamond_log')" max-width="210">
+      <el-table-column :label="$t('liveLog.kou_diamond_log')" width="225">
         <template #default="{ row }">
           <el-button type="success" @click="viewDiamondLog(row.zhibo_log_id)">{{
             $t('liveLog.view_button')
+          }}</el-button>
+          <el-button type="primary" @click="onDownloadLog(row.zhibo_log_id)">{{
+            $t('buttons.download_gift_log')
           }}</el-button>
         </template>
       </el-table-column>
@@ -105,7 +108,11 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue'
 import Moment from 'moment'
-import { deductDiamond, getLiveRecording } from '../../../api/live'
+import {
+  deductDiamond,
+  downloadGiftLog,
+  getLiveRecording
+} from '../../../api/live'
 const dialogVisible = ref<boolean>(false)
 const props = defineProps({
   visible: {
@@ -160,6 +167,10 @@ function viewDiamondLog(id: any) {
 }
 function closeDiamondLog() {
   logId.value = null
+}
+async function onDownloadLog(id: number) {
+  const res: any = await downloadGiftLog({ zhibo_id: id, is_down: 0 })
+  window.open(res.data.file, '_blank')
 }
 // 计算时长
 function convertTimestampsToString(startTime: number, endTime: number) {
