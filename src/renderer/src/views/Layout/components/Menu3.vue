@@ -66,63 +66,62 @@
                 >{{ $t('system.recharge') }}</el-link
               >
             </div>
-
-            <Transition :name="theTop ? 'slide-top' : 'slide'">
-              <div v-if="listLock" class="drop" :class="{ 'drop-top': theTop }">
-                <!-- :style="{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  position: 'absolute',
-                  background: '#202020',
-                  borderRadius: '6px 6px 0 0',
-                  left: '0',
-                  top: theTop ? '-161px' : '-180px'
-                }" -->
-                <div class="drop-item" @click="onOpenRecharge">
-                  <div class="drop-item-content">
-                    <span
-                      >{{ $t('recharge.title') }}&ensp;
-                      {{ $t('system.diamond') }}/{{ $t('system.price') }}</span
-                    >
-                    <span>👉</span>
-                  </div>
-                </div>
-                <div class="drop-item" @click="onOpenTransfer">
-                  <div class="drop-item-content">
-                    <span
-                      >{{ $t('transfer.transfer') }}&ensp;
-                      {{ $t('system.price') }}/{{ $t('system.diamond') }}</span
-                    >
-                    <span>👉</span>
-                  </div>
-                </div>
-                <div class="drop-item" @click="onOpenConvert">
-                  <div class="drop-item-content">
-                    <span
-                      >{{ $t('system.price') }}&ensp;
-                      {{ $t('convert.convert') }}</span
-                    >
-                    <span>👉</span>
-                  </div>
-                </div>
-                <div
-                  class="drop-item"
-                  style="border-bottom: 1px solid #404040"
-                  @click="onOpenLiveLog"
-                >
-                  <div class="drop-item-content" style="border-bottom: none">
-                    <span
-                      >{{ $t('liveLog.view_button') }}&ensp;
-                      {{ $t('liveLog.live_kb') }}</span
-                    >
-                    <span>👉</span>
-                  </div>
-                </div>
-              </div>
-            </Transition>
           </template>
         </el-menu-item>
+        <div class="drop-f" style="position: relative">
+          <div class="drop" :class="{ 'drop-top': theTop }">
+            <!-- :style="{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'absolute',
+                background: '#202020',
+                borderRadius: '6px 6px 0 0',
+                left: '0',
+                top: theTop ? '-161px' : '-180px'
+              }" -->
+            <div class="drop-item" @click="onOpenRecharge">
+              <div class="drop-item-content">
+                <span
+                  >{{ $t('recharge.title') }}&ensp;
+                  {{ $t('system.diamond') }}/{{ $t('system.price') }}</span
+                >
+                <span>👉</span>
+              </div>
+            </div>
+            <div class="drop-item" @click="onOpenTransfer">
+              <div class="drop-item-content">
+                <span
+                  >{{ $t('transfer.transfer') }}&ensp;
+                  {{ $t('system.price') }}/{{ $t('system.diamond') }}</span
+                >
+                <span>👉</span>
+              </div>
+            </div>
+            <div class="drop-item" @click="onOpenConvert">
+              <div class="drop-item-content">
+                <span
+                  >{{ $t('system.price') }}&ensp;
+                  {{ $t('convert.convert') }}</span
+                >
+                <span>👉</span>
+              </div>
+            </div>
+            <div
+              class="drop-item"
+              style="border-bottom: 1px solid #404040"
+              @click="onOpenLiveLog"
+            >
+              <div class="drop-item-content" style="border-bottom: none">
+                <span
+                  >{{ $t('liveLog.view_button') }}&ensp;
+                  {{ $t('liveLog.live_kb') }}</span
+                >
+                <span>👉</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </el-menu>
     </div>
   </div>
@@ -276,46 +275,47 @@ watch(
 </script>
 
 <style lang="less" scoped>
-.slide-top-enter-to,
-.slide-top-leave-from {
-  // opacity: 1;
-  height: 160px;
+// .drop {
+//   animation-duration: 3s;
+//   animation-name: slidein;
+// }
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 
-.slide-enter-from,
-.slide-leave-to,
-.slide-top-enter-from,
-.slide-top-leave-to {
-  // opacity: 0;
-  height: 0;
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.slide-enter-active,
-.slide-leave-active,
-.slide-top-enter-active,
-.slide-top-leave-active {
-  transition: all 1s ease;
+.v-enter-to,
+.v-leave-from {
+  opacity: 1;
+  // transform: translate(0, -50px);
 }
 
-.slide-enter-to,
-.slide-leave-from {
-  // opacity: 1;
-  height: 183px;
-}
-.drop-top {
-  bottom: 48px !important;
-}
+// .v-enter-active {
+//   animation: run-slide 1s linear 0s;
+// }
+// .v-leave-active {
+//   animation: run-slide 1s linear 0s reverse;
+// }
+
+// @keyframes run-slide {
+//   0% {
+//     transform: translate(0, 0px);
+//   }
+//   100% {
+//     transform: translate(0, -50px);
+//   }
+// }
+// .drop-top {
+//   top: -157px !important;
+// }
 .drop {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  background: #202020;
-  border-radius: 6px 6px 0 0;
-  left: 0;
-  overflow: hidden;
-  // top: -180px;
-  bottom: 65px;
+  // transition: all 0.5s linear;
   .drop-item {
     padding: 0 20px;
     width: 100%;
@@ -357,8 +357,45 @@ watch(
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
+  overflow: hidden;
 }
+.drop {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  background: #202020;
+  border-radius: 6px 6px 0 0;
+  left: 0;
+  // top: -300px;
+  bottom: 0;
+}
+.drop-f {
+  position: relative;
+  width: 100%;
+  // height: 200px;
+  animation-fill-mode: forwards;
+  top: -50px;
+  background-color: blue;
+}
+.live-info:hover + .drop-f .drop {
+  animation-duration: 3s;
+  animation-name: slidein;
+  background-color: red;
+  // top: -100px;
+}
+@keyframes slidein {
+  from {
+    height: 0;
+    overflow: hidden;
+  }
 
+  to {
+    height: 200px;
+    overflow: hidden;
+  }
+}
 @media screen and (max-width: 1280px) {
   .live-info {
     font-size: 14px;
@@ -407,7 +444,6 @@ watch(
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
   // border: 1px solid #ccc;
   position: relative;
 }

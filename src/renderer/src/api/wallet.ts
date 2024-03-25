@@ -32,3 +32,11 @@ export const rechargeWeixin = (data: any) => {
 export const checkWeixinOrder = (data: any) => {
   return request.post('/zhuboduan/gameser/check_order', data)
 }
+// 余额转钻石
+export const theConvert = (data: any) => {
+  return request.post('/zhuboduan/paymiyao/yundou2jifen', data)
+}
+// 转账
+export const theTransfer = (data: any) => {
+  return request.post('/zhuboduan/my/zhuanzhang', data)
+}

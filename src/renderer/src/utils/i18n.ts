@@ -30,7 +30,8 @@ const i18n = createI18n({
         tip: '提示',
         danmu_tip:
           '如果无法获取弹幕，请登录一个非当前主播的TikTok账号（⚠️注意！非当前主播！）',
-        not_diamond: '钻石不足'
+        not_diamond: '钻石不足',
+        place_enter: '请输入'
       },
       home: {
         redeem: '兑换游戏',
@@ -203,6 +204,7 @@ const i18n = createI18n({
       },
       liveLog: {
         live_log: '直播记录',
+        live_kb: '开播记录',
         anchor: '主播',
         avatar: '头像',
         game: '游戏',
@@ -223,6 +225,17 @@ const i18n = createI18n({
         dev_document: '开发文档',
         dev_manage: '管理后台',
         switch_account: '切换账号'
+      },
+      convert: {
+        convert: '兑换钻石',
+        msg: '兑换成功',
+        price_convert: '余额可兑换'
+      },
+      transfer: {
+        transfer: '转账',
+        trans_type: '转账类型',
+        trans_id: '转账ID',
+        trans_count: '转账数额'
       }
     },
     en: {
@@ -249,7 +262,8 @@ const i18n = createI18n({
         tip: 'Tip',
         danmu_tip:
           "If you can't get pop-ups, log into a TikTok account that is not the current anchor (⚠️ Note! Non-current anchor!)",
-        not_diamond: 'Not enough diamonds'
+        not_diamond: 'Not enough diamonds',
+        place_enter: 'Please enter'
       },
       home: {
         redeem: 'Redeem game',
@@ -426,6 +440,7 @@ const i18n = createI18n({
       },
       liveLog: {
         live_log: 'Live recording',
+        live_kb: 'Live recording',
         anchor: 'Anchor',
         avatar: 'Avatar',
         game: 'Game',
@@ -446,6 +461,17 @@ const i18n = createI18n({
         dev_document: 'Develop document',
         dev_manage: 'Manage backend',
         switch_account: 'Switch accounts'
+      },
+      convert: {
+        convert: 'Convert Diamonds',
+        msg: 'Convert Successful',
+        price_convert: 'Price redeemable for'
+      },
+      transfer: {
+        transfer: 'Transfer',
+        trans_type: 'Transfer Type',
+        trans_id: 'Transfer ID',
+        trans_count: 'Amount transferred'
       }
     },
     tw: {
@@ -472,7 +498,8 @@ const i18n = createI18n({
         tip: '提示',
         danmu_tip:
           '如果無法獲取彈幕，請登錄壹個非當前主播的TikTok賬號（⚠️注意！非當前主播！）',
-        not_diamond: '鑽石不足'
+        not_diamond: '鑽石不足',
+        place_enter: '請輸入'
       },
       home: {
         redeem: '兌換遊戲',
@@ -645,6 +672,7 @@ const i18n = createI18n({
       },
       liveLog: {
         live_log: '直播記錄',
+        live_kb: '開播記錄',
         anchor: '主播',
         avatar: '頭像',
         game: '遊戲',
@@ -665,6 +693,17 @@ const i18n = createI18n({
         dev_document: '開發文檔',
         dev_manage: '管理後台',
         switch_account: '切換賬號'
+      },
+      convert: {
+        convert: '兌換鑽石',
+        msg: '兌換成功',
+        price_convert: '餘額可兌換'
+      },
+      transfer: {
+        transfer: '轉賬',
+        trans_type: '轉賬類型',
+        trans_id: '轉賬ID',
+        trans_count: '轉賬數額'
       }
     }
   }

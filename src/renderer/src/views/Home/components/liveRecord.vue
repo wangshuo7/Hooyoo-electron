@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     :title="$t('liveLog.live_log')"
-    width="1300px"
+    width="80%"
     top="5vh"
     @close="closeLiveRecordDialog"
   >
