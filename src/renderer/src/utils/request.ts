@@ -27,6 +27,7 @@ request.interceptors.request.use(
     return config
   },
   (error: AxiosError) => {
+    ElMessage.error(error)
     return Promise.reject(error)
   }
 )
@@ -54,6 +55,7 @@ request.interceptors.response.use(
   },
   (error) => {
     // 处理响应错误
+    ElMessage.error(error)
     return Promise.reject(error)
   }
 )

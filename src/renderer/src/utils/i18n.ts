@@ -187,10 +187,12 @@ const i18n = createI18n({
         card_placeholder: '请输入卡密',
         amount: '充值数额',
         dui: '元可兑换',
+        pay_dui: '美元可兑换',
         message_success: '充值成功',
         message_vx_success: '微信充值成功',
         message_qrcode: '请扫描二维码充值',
-        message_timeout: '订单超时'
+        message_timeout: '订单超时',
+        message_paypal: '正在前往支付页面'
       },
       exchange: {
         title: '兑换游戏',
@@ -423,10 +425,12 @@ const i18n = createI18n({
         card_placeholder: 'Please enter the key',
         amount: 'Amount',
         dui: 'RMB can be exchanged for',
+        pay_dui: 'dollar can be exchanged for',
         message_success: 'Recharged successfully',
         message_vx_success: 'Wechat recharge successfully',
         message_qrcode: 'Please scan the QR code to recharge',
-        message_timeout: 'Order timeout'
+        message_timeout: 'Order timeout',
+        message_paypal: 'Going to the paypal page'
       },
       exchange: {
         title: 'Exchange game',
@@ -655,10 +659,12 @@ const i18n = createI18n({
         card_placeholder: '請輸入卡密',
         amount: '充值數額',
         dui: '元可兌換',
+        pay_dui: '美元可兌換',
         message_success: '充值成功',
         message_vx_success: '微信充值成功',
         message_qrcode: '請掃描二維碼充值',
-        message_timeout: '訂單超時'
+        message_timeout: '訂單超時',
+        message_paypal: '正在前往支付頁面'
       },
       exchange: {
         title: '兌換遊戲',

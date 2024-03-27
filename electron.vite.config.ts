@@ -28,7 +28,7 @@ export default defineConfig({
     server: {
       proxy: {
         '/api': {
-          target: 'http://cdn-box.huyouyun.cn',
+          target: 'http://test-box-server.huyouyun.cn',
           changeOrigin: true, // 允许跨域
           rewrite: (path) => path.replace(/^\/api/, '')
         }

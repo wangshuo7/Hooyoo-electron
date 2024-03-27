@@ -10,8 +10,9 @@
         $t('recharge.type')
       }}</span>
       <el-radio-group v-model="recharge_type" class="recharge-radio">
-        <el-radio label="1" size="large">{{ $t('recharge.key') }}</el-radio>
-        <el-radio label="2" size="large">{{ $t('recharge.vx') }}</el-radio>
+        <el-radio value="1" size="large">{{ $t('recharge.key') }}</el-radio>
+        <el-radio value="2" size="large">{{ $t('recharge.vx') }}</el-radio>
+        <el-radio value="3" size="large">Paypal</el-radio>
       </el-radio-group>
     </div>
     <div>
@@ -19,8 +20,8 @@
         $t('recharge.target')
       }}</span>
       <el-radio-group v-model="target_type" class="recharge-radio">
-        <el-radio label="1" size="large">{{ $t('system.price') }}</el-radio>
-        <el-radio label="2" size="large">
+        <el-radio value="1" size="large">{{ $t('system.price') }}</el-radio>
+        <el-radio value="2" size="large">
           {{ $t('system.diamond') }}
           <el-text type="info" style="margin-left: 10px">
             ({{ $t('recharge.tip') }})
@@ -50,7 +51,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <div v-else class="recharge-content">
+    <div v-if="recharge_type == '2'" class="recharge-content">
       <el-form label-width="68px">
         <el-form-item :label="$t('recharge.amount')">
           <el-input-number
@@ -81,6 +82,34 @@
         <img :src="qrcode" alt="QR Code" />
       </div>
     </div>
+    <div v-if="recharge_type == '3'" class="recharge-content">
+      <el-form label-width="68px">
+        <el-form-item :label="$t('recharge.amount')">
+          <el-input-number
+            v-model="pay_price"
+            :min="0"
+            controls-position="right"
+            style="width: 180px"
+            @input="changePayPrice"
+          ></el-input-number>
+          <el-button
+            type="primary"
+            style="margin-left: 20px"
+            @click="onRechargePaypal"
+          >
+            {{ $t('buttons.confirm') }}
+          </el-button>
+          <el-button @click="onCancelRechargePaypal">{{
+            $t('buttons.cancel')
+          }}</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-text v-if="target_type === '2' && pay_price > 0" type="info">
+            {{ getPayJifen }}
+          </el-text>
+        </el-form-item>
+      </el-form>
+    </div>
   </el-dialog>
 </template>
 
@@ -96,8 +125,10 @@ import {
 } from '../../api/wallet'
 import { computedPrice } from '../../api/global'
 import { getConfig } from '../../api/global'
+import { useLiveStore } from '../../store/live'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
+const liveStore = useLiveStore()
 const dialogVisible = ref<boolean>(false)
 const vx_price = ref<number>(0)
 const form = ref<any>({
@@ -123,15 +154,23 @@ function closeRechargeDialog() {
 }
 const diamonds = ref<any>(0)
 async function changePrice(num) {
-  const res: any = await computedPrice({ cny: num })
+  const res: any = await computedPrice({ req_num: num, zhifu_type: 1 })
   diamonds.value = res?.data?.jifen
 }
-// 充值
-const ruleFormRef = ref<FormInstance>()
-const rechargeForm = ref<any>({ miyao: '' })
 const getJifen = computed(() => {
   return `${vx_price.value} ${t('recharge.dui')} ${diamonds.value} ${t('detail.divide_diamonds')}`
 })
+const payDiamonds = ref<any>(0)
+async function changePayPrice(num: any) {
+  const res: any = await computedPrice({ req_num: num, zhifu_type: 2 })
+  payDiamonds.value = res.data.jifen
+}
+const getPayJifen = computed(() => {
+  return `${pay_price.value} ${t('recharge.pay_dui')} ${payDiamonds.value} ${t('detail.divide_diamonds')}`
+})
+// 充值
+const ruleFormRef = ref<FormInstance>()
+const rechargeForm = ref<any>({ miyao: '' })
 // 卡密-确定
 function submit() {
   ruleFormRef.value?.validate(async (valid) => {
@@ -178,7 +217,8 @@ async function onRechargeWeixin() {
     clearInterval(intervalId.value) // 清除之前的订单检查定时器
     const send_data = {
       price: vx_price.value,
-      type: target_type.value == '1' ? 'yundou' : 'jifen'
+      type: target_type.value == '1' ? 'yundou' : 'jifen',
+      zhifu_type: '1'
     }
     const res: any = await rechargeWeixin(send_data)
     if (res.code === 200) {
@@ -197,19 +237,42 @@ async function onRechargeWeixin() {
         3 * 60 * 1000
       ) // 3分钟
     }
-  } catch {
+  } catch (error: any) {
     code_url.value = ''
+    ElMessage.error(error)
   }
 }
+
 function onCancelRechargeWeixin() {
   vx_price.value = 0
   code_url.value = ''
   clearInterval(intervalId.value)
   clearTimeout(timeoutId.value)
 }
+// Paypal-确定
+const pay_price = ref<number>(0)
+async function onRechargePaypal() {
+  try {
+    const send_data = {
+      price: pay_price.value,
+      type: target_type.value == '1' ? 'yundou' : 'jifen',
+      zhifu_type: '2',
+      url_zdy: '1'
+    }
+    pay_price.value && ElMessage.success(t('recharge.message_paypal'))
+    const res: any = await rechargeWeixin(send_data)
+    window.open(res.data.href, '_blank')
+  } catch (err: any) {
+    ElMessage.error(err)
+  }
+}
+function onCancelRechargePaypal() {
+  pay_price.value = 0
+}
 async function viewPersonal() {
   const res = await getPersonalInfo()
   info.value = res?.data?.one
+  liveStore.setDiamond(res.data.one.jifen)
 }
 watch(
   () => target_type.value,
@@ -228,9 +291,12 @@ watch(
   () => dialogVisible.value,
   (newVal) => {
     if (newVal === false) {
+      viewPersonal()
       recharge_type.value = '1'
+      target_type.value = '2'
       form.value.miyao = undefined
       vx_price.value = 0
+      pay_price.value = 0
       code_url.value = ''
       clearInterval(intervalId.value)
       clearTimeout(timeoutId.value)
@@ -256,7 +322,7 @@ watch(
   margin-bottom: 40px;
 }
 .recharge-content {
-  margin-bottom: 40px;
+  height: 100px;
 }
 .qrcode-box {
   position: absolute;
