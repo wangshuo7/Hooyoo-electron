@@ -219,7 +219,8 @@ const i18n = createI18n({
         kou_diamond_log: '扣钻记录',
         kou_time: '扣除时间',
         computed: '计算中...',
-        view_button: '查看'
+        view_button: '查看',
+        account_diamonds: '剩余钻石'
       },
       developer: {
         moni: '模拟弹幕',
@@ -457,7 +458,8 @@ const i18n = createI18n({
         kou_diamond_log: 'Diamond buckle record',
         kou_time: 'Deduction time',
         computed: 'Calculating...',
-        view_button: 'View'
+        view_button: 'View',
+        account_diamonds: 'Surplus diamonds'
       },
       developer: {
         moni: 'Simulated barrage',
@@ -691,7 +693,8 @@ const i18n = createI18n({
         kou_diamond_log: '扣鑽記錄',
         kou_time: '扣除時間',
         computed: '計算中...',
-        view_button: '查看'
+        view_button: '查看',
+        account_diamonds: '剩餘鑽石'
       },
       developer: {
         moni: '模擬彈幕',

@@ -53,6 +53,11 @@
           row.is_php_jisuan == 2 ? row.lw_price : $t('liveLog.computed')
         }}</template>
       </el-table-column>
+      <el-table-column :label="$t('liveLog.account_diamonds')">
+        <template #default="{ row }">
+          {{ row.shengyu_jifen }}
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('liveLog.kou_diamond_log')" width="225">
         <template #default="{ row }">
           <el-button type="success" @click="viewDiamondLog(row.zhibo_log_id)">{{
